@@ -436,10 +436,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentDate: new Date(req.body.paymentDate)
       };
       const validatedData = insertCustomerPaymentSchema.parse(processedBody);
+      
+      // Create the customer payment
       const payment = await storage.createCustomerPayment(validatedData);
+      
+      // Get customer name for the transaction description
+      const customer = await storage.getCustomer(validatedData.customerId);
+      const customerName = customer?.name || "Bilinmeyen Müşteri";
+      
+      // Create a corresponding income transaction
+      const incomeTransaction = {
+        type: "income" as const,
+        amount: validatedData.amount,
+        description: `${customerName} - Müşteri Ödemesi: ${validatedData.description}`,
+        date: validatedData.paymentDate,
+        category: "Müşteri Ödemesi"
+      };
+      
+      // Add the income transaction to the system
+      await storage.createTransaction(incomeTransaction);
+      
       res.status(201).json(payment);
     } catch (error) {
-      res.status(400).json({ message: "Invalid payment data" });
+      console.error("Payment creation error:", error);
+      res.status(400).json({ message: "Invalid payment data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
