@@ -59,7 +59,7 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-sm">
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-sm max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Yeni Personel</DialogTitle>
         </DialogHeader>

@@ -246,7 +246,7 @@ export default function ProjectsPage() {
 
       {/* Project Form Dialog */}
       <Dialog open={showProjectForm} onOpenChange={setShowProjectForm}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md">
+        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Yeni Proje</DialogTitle>
           </DialogHeader>

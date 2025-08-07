@@ -76,7 +76,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md">
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Puantaj Yaz</DialogTitle>
         </DialogHeader>
