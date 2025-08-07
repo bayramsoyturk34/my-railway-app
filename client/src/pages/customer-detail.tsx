@@ -11,7 +11,7 @@ import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -510,6 +510,9 @@ export default function CustomerDetailPage() {
             <DialogTitle className="text-xl font-semibold">
               {editingTask ? "Görev Düzenle" : "Yeni Görev"}
             </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              {editingTask ? "Mevcut görevi düzenleyin" : "Müşteri için yeni bir görev oluşturun"}
+            </DialogDescription>
           </DialogHeader>
 
           <Form {...taskForm}>
@@ -639,6 +642,9 @@ export default function CustomerDetailPage() {
         <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Ödeme Kaydet</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Bu müşteriden alınan ödemeyi kaydedin
+            </DialogDescription>
           </DialogHeader>
 
           <Form {...paymentForm}>

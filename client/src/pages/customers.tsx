@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CustomersPage() {
@@ -403,6 +403,9 @@ export default function CustomersPage() {
             <DialogTitle className="text-xl font-semibold">
               {editingCustomer ? "Müşteri Düzenle" : "Yeni Müşteri"}
             </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              {editingCustomer ? "Mevcut müşteri bilgilerini düzenleyin" : "Yeni müşteri bilgilerini girin"}
+            </DialogDescription>
           </DialogHeader>
 
           <Form {...form}>
