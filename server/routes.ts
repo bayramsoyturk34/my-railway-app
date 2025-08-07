@@ -82,18 +82,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", async (req, res) => {
     try {
-      const validatedData = insertProjectSchema.parse(req.body);
+      console.log("Project request body:", req.body);
+      // Convert string date to Date object
+      const processedBody = {
+        ...req.body,
+        startDate: new Date(req.body.startDate)
+      };
+      const validatedData = insertProjectSchema.parse(processedBody);
       const project = await storage.createProject(validatedData);
       res.status(201).json(project);
     } catch (error) {
-      res.status(400).json({ message: "Invalid project data" });
+      console.error("Project validation error:", error);
+      res.status(400).json({ message: "Invalid project data", error: error.message });
     }
   });
 
   app.put("/api/projects/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const validatedData = insertProjectSchema.partial().parse(req.body);
+      // Convert string date to Date object if present
+      const processedBody = {
+        ...req.body,
+        ...(req.body.startDate && { startDate: new Date(req.body.startDate) })
+      };
+      const validatedData = insertProjectSchema.partial().parse(processedBody);
       const project = await storage.updateProject(id, validatedData);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });

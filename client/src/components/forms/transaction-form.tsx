@@ -55,6 +55,7 @@ export default function TransactionForm({ open, onOpenChange }: TransactionFormP
   });
 
   const onSubmit = (data: InsertTransaction) => {
+    console.log("Submitting transaction data:", data);
     createTransactionMutation.mutate(data);
   };
 

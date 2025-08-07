@@ -121,6 +121,7 @@ export default function ProjectsPage() {
   };
 
   const onSubmit = (data: InsertProject) => {
+    console.log("Submitting project data:", data);
     createProjectMutation.mutate(data);
   };
 
