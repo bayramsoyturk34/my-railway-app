@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export default function ProjectsPage() {
   const [, setLocation] = useLocation();
   const [showProjectForm, setShowProjectForm] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -59,6 +60,31 @@ export default function ProjectsPage() {
       toast({
         title: "Hata",
         description: "Proje kaydı oluşturulamadı.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertProject> }) => {
+      const response = await apiRequest("PUT", `/api/projects/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      toast({
+        title: "Başarılı",
+        description: "Proje kaydı güncellendi.",
+      });
+      form.reset();
+      setShowProjectForm(false);
+      setEditingProject(null);
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Proje kaydı güncellenemedi.",
         variant: "destructive",
       });
     },
@@ -120,9 +146,34 @@ export default function ProjectsPage() {
     return type === "given" ? "Verilen" : "Alınan";
   };
 
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    form.reset({
+      name: project.name,
+      type: project.type,
+      amount: project.amount,
+      status: project.status,
+      description: project.description || "",
+      clientName: project.clientName || "",
+      startDate: new Date(project.startDate),
+      endDate: project.endDate ? new Date(project.endDate) : undefined,
+    });
+    setShowProjectForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowProjectForm(false);
+    setEditingProject(null);
+    form.reset();
+  };
+
   const onSubmit = (data: InsertProject) => {
     console.log("Submitting project data:", data);
-    createProjectMutation.mutate(data);
+    if (editingProject) {
+      updateProjectMutation.mutate({ id: editingProject.id, data });
+    } else {
+      createProjectMutation.mutate(data);
+    }
   };
 
   if (isLoading) {
@@ -223,7 +274,7 @@ export default function ProjectsPage() {
                         variant="ghost"
                         size="icon"
                         className="text-blue-400 hover:text-blue-300 hover:bg-dark-accent"
-                        onClick={() => console.log("Edit project", project.id)}
+                        onClick={() => handleEditProject(project)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -246,10 +297,12 @@ export default function ProjectsPage() {
       </div>
 
       {/* Project Form Dialog */}
-      <Dialog open={showProjectForm} onOpenChange={setShowProjectForm}>
+      <Dialog open={showProjectForm} onOpenChange={handleCloseForm}>
         <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Yeni Proje</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
+              {editingProject ? "Proje Düzenle" : "Yeni Proje"}
+            </DialogTitle>
           </DialogHeader>
 
           <Form {...form}>
@@ -407,16 +460,20 @@ export default function ProjectsPage() {
                   type="button"
                   variant="secondary"
                   className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
-                  onClick={() => setShowProjectForm(false)}
+                  onClick={handleCloseForm}
                 >
                   İptal
                 </Button>
                 <Button
                   type="submit"
                   className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
-                  disabled={createProjectMutation.isPending}
+                  disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
                 >
-                  {createProjectMutation.isPending ? "Kaydediliyor..." : "Kaydet"}
+                  {(createProjectMutation.isPending || updateProjectMutation.isPending) 
+                    ? "Kaydediliyor..." 
+                    : editingProject 
+                      ? "Güncelle" 
+                      : "Kaydet"}
                 </Button>
               </div>
             </form>
