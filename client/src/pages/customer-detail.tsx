@@ -546,6 +546,7 @@ export default function CustomerDetailPage() {
                         className="bg-dark-primary border-dark-accent text-white"
                         placeholder="Görev açıklaması"
                         {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
