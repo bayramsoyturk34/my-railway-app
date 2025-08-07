@@ -407,14 +407,17 @@ export default function ProjectsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-300">Müşteri Adı</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
+                      value={field.value || "none"}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
                           <SelectValue placeholder="Müşteri seçin" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-dark-primary border-dark-accent">
-                        <SelectItem value="" className="text-white">Müşteri seçmeyin</SelectItem>
+                        <SelectItem value="none" className="text-white">Müşteri seçmeyin</SelectItem>
                         {customers.map((customer) => (
                           <SelectItem key={customer.id} value={customer.name} className="text-white">
                             {customer.name} {customer.company && `(${customer.company})`}
