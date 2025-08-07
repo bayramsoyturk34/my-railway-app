@@ -59,7 +59,7 @@ export default function CustomersPage() {
 
   const createCustomerMutation = useMutation({
     mutationFn: async (data: InsertCustomer) => {
-      const response = await apiRequest("POST", "/api/customers", data);
+      const response = await apiRequest("/api/customers", "POST", data);
       return response.json();
     },
     onSuccess: () => {
@@ -82,7 +82,7 @@ export default function CustomersPage() {
 
   const updateCustomerMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertCustomer> }) => {
-      const response = await apiRequest("PUT", `/api/customers/${id}`, data);
+      const response = await apiRequest(`/api/customers/${id}`, "PUT", data);
       return response.json();
     },
     onSuccess: () => {
@@ -106,7 +106,7 @@ export default function CustomersPage() {
 
   const deleteCustomerMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/customers/${id}`);
+      await apiRequest(`/api/customers/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });

@@ -32,7 +32,7 @@ export default function TransactionForm({ open, onOpenChange }: TransactionFormP
 
   const createTransactionMutation = useMutation({
     mutationFn: async (data: InsertTransaction) => {
-      const response = await apiRequest("POST", "/api/transactions", data);
+      const response = await apiRequest("/api/transactions", "POST", data);
       return response.json();
     },
     onSuccess: () => {

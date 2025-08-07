@@ -51,7 +51,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
         overtimeHours: data.overtimeHours || "0.00",
       };
 
-      const response = await apiRequest("POST", "/api/timesheets", timesheetData);
+      const response = await apiRequest("/api/timesheets", "POST", timesheetData);
       return response.json();
     },
     onSuccess: () => {

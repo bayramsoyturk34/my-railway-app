@@ -60,7 +60,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
 
   const createPersonnelMutation = useMutation({
     mutationFn: async (data: InsertPersonnel) => {
-      const response = await apiRequest("POST", "/api/personnel", data);
+      const response = await apiRequest("/api/personnel", "POST", data);
       return response.json();
     },
     onSuccess: () => {
@@ -83,7 +83,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
 
   const updatePersonnelMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertPersonnel> }) => {
-      const response = await apiRequest("PUT", `/api/personnel/${id}`, data);
+      const response = await apiRequest(`/api/personnel/${id}`, "PUT", data);
       return response.json();
     },
     onSuccess: () => {

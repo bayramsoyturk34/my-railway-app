@@ -32,7 +32,7 @@ export default function FinancesPage() {
 
   const deleteTransactionMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/transactions/${id}`);
+      await apiRequest(`/api/transactions/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });

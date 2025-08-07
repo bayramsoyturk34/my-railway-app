@@ -27,7 +27,7 @@ export default function Personnel() {
 
   const deletePersonnelMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/personnel/${id}`);
+      await apiRequest(`/api/personnel/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/personnel"] });
