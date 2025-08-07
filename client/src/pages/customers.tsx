@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, User, Edit, Trash2, Building2, Phone, Mail } from "lucide-react";
-import { type Customer, insertCustomerSchema, type InsertCustomer } from "@shared/schema";
+import { ArrowLeft, Plus, User, Edit, Trash2, Building2, Phone, Mail, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
+import { type Customer, insertCustomerSchema, type InsertCustomer, type CustomerTask, type CustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -34,6 +34,14 @@ export default function CustomersPage() {
 
   const { data: customers = [], isLoading } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
+  });
+
+  const { data: allCustomerTasks = [] } = useQuery<CustomerTask[]>({
+    queryKey: ["/api/customer-tasks"],
+  });
+
+  const { data: allCustomerPayments = [] } = useQuery<CustomerPayment[]>({
+    queryKey: ["/api/customer-payments"],
   });
 
   const form = useForm<InsertCustomer>({
@@ -176,6 +184,23 @@ export default function CustomersPage() {
     return matchesSearch && matchesStatus;
   });
 
+  // Helper functions
+  const getCustomerTasks = (customerId: string) => {
+    return allCustomerTasks.filter(task => task.customerId === customerId);
+  };
+
+  const getCustomerPayments = (customerId: string) => {
+    return allCustomerPayments.filter(payment => payment.customerId === customerId);
+  };
+
+  const formatCurrency = (amount: string | number) => {
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'TRY',
+      minimumFractionDigits: 0,
+    }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-dark-primary text-white">
@@ -235,20 +260,32 @@ export default function CustomersPage() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {filteredCustomers.map((customer) => (
-              <Card key={customer.id} className="bg-dark-secondary border-dark-accent">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <User className="h-5 w-5 text-blue-400" />
-                        <h4 className="text-white font-medium text-lg">{customer.name}</h4>
-                        <span className={`text-sm px-2 py-1 rounded ${
-                          customer.status === "active" ? "text-green-400 bg-green-400/10" : "text-gray-400 bg-gray-400/10"
-                        }`}>
-                          {customer.status === "active" ? "Aktif" : "Pasif"}
-                        </span>
-                      </div>
+            {filteredCustomers.map((customer) => {
+              const customerTasks = getCustomerTasks(customer.id);
+              const customerPayments = getCustomerPayments(customer.id);
+              const totalTaskAmount = customerTasks.reduce((sum, task) => sum + parseFloat(task.amount), 0);
+              const totalPaidAmount = customerPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+              const remainingAmount = totalTaskAmount - totalPaidAmount;
+
+              return (
+                <Card key={customer.id} className="bg-dark-secondary border-dark-accent">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <User className="h-5 w-5 text-blue-400" />
+                          <button
+                            className="text-white font-medium text-lg hover:text-blue-400 underline cursor-pointer"
+                            onClick={() => setLocation(`/customers/${encodeURIComponent(customer.name)}`)}
+                          >
+                            {customer.name}
+                          </button>
+                          <span className={`text-sm px-2 py-1 rounded ${
+                            customer.status === "active" ? "text-green-400 bg-green-400/10" : "text-gray-400 bg-gray-400/10"
+                          }`}>
+                            {customer.status === "active" ? "Aktif" : "Pasif"}
+                          </span>
+                        </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                         {customer.company && (
@@ -295,6 +332,40 @@ export default function CustomersPage() {
                           <p className="text-gray-300 text-sm">{customer.taxNumber}</p>
                         </div>
                       )}
+
+                      {/* Financial Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-3 bg-dark-primary rounded-lg">
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-2 mb-1">
+                            <TrendingUp className="h-4 w-4 text-blue-400" />
+                            <p className="text-gray-400 text-sm">Toplam İş</p>
+                          </div>
+                          <p className="text-blue-400 font-semibold">{formatCurrency(totalTaskAmount)}</p>
+                          <p className="text-gray-500 text-xs">{customerTasks.length} adet</p>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-2 mb-1">
+                            <TrendingDown className="h-4 w-4 text-green-400" />
+                            <p className="text-gray-400 text-sm">Ödenen</p>
+                          </div>
+                          <p className="text-green-400 font-semibold">{formatCurrency(totalPaidAmount)}</p>
+                          <p className="text-gray-500 text-xs">{customerPayments.length} ödeme</p>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-2 mb-1">
+                            <DollarSign className="h-4 w-4 text-orange-400" />
+                            <p className="text-gray-400 text-sm">Kalan</p>
+                          </div>
+                          <p className={`font-semibold ${remainingAmount > 0 ? 'text-orange-400' : 'text-gray-400'}`}>
+                            {formatCurrency(remainingAmount)}
+                          </p>
+                          <p className="text-gray-500 text-xs">
+                            {remainingAmount > 0 ? 'Alacak' : 'Tamam'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex gap-2 ml-4">
@@ -319,7 +390,8 @@ export default function CustomersPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

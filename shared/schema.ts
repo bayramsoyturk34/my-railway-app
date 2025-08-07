@@ -79,6 +79,29 @@ export const customers = pgTable("customers", {
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
+// Customer Tasks (Yapılacak İşler)
+export const customerTasks = pgTable("customer_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").notNull().default("pending"), // "pending", "in_progress", "completed"
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Customer Payments (Müşteri Ödemeleri)
+export const customerPayments = pgTable("customer_payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  paymentDate: timestamp("payment_date").notNull(),
+  paymentMethod: text("payment_method"), // "cash", "bank_transfer", "check", "other"
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerId: varchar("customer_id").notNull(),
@@ -173,6 +196,21 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
   company: z.string().optional().nullable(),
 });
 
+export const insertCustomerTaskSchema = createInsertSchema(customerTasks).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  description: z.string().optional().nullable(),
+  dueDate: z.date().optional().nullable(),
+});
+
+export const insertCustomerPaymentSchema = createInsertSchema(customerPayments).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  paymentMethod: z.string().optional().nullable(),
+});
+
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   id: true,
   createdAt: true,
@@ -209,6 +247,12 @@ export type InsertContractor = z.infer<typeof insertContractorSchema>;
 
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+
+export type CustomerTask = typeof customerTasks.$inferSelect;
+export type InsertCustomerTask = z.infer<typeof insertCustomerTaskSchema>;
+
+export type CustomerPayment = typeof customerPayments.$inferSelect;
+export type InsertCustomerPayment = z.infer<typeof insertCustomerPaymentSchema>;
 
 export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;

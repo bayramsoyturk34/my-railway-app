@@ -9,6 +9,8 @@ import {
   insertNoteSchema,
   insertContractorSchema,
   insertCustomerSchema,
+  insertCustomerTaskSchema,
+  insertCustomerPaymentSchema,
   insertInvoiceSchema,
   insertInvoiceItemSchema,
   insertReportSchema
@@ -339,6 +341,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete customer" });
+    }
+  });
+
+  // Customer Tasks routes
+  app.get("/api/customer-tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getCustomerTasks();
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer tasks" });
+    }
+  });
+
+  app.get("/api/customer-tasks/customer/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      const tasks = await storage.getCustomerTasksByCustomerId(customerId);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer tasks" });
+    }
+  });
+
+  app.post("/api/customer-tasks", async (req, res) => {
+    try {
+      const processedBody = {
+        ...req.body,
+        ...(req.body.dueDate && { dueDate: new Date(req.body.dueDate) })
+      };
+      const validatedData = insertCustomerTaskSchema.parse(processedBody);
+      const task = await storage.createCustomerTask(validatedData);
+      res.status(201).json(task);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid task data" });
+    }
+  });
+
+  app.put("/api/customer-tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const processedBody = {
+        ...req.body,
+        ...(req.body.dueDate && { dueDate: new Date(req.body.dueDate) })
+      };
+      const validatedData = insertCustomerTaskSchema.partial().parse(processedBody);
+      const task = await storage.updateCustomerTask(id, validatedData);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid task data" });
+    }
+  });
+
+  app.delete("/api/customer-tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCustomerTask(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // Customer Payments routes
+  app.get("/api/customer-payments", async (req, res) => {
+    try {
+      const payments = await storage.getCustomerPayments();
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer payments" });
+    }
+  });
+
+  app.get("/api/customer-payments/customer/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      const payments = await storage.getCustomerPaymentsByCustomerId(customerId);
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer payments" });
+    }
+  });
+
+  app.post("/api/customer-payments", async (req, res) => {
+    try {
+      const processedBody = {
+        ...req.body,
+        paymentDate: new Date(req.body.paymentDate)
+      };
+      const validatedData = insertCustomerPaymentSchema.parse(processedBody);
+      const payment = await storage.createCustomerPayment(validatedData);
+      res.status(201).json(payment);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid payment data" });
+    }
+  });
+
+  app.delete("/api/customer-payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCustomerPayment(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete payment" });
     }
   });
 

@@ -5,7 +5,9 @@ import {
   type Transaction, type InsertTransaction,
   type Note, type InsertNote,
   type Contractor, type InsertContractor,
-  type Customer, type InsertCustomer
+  type Customer, type InsertCustomer,
+  type CustomerTask, type InsertCustomerTask,
+  type CustomerPayment, type InsertCustomerPayment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -54,6 +56,19 @@ export interface IStorage {
   createCustomer(customer: InsertCustomer): Promise<Customer>;
   updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
   deleteCustomer(id: string): Promise<boolean>;
+
+  // Customer Tasks
+  getCustomerTasks(): Promise<CustomerTask[]>;
+  getCustomerTasksByCustomerId(customerId: string): Promise<CustomerTask[]>;
+  createCustomerTask(task: InsertCustomerTask): Promise<CustomerTask>;
+  updateCustomerTask(id: string, task: Partial<InsertCustomerTask>): Promise<CustomerTask | undefined>;
+  deleteCustomerTask(id: string): Promise<boolean>;
+
+  // Customer Payments
+  getCustomerPayments(): Promise<CustomerPayment[]>;
+  getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]>;
+  createCustomerPayment(payment: InsertCustomerPayment): Promise<CustomerPayment>;
+  deleteCustomerPayment(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -64,6 +79,8 @@ export class MemStorage implements IStorage {
   private notes: Map<string, Note> = new Map();
   private contractors: Map<string, Contractor> = new Map();
   private customers: Map<string, Customer> = new Map();
+  private customerTasks: Map<string, CustomerTask> = new Map();
+  private customerPayments: Map<string, CustomerPayment> = new Map();
 
   constructor() {
     // Initialize with empty data
@@ -296,6 +313,67 @@ export class MemStorage implements IStorage {
 
   async deleteCustomer(id: string): Promise<boolean> {
     return this.customers.delete(id);
+  }
+
+  // Customer Tasks methods
+  async getCustomerTasks(): Promise<CustomerTask[]> {
+    return Array.from(this.customerTasks.values());
+  }
+
+  async getCustomerTasksByCustomerId(customerId: string): Promise<CustomerTask[]> {
+    return Array.from(this.customerTasks.values()).filter(task => task.customerId === customerId);
+  }
+
+  async createCustomerTask(insertTask: InsertCustomerTask): Promise<CustomerTask> {
+    const id = randomUUID();
+    const task: CustomerTask = {
+      ...insertTask,
+      id,
+      createdAt: new Date(),
+      description: insertTask.description || null,
+      dueDate: insertTask.dueDate || null,
+      status: insertTask.status || "pending",
+    };
+    this.customerTasks.set(id, task);
+    return task;
+  }
+
+  async updateCustomerTask(id: string, updates: Partial<InsertCustomerTask>): Promise<CustomerTask | undefined> {
+    const task = this.customerTasks.get(id);
+    if (!task) return undefined;
+
+    const updated = { ...task, ...updates };
+    this.customerTasks.set(id, updated);
+    return updated;
+  }
+
+  async deleteCustomerTask(id: string): Promise<boolean> {
+    return this.customerTasks.delete(id);
+  }
+
+  // Customer Payments methods
+  async getCustomerPayments(): Promise<CustomerPayment[]> {
+    return Array.from(this.customerPayments.values());
+  }
+
+  async getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]> {
+    return Array.from(this.customerPayments.values()).filter(payment => payment.customerId === customerId);
+  }
+
+  async createCustomerPayment(insertPayment: InsertCustomerPayment): Promise<CustomerPayment> {
+    const id = randomUUID();
+    const payment: CustomerPayment = {
+      ...insertPayment,
+      id,
+      createdAt: new Date(),
+      paymentMethod: insertPayment.paymentMethod || null,
+    };
+    this.customerPayments.set(id, payment);
+    return payment;
+  }
+
+  async deleteCustomerPayment(id: string): Promise<boolean> {
+    return this.customerPayments.delete(id);
   }
 }
 
