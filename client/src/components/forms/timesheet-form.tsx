@@ -71,6 +71,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
   });
 
   const onSubmit = (data: InsertTimesheet) => {
+    console.log("Submitting timesheet data:", data);
     createTimesheetMutation.mutate(data);
   };
 

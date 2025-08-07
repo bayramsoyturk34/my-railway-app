@@ -139,11 +139,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/timesheets", async (req, res) => {
     try {
-      const validatedData = insertTimesheetSchema.parse(req.body);
+      console.log("Timesheet request body:", req.body);
+      // Convert string date to Date object
+      const processedBody = {
+        ...req.body,
+        date: new Date(req.body.date)
+      };
+      const validatedData = insertTimesheetSchema.parse(processedBody);
       const timesheet = await storage.createTimesheet(validatedData);
       res.status(201).json(timesheet);
     } catch (error) {
-      res.status(400).json({ message: "Invalid timesheet data" });
+      console.error("Timesheet validation error:", error);
+      res.status(400).json({ message: "Invalid timesheet data", error: error.message });
     }
   });
 
@@ -159,11 +166,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/transactions", async (req, res) => {
     try {
-      const validatedData = insertTransactionSchema.parse(req.body);
+      console.log("Transaction request body:", req.body);
+      // Convert string date to Date object
+      const processedBody = {
+        ...req.body,
+        date: new Date(req.body.date)
+      };
+      const validatedData = insertTransactionSchema.parse(processedBody);
       const transaction = await storage.createTransaction(validatedData);
       res.status(201).json(transaction);
     } catch (error) {
-      res.status(400).json({ message: "Invalid transaction data" });
+      console.error("Transaction validation error:", error);
+      res.status(400).json({ message: "Invalid transaction data", error: error.message });
     }
   });
 
