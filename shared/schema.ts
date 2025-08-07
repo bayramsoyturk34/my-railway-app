@@ -34,6 +34,7 @@ export const timesheets = pgTable("timesheets", {
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),
   totalHours: decimal("total_hours", { precision: 4, scale: 2 }).notNull(),
+  overtimeHours: decimal("overtime_hours", { precision: 4, scale: 2 }).default("0.00"),
   notes: text("notes"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
@@ -135,6 +136,7 @@ export const insertTimesheetSchema = createInsertSchema(timesheets).omit({
   createdAt: true,
 }).extend({
   notes: z.string().optional().nullable(),
+  overtimeHours: z.string().optional().nullable(),
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({

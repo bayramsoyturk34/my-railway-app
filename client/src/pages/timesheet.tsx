@@ -96,7 +96,7 @@ export default function TimesheetPage() {
                         </h4>
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                         <div>
                           <p className="text-gray-400">Tarih</p>
                           <p className="text-white font-medium">{formatDate(timesheet.date)}</p>
@@ -110,8 +110,16 @@ export default function TimesheetPage() {
                           <p className="text-white font-medium">{formatTime(timesheet.endTime)}</p>
                         </div>
                         <div>
-                          <p className="text-gray-400">Toplam Saat</p>
+                          <p className="text-gray-400">Normal Saat</p>
                           <p className="text-white font-medium">{timesheet.totalHours}h</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Mesai Saati</p>
+                          <p className="text-orange-400 font-medium">
+                            {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 
+                              ? `${timesheet.overtimeHours}h` 
+                              : "0h"}
+                          </p>
                         </div>
                       </div>
 

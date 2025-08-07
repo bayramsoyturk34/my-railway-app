@@ -28,6 +28,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
       startTime: "08:00",
       endTime: "17:00",
       totalHours: "9.00",
+      overtimeHours: "0.00",
       notes: "",
     },
   });
@@ -47,6 +48,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
       const timesheetData = {
         ...data,
         totalHours: diffHours.toFixed(2),
+        overtimeHours: data.overtimeHours || "0.00",
       };
 
       const response = await apiRequest("POST", "/api/timesheets", timesheetData);
@@ -147,24 +149,52 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Tarih</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      className="bg-dark-primary border-dark-accent text-white"
-                      value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
-                      onChange={(e) => field.onChange(new Date(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Tarih</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        className="bg-dark-primary border-dark-accent text-white"
+                        value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                        onChange={(e) => field.onChange(new Date(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="overtimeHours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Mesai Saati</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        max="12"
+                        className="bg-dark-primary border-dark-accent text-white"
+                        placeholder="0.00"
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

@@ -157,6 +157,7 @@ export class MemStorage implements IStorage {
       id,
       createdAt: new Date(),
       notes: insertTimesheet.notes || null,
+      overtimeHours: insertTimesheet.overtimeHours || "0.00",
     };
     this.timesheets.set(id, timesheet);
     return timesheet;
