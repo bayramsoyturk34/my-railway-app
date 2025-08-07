@@ -258,14 +258,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactions = await storage.getTransactions();
       const projects = await storage.getProjects();
       const contractors = await storage.getContractors();
+      
+      console.log("All transactions:", transactions.map(t => ({ type: t.type, amount: t.amount, description: t.description })));
 
       const income = transactions
         .filter(t => t.type === "income")
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
 
       const expenses = transactions
         .filter(t => t.type === "expense")
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
 
       const givenProjects = projects.filter(p => p.type === "given");
       const receivedProjects = projects.filter(p => p.type === "received");
@@ -291,9 +293,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
+      console.log("Financial summary:", summary);
       res.json(summary);
     } catch (error) {
-      res.status(500).json({ message: "Failed to calculate financial summary" });
+      console.error("Financial summary error:", error);
+      res.status(500).json({ message: "Failed to fetch financial summary" });
     }
   });
 
