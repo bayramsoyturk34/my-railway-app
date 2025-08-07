@@ -11,6 +11,7 @@ import Timesheet from "@/pages/timesheet";
 import Projects from "@/pages/projects";
 import Finances from "@/pages/finances";
 import Customers from "@/pages/customers";
+import CustomerDetail from "@/pages/customer-detail";
 import Reports from "@/pages/reports";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/projects" component={Projects} />
       <Route path="/finances" component={Finances} />
       <Route path="/customers" component={Customers} />
+      <Route path="/customers/:customerName" component={CustomerDetail} />
       <Route path="/reports" component={Reports} />
       <Route component={NotFound} />
     </Switch>

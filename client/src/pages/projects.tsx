@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Plus, Building, Trash2, Edit } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProjectSchema, type InsertProject, type Project } from "@shared/schema";
+import { insertProjectSchema, type InsertProject, type Project, type Customer } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/layout/header";
@@ -25,6 +25,10 @@ export default function ProjectsPage() {
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
+  });
+
+  const { data: customers = [] } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
   });
 
   const form = useForm<InsertProject>({
@@ -257,7 +261,12 @@ export default function ProjectsPage() {
                       {project.clientName && (
                         <div className="mb-2">
                           <p className="text-gray-400 text-sm">Müşteri</p>
-                          <p className="text-gray-300 text-sm">{project.clientName}</p>
+                          <button 
+                            className="text-blue-400 hover:text-blue-300 text-sm underline cursor-pointer"
+                            onClick={() => setLocation(`/customers/${encodeURIComponent(project.clientName || "")}`)}
+                          >
+                            {project.clientName}
+                          </button>
                         </div>
                       )}
 
@@ -398,17 +407,21 @@ export default function ProjectsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-300">Müşteri Adı</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="Müşteri adını girin"
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                      />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                          <SelectValue placeholder="Müşteri seçin" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-dark-primary border-dark-accent">
+                        <SelectItem value="" className="text-white">Müşteri seçmeyin</SelectItem>
+                        {customers.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.name} className="text-white">
+                            {customer.name} {customer.company && `(${customer.company})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
