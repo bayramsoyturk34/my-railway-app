@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, Edit, Trash2, User } from "lucide-react";
-import { type Personnel } from "@shared/schema";
+import { ArrowLeft, Plus, Edit, Trash2, User, Clock, Calendar } from "lucide-react";
+import { type Personnel, type Timesheet } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/layout/header";
@@ -19,6 +19,10 @@ export default function Personnel() {
 
   const { data: personnel = [], isLoading } = useQuery<Personnel[]>({
     queryKey: ["/api/personnel"],
+  });
+
+  const { data: timesheets = [] } = useQuery<Timesheet[]>({
+    queryKey: ["/api/timesheets"],
   });
 
   const deletePersonnelMutation = useMutation({
@@ -44,6 +48,15 @@ export default function Personnel() {
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     return d.toLocaleDateString('tr-TR');
+  };
+
+  const getPersonnelTimesheets = (personnelId: string) => {
+    return timesheets.filter(timesheet => timesheet.personnelId === personnelId);
+  };
+
+  const formatSalary = (salary: string | null) => {
+    if (!salary) return "Belirtilmemiş";
+    return `${parseFloat(salary).toLocaleString('tr-TR')} TL`;
   };
 
   if (isLoading) {
@@ -99,53 +112,84 @@ export default function Personnel() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {personnel.map((person) => (
-              <Card key={person.id} className="bg-dark-secondary border-dark-accent">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                        <User className="h-6 w-6 text-white" />
+            {personnel.map((person) => {
+              const personTimesheets = getPersonnelTimesheets(person.id);
+              const totalHours = personTimesheets.reduce((sum, ts) => sum + parseFloat(ts.totalHours), 0);
+              const totalOvertimeHours = personTimesheets.reduce((sum, ts) => sum + parseFloat(ts.overtimeHours || "0"), 0);
+              
+              return (
+                <Card key={person.id} className="bg-dark-secondary border-dark-accent">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-white font-medium text-lg">{person.name}</h4>
+                          <p className="text-gray-400 text-sm">
+                            {person.position} • Başlangıç: {formatDate(person.startDate)}
+                          </p>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
+                            <div>
+                              <p className="text-gray-500 text-sm">💰 Maaş: {formatSalary(person.salary)}</p>
+                              {person.phone && (
+                                <p className="text-gray-500 text-sm">📞 {person.phone}</p>
+                              )}
+                              {person.email && (
+                                <p className="text-gray-500 text-sm">✉️ {person.email}</p>
+                              )}
+                            </div>
+                            
+                            <div className="text-sm">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Clock className="h-4 w-4 text-blue-400" />
+                                <span className="text-gray-400">Puantaj Bilgileri</span>
+                              </div>
+                              <p className="text-gray-300">
+                                {personTimesheets.length} kayıt • {totalHours.toFixed(1)}h normal
+                              </p>
+                              {totalOvertimeHours > 0 && (
+                                <p className="text-orange-400">
+                                  {totalOvertimeHours.toFixed(1)}h mesai
+                                </p>
+                              )}
+                              {personTimesheets.length === 0 && (
+                                <p className="text-gray-500">Henüz puantaj kaydı yok</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-white font-medium text-lg">{person.name}</h4>
-                        <p className="text-gray-400 text-sm">
-                          {person.position} • Başlangıç: {formatDate(person.startDate)}
-                        </p>
-                        {person.phone && (
-                          <p className="text-gray-500 text-sm">📞 {person.phone}</p>
-                        )}
-                        {person.email && (
-                          <p className="text-gray-500 text-sm">✉️ {person.email}</p>
-                        )}
+                      
+                      <div className="flex gap-2 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-blue-400 hover:text-blue-300 hover:bg-dark-accent"
+                          onClick={() => {
+                            setSelectedPersonnel(person);
+                            setShowPersonnelForm(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-400 hover:text-red-300 hover:bg-dark-accent"
+                          onClick={() => deletePersonnelMutation.mutate(person.id)}
+                          disabled={deletePersonnelMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-blue-400 hover:text-blue-300 hover:bg-dark-accent"
-                        onClick={() => {
-                          setSelectedPersonnel(person);
-                          setShowPersonnelForm(true);
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-400 hover:text-red-300 hover:bg-dark-accent"
-                        onClick={() => deletePersonnelMutation.mutate(person.id)}
-                        disabled={deletePersonnelMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

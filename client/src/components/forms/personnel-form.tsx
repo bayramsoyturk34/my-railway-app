@@ -28,6 +28,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
       startDate: new Date(),
       phone: null,
       email: null,
+      salary: null,
       isActive: true,
     },
   });
@@ -41,6 +42,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
         startDate: new Date(personnel.startDate),
         phone: personnel.phone,
         email: personnel.email,
+        salary: personnel.salary,
         isActive: personnel.isActive,
       });
     } else {
@@ -50,6 +52,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
         startDate: new Date(),
         phone: null,
         email: null,
+        salary: null,
         isActive: true,
       });
     }
@@ -221,6 +224,31 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
                       type="email"
                       className="bg-dark-primary border-dark-accent text-white"
                       placeholder="E-posta adresi"
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="salary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Maaş (TL)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="bg-dark-primary border-dark-accent text-white"
+                      placeholder="Aylık maaş tutarı"
                       value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}

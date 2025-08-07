@@ -10,6 +10,7 @@ export const personnel = pgTable("personnel", {
   startDate: timestamp("start_date").notNull(),
   phone: text("phone"),
   email: text("email"),
+  salary: decimal("salary", { precision: 10, scale: 2 }),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
@@ -120,6 +121,7 @@ export const insertPersonnelSchema = createInsertSchema(personnel).omit({
 }).extend({
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
+  salary: z.string().optional().nullable(),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
