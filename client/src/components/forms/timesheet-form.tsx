@@ -76,7 +76,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white">
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Puantaj Yaz</DialogTitle>
         </DialogHeader>
@@ -175,7 +175,11 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
                     <Textarea
                       className="bg-dark-primary border-dark-accent text-white h-20"
                       placeholder="Ek bilgiler..."
-                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                     />
                   </FormControl>
                   <FormMessage />

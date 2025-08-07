@@ -69,21 +69,32 @@ export const contractors = pgTable("contractors", {
 export const insertPersonnelSchema = createInsertSchema(personnel).omit({
   id: true,
   createdAt: true,
+}).extend({
+  phone: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
   createdAt: true,
+}).extend({
+  description: z.string().optional().nullable(),
+  clientName: z.string().optional().nullable(),
+  endDate: z.date().optional().nullable(),
 });
 
 export const insertTimesheetSchema = createInsertSchema(timesheets).omit({
   id: true,
   createdAt: true,
+}).extend({
+  notes: z.string().optional().nullable(),
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
+}).extend({
+  category: z.string().optional().nullable(),
 });
 
 export const insertNoteSchema = createInsertSchema(notes).omit({
@@ -94,6 +105,10 @@ export const insertNoteSchema = createInsertSchema(notes).omit({
 export const insertContractorSchema = createInsertSchema(contractors).omit({
   id: true,
   createdAt: true,
+}).extend({
+  company: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
 });
 
 // Types

@@ -348,7 +348,11 @@ export default function ProjectsPage() {
                       <Input
                         className="bg-dark-primary border-dark-accent text-white"
                         placeholder="Müşteri adını girin"
-                        {...field}
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -385,7 +389,11 @@ export default function ProjectsPage() {
                       <Textarea
                         className="bg-dark-primary border-dark-accent text-white h-20"
                         placeholder="Proje açıklaması"
-                        {...field}
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />

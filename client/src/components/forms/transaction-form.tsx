@@ -60,7 +60,7 @@ export default function TransactionForm({ open, onOpenChange }: TransactionFormP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white">
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Kasa Yönetimi</DialogTitle>
         </DialogHeader>
@@ -137,7 +137,11 @@ export default function TransactionForm({ open, onOpenChange }: TransactionFormP
                     <Input
                       className="bg-dark-primary border-dark-accent text-white"
                       placeholder="İşlem kategorisi"
-                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                     />
                   </FormControl>
                   <FormMessage />

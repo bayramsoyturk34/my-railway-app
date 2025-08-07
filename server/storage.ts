@@ -75,6 +75,9 @@ export class MemStorage implements IStorage {
       ...insertPersonnel,
       id,
       createdAt: new Date(),
+      phone: insertPersonnel.phone || null,
+      email: insertPersonnel.email || null,
+      isActive: insertPersonnel.isActive ?? true,
     };
     this.personnel.set(id, personnel);
     return personnel;
@@ -108,6 +111,9 @@ export class MemStorage implements IStorage {
       ...insertProject,
       id,
       createdAt: new Date(),
+      description: insertProject.description || null,
+      clientName: insertProject.clientName || null,
+      endDate: insertProject.endDate || null,
     };
     this.projects.set(id, project);
     return project;
@@ -141,6 +147,7 @@ export class MemStorage implements IStorage {
       ...insertTimesheet,
       id,
       createdAt: new Date(),
+      notes: insertTimesheet.notes || null,
     };
     this.timesheets.set(id, timesheet);
     return timesheet;
@@ -170,6 +177,7 @@ export class MemStorage implements IStorage {
       ...insertTransaction,
       id,
       createdAt: new Date(),
+      category: insertTransaction.category || null,
     };
     this.transactions.set(id, transaction);
     return transaction;
@@ -219,6 +227,9 @@ export class MemStorage implements IStorage {
       ...insertContractor,
       id,
       createdAt: new Date(),
+      company: insertContractor.company || null,
+      phone: insertContractor.phone || null,
+      email: insertContractor.email || null,
     };
     this.contractors.set(id, contractor);
     return contractor;

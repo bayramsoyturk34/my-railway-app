@@ -59,7 +59,7 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white">
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Yeni Personel</DialogTitle>
         </DialogHeader>
@@ -131,7 +131,11 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
                     <Input
                       className="bg-dark-primary border-dark-accent text-white"
                       placeholder="Telefon numarası"
-                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                     />
                   </FormControl>
                   <FormMessage />
@@ -150,7 +154,11 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
                       type="email"
                       className="bg-dark-primary border-dark-accent text-white"
                       placeholder="E-posta adresi"
-                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                     />
                   </FormControl>
                   <FormMessage />
