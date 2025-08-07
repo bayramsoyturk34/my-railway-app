@@ -24,7 +24,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/personnel", async (req, res) => {
     try {
       console.log("Personnel request body:", req.body);
-      const validatedData = insertPersonnelSchema.parse(req.body);
+      // Convert string date to Date object
+      const processedBody = {
+        ...req.body,
+        startDate: new Date(req.body.startDate)
+      };
+      const validatedData = insertPersonnelSchema.parse(processedBody);
       const personnel = await storage.createPersonnel(validatedData);
       res.status(201).json(personnel);
     } catch (error) {
@@ -36,7 +41,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/personnel/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const validatedData = insertPersonnelSchema.partial().parse(req.body);
+      // Convert string date to Date object if present
+      const processedBody = {
+        ...req.body,
+        ...(req.body.startDate && { startDate: new Date(req.body.startDate) })
+      };
+      const validatedData = insertPersonnelSchema.partial().parse(processedBody);
       const personnel = await storage.updatePersonnel(id, validatedData);
       if (!personnel) {
         return res.status(404).json({ message: "Personnel not found" });
