@@ -23,11 +23,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/personnel", async (req, res) => {
     try {
+      console.log("Personnel request body:", req.body);
       const validatedData = insertPersonnelSchema.parse(req.body);
       const personnel = await storage.createPersonnel(validatedData);
       res.status(201).json(personnel);
     } catch (error) {
-      res.status(400).json({ message: "Invalid personnel data" });
+      console.error("Personnel validation error:", error);
+      res.status(400).json({ message: "Invalid personnel data", error: error.message });
     }
   });
 

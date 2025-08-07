@@ -24,8 +24,8 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
       name: "",
       position: "",
       startDate: new Date(),
-      phone: "",
-      email: "",
+      phone: null,
+      email: null,
       isActive: true,
     },
   });
@@ -54,7 +54,14 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
   });
 
   const onSubmit = (data: InsertPersonnel) => {
-    createPersonnelMutation.mutate(data);
+    // Convert empty strings to null for optional fields
+    const cleanedData = {
+      ...data,
+      phone: data.phone?.trim() || null,
+      email: data.email?.trim() || null,
+    };
+    console.log("Submitting personnel data:", cleanedData);
+    createPersonnelMutation.mutate(cleanedData);
   };
 
   return (
