@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function Personnel() {
   const [, setLocation] = useLocation();
   const [showPersonnelForm, setShowPersonnelForm] = useState(false);
+  const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | undefined>(undefined);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -78,7 +79,10 @@ export default function Personnel() {
         <div className="mb-6">
           <Button
             className="bg-green-500 hover:bg-green-600 text-white"
-            onClick={() => setShowPersonnelForm(true)}
+            onClick={() => {
+              setSelectedPersonnel(undefined);
+              setShowPersonnelForm(true);
+            }}
           >
             <Plus className="h-4 w-4 mr-2" />
             Yeni Personel
@@ -121,7 +125,10 @@ export default function Personnel() {
                         variant="ghost"
                         size="icon"
                         className="text-blue-400 hover:text-blue-300 hover:bg-dark-accent"
-                        onClick={() => console.log("Edit personnel", person.id)}
+                        onClick={() => {
+                          setSelectedPersonnel(person);
+                          setShowPersonnelForm(true);
+                        }}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -145,7 +152,13 @@ export default function Personnel() {
 
       <PersonnelForm 
         open={showPersonnelForm} 
-        onOpenChange={setShowPersonnelForm} 
+        onOpenChange={(open) => {
+          setShowPersonnelForm(open);
+          if (!open) {
+            setSelectedPersonnel(undefined);
+          }
+        }}
+        personnel={selectedPersonnel}
       />
     </div>
   );

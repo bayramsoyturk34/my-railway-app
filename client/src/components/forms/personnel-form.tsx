@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { insertPersonnelSchema, type InsertPersonnel } from "@shared/schema";
+import { useEffect } from "react";
+import { insertPersonnelSchema, type InsertPersonnel, type Personnel } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 interface PersonnelFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  personnel?: Personnel;
 }
 
-export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps) {
+export default function PersonnelForm({ open, onOpenChange, personnel }: PersonnelFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -29,6 +31,29 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
       isActive: true,
     },
   });
+
+  // Update form when personnel changes
+  useEffect(() => {
+    if (personnel) {
+      form.reset({
+        name: personnel.name,
+        position: personnel.position,
+        startDate: new Date(personnel.startDate),
+        phone: personnel.phone,
+        email: personnel.email,
+        isActive: personnel.isActive,
+      });
+    } else {
+      form.reset({
+        name: "",
+        position: "",
+        startDate: new Date(),
+        phone: null,
+        email: null,
+        isActive: true,
+      });
+    }
+  }, [personnel, form]);
 
   const createPersonnelMutation = useMutation({
     mutationFn: async (data: InsertPersonnel) => {
@@ -53,6 +78,29 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
     },
   });
 
+  const updatePersonnelMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertPersonnel> }) => {
+      const response = await apiRequest("PUT", `/api/personnel/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/personnel"] });
+      toast({
+        title: "Başarılı",
+        description: "Personel kaydı güncellendi.",
+      });
+      form.reset();
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Personel kaydı güncellenemedi.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: InsertPersonnel) => {
     // Convert empty strings to null for optional fields
     const cleanedData = {
@@ -61,14 +109,26 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
       email: data.email?.trim() || null,
     };
     console.log("Submitting personnel data:", cleanedData);
-    createPersonnelMutation.mutate(cleanedData);
+    
+    if (personnel) {
+      updatePersonnelMutation.mutate({ id: personnel.id, data: cleanedData });
+    } else {
+      createPersonnelMutation.mutate(cleanedData);
+    }
+  };
+
+  const handleClose = () => {
+    form.reset();
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-sm max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Yeni Personel</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {personnel ? "Personel Düzenle" : "Yeni Personel"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -178,16 +238,20 @@ export default function PersonnelForm({ open, onOpenChange }: PersonnelFormProps
                 type="button"
                 variant="secondary"
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
-                onClick={() => onOpenChange(false)}
+                onClick={handleClose}
               >
                 İptal
               </Button>
               <Button
                 type="submit"
                 className="flex-1 bg-green-500 hover:bg-green-600 text-white"
-                disabled={createPersonnelMutation.isPending}
+                disabled={createPersonnelMutation.isPending || updatePersonnelMutation.isPending}
               >
-                {createPersonnelMutation.isPending ? "Kaydediliyor..." : "Kaydet"}
+                {(createPersonnelMutation.isPending || updatePersonnelMutation.isPending)
+                  ? "Kaydediliyor..." 
+                  : personnel 
+                    ? "Güncelle" 
+                    : "Kaydet"}
               </Button>
             </div>
           </form>
