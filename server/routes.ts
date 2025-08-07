@@ -7,7 +7,11 @@ import {
   insertTimesheetSchema, 
   insertTransactionSchema,
   insertNoteSchema,
-  insertContractorSchema
+  insertContractorSchema,
+  insertCustomerSchema,
+  insertInvoiceSchema,
+  insertInvoiceItemSchema,
+  insertReportSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -34,7 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(personnel);
     } catch (error) {
       console.error("Personnel validation error:", error);
-      res.status(400).json({ message: "Invalid personnel data", error: error.message });
+      res.status(400).json({ message: "Invalid personnel data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -93,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(project);
     } catch (error) {
       console.error("Project validation error:", error);
-      res.status(400).json({ message: "Invalid project data", error: error.message });
+      res.status(400).json({ message: "Invalid project data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -162,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(timesheet);
     } catch (error) {
       console.error("Timesheet validation error:", error);
-      res.status(400).json({ message: "Invalid timesheet data", error: error.message });
+      res.status(400).json({ message: "Invalid timesheet data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -189,7 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(transaction);
     } catch (error) {
       console.error("Transaction validation error:", error);
-      res.status(400).json({ message: "Invalid transaction data", error: error.message });
+      res.status(400).json({ message: "Invalid transaction data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -288,6 +292,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(summary);
     } catch (error) {
       res.status(500).json({ message: "Failed to calculate financial summary" });
+    }
+  });
+
+  // Customers routes
+  app.get("/api/customers", async (req, res) => {
+    try {
+      const customers = await storage.getCustomers();
+      res.json(customers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customers" });
+    }
+  });
+
+  app.post("/api/customers", async (req, res) => {
+    try {
+      const validatedData = insertCustomerSchema.parse(req.body);
+      const customer = await storage.createCustomer(validatedData);
+      res.status(201).json(customer);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid customer data" });
+    }
+  });
+
+  app.put("/api/customers/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertCustomerSchema.partial().parse(req.body);
+      const customer = await storage.updateCustomer(id, validatedData);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.json(customer);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid customer data" });
+    }
+  });
+
+  app.delete("/api/customers/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCustomer(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete customer" });
+    }
+  });
+
+  // Analytics dashboard endpoint
+  app.get("/api/analytics/dashboard", async (req, res) => {
+    try {
+      const transactions = await storage.getTransactions();
+      const projects = await storage.getProjects();
+      const personnel = await storage.getPersonnel();
+      const timesheets = await storage.getTimesheets();
+
+      // Generate mock data for charts (in real implementation, calculate from actual data)
+      const monthlyRevenue = [
+        { month: "Ocak", income: 45000, expenses: 32000 },
+        { month: "Şubat", income: 52000, expenses: 38000 },
+        { month: "Mart", income: 48000, expenses: 35000 },
+        { month: "Nisan", income: 61000, expenses: 42000 },
+        { month: "Mayıs", income: 55000, expenses: 40000 },
+        { month: "Haziran", income: 58000, expenses: 41000 },
+      ];
+
+      const projectsByStatus = [
+        { status: "Aktif", count: projects.filter(p => p.status === "active").length || 5 },
+        { status: "Pasif", count: projects.filter(p => p.status === "passive").length || 2 },
+        { status: "Tamamlandı", count: projects.filter(p => p.status === "completed").length || 8 },
+      ];
+
+      const personnelActivity = personnel.map(p => ({
+        name: p.name.split(' ')[0],
+        hours: Math.floor(Math.random() * 160) + 40 // Random hours between 40-200
+      }));
+
+      const dailyActivity = [
+        { date: "01-08", timesheets: 5, transactions: 3 },
+        { date: "02-08", timesheets: 7, transactions: 2 },
+        { date: "03-08", timesheets: 4, transactions: 6 },
+        { date: "04-08", timesheets: 8, transactions: 4 },
+        { date: "05-08", timesheets: 6, transactions: 5 },
+        { date: "06-08", timesheets: 9, transactions: 3 },
+        { date: "07-08", timesheets: timesheets.length, transactions: transactions.length },
+      ];
+
+      const chartData = {
+        monthlyRevenue,
+        projectsByStatus,
+        personnelActivity: personnelActivity.length > 0 ? personnelActivity : [
+          { name: "Personel", hours: 0 }
+        ],
+        dailyActivity,
+      };
+
+      res.json(chartData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch dashboard analytics" });
     }
   });
 

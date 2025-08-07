@@ -4,7 +4,8 @@ import {
   type Timesheet, type InsertTimesheet,
   type Transaction, type InsertTransaction,
   type Note, type InsertNote,
-  type Contractor, type InsertContractor
+  type Contractor, type InsertContractor,
+  type Customer, type InsertCustomer
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -46,6 +47,13 @@ export interface IStorage {
   createContractor(contractor: InsertContractor): Promise<Contractor>;
   updateContractor(id: string, contractor: Partial<InsertContractor>): Promise<Contractor | undefined>;
   deleteContractor(id: string): Promise<boolean>;
+
+  // Customers
+  getCustomers(): Promise<Customer[]>;
+  getCustomerById(id: string): Promise<Customer | undefined>;
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
+  deleteCustomer(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -55,6 +63,7 @@ export class MemStorage implements IStorage {
   private transactions: Map<string, Transaction> = new Map();
   private notes: Map<string, Note> = new Map();
   private contractors: Map<string, Contractor> = new Map();
+  private customers: Map<string, Customer> = new Map();
 
   constructor() {
     // Initialize with empty data
@@ -246,6 +255,45 @@ export class MemStorage implements IStorage {
 
   async deleteContractor(id: string): Promise<boolean> {
     return this.contractors.delete(id);
+  }
+
+  // Customer methods
+  async getCustomers(): Promise<Customer[]> {
+    return Array.from(this.customers.values());
+  }
+
+  async getCustomerById(id: string): Promise<Customer | undefined> {
+    return this.customers.get(id);
+  }
+
+  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+    const id = randomUUID();
+    const customer: Customer = {
+      ...insertCustomer,
+      id,
+      createdAt: new Date(),
+      company: insertCustomer.company || null,
+      phone: insertCustomer.phone || null,
+      email: insertCustomer.email || null,
+      address: insertCustomer.address || null,
+      taxNumber: insertCustomer.taxNumber || null,
+      status: insertCustomer.status || "active",
+    };
+    this.customers.set(id, customer);
+    return customer;
+  }
+
+  async updateCustomer(id: string, updates: Partial<InsertCustomer>): Promise<Customer | undefined> {
+    const customer = this.customers.get(id);
+    if (!customer) return undefined;
+
+    const updated = { ...customer, ...updates };
+    this.customers.set(id, updated);
+    return updated;
+  }
+
+  async deleteCustomer(id: string): Promise<boolean> {
+    return this.customers.delete(id);
   }
 }
 

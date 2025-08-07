@@ -10,13 +10,16 @@ import {
   CalendarDays, 
   UserCog,
   Plus,
-  Info
+  Info,
+  BarChart3
 } from "lucide-react";
 import Header from "@/components/layout/header";
 import ProjectCard from "@/components/cards/project-card";
 import NavigationCard from "@/components/cards/navigation-card";
 import TimesheetForm from "@/components/forms/timesheet-form";
+import DashboardCharts from "@/components/analytics/dashboard-charts";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface FinancialSummary {
   totalIncome: number;
@@ -147,11 +150,31 @@ export default function Dashboard() {
           
           <NavigationCard
             icon={UserCog}
-            label="Hesabım"
-            onClick={() => console.log("Account settings")}
-            iconColor="text-red-400"
+            label="Müşteriler"
+            onClick={() => setLocation("/customers")}
+            iconColor="text-orange-400"
+          />
+
+          <NavigationCard
+            icon={Info}
+            label="Raporlar"
+            onClick={() => setLocation("/reports")}
+            iconColor="text-pink-400"
           />
         </div>
+
+        {/* Analytics Section */}
+        <Card className="bg-dark-secondary border-dark-accent">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-white flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-blue-400" />
+              Veri Analizi ve Raporlar
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DashboardCharts />
+          </CardContent>
+        </Card>
 
         {/* Notes Section */}
         <div className="bg-dark-secondary rounded-xl p-4 border border-dark-accent">

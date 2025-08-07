@@ -10,6 +10,8 @@ import Personnel from "@/pages/personnel";
 import Timesheet from "@/pages/timesheet";
 import Projects from "@/pages/projects";
 import Finances from "@/pages/finances";
+import Customers from "@/pages/customers";
+import Reports from "@/pages/reports";
 
 function Router() {
   return (
@@ -19,6 +21,8 @@ function Router() {
       <Route path="/timesheet" component={Timesheet} />
       <Route path="/projects" component={Projects} />
       <Route path="/finances" component={Finances} />
+      <Route path="/customers" component={Customers} />
+      <Route path="/reports" component={Reports} />
       <Route component={NotFound} />
     </Switch>
   );
