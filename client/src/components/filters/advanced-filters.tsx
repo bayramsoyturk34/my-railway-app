@@ -179,6 +179,16 @@ export default function AdvancedFilters({ onFilterChange, onExport }: FilterProp
                 </Select>
               </div>
             </div>
+            
+            {/* Apply Filter Button */}
+            <div className="flex justify-end pt-4 border-t border-dark-accent">
+              <Button
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+                onClick={() => setShowFilters(false)}
+              >
+                Uygula
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
