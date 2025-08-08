@@ -59,14 +59,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-dark-primary text-white">
       <Header />
       
-      {/* Notification Banner */}
-      <div className="mx-4 mt-4 p-4 bg-yellow-500 text-black rounded-lg flex items-center gap-3">
-        <Info className="text-lg" />
-        <div className="flex-1">
-          <p className="font-medium">2 Günlük kullanım süreniz kaldı.</p>
-          <p className="text-sm opacity-80">Dilediğiniz zaman satın alabilirsiniz.</p>
-        </div>
-      </div>
+
 
       <main className="p-4">
         {/* Customer Financial Cards */}

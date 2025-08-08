@@ -271,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate customer tasks totals
       const customerTasksTotal = customerTasks.reduce((sum, task) => sum + parseFloat(task.amount), 0);
-      const pendingTasks = customerTasks.filter(task => task.status === "pending").length;
+      const pendingTasks = customerTasks.filter(task => task.status === "pending" || task.status === "active" || task.status === "in_progress").length;
       const completedTasks = customerTasks.filter(task => task.status === "completed").length;
 
       // Calculate customer payments totals
