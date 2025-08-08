@@ -140,7 +140,7 @@ export default function AdvancedFilters({ onFilterChange, onExport }: FilterProp
                     <SelectValue placeholder="Durum seçin" />
                   </SelectTrigger>
                   <SelectContent className="bg-dark-primary border-dark-accent">
-                    <SelectItem value="" className="text-white">Tümü</SelectItem>
+                    <SelectItem value="all" className="text-white">Tümü</SelectItem>
                     <SelectItem value="active" className="text-white">Aktif</SelectItem>
                     <SelectItem value="passive" className="text-white">Pasif</SelectItem>
                     <SelectItem value="completed" className="text-white">Tamamlandı</SelectItem>
@@ -156,7 +156,7 @@ export default function AdvancedFilters({ onFilterChange, onExport }: FilterProp
                     <SelectValue placeholder="Tür seçin" />
                   </SelectTrigger>
                   <SelectContent className="bg-dark-primary border-dark-accent">
-                    <SelectItem value="" className="text-white">Tümü</SelectItem>
+                    <SelectItem value="all" className="text-white">Tümü</SelectItem>
                     <SelectItem value="income" className="text-white">Gelir</SelectItem>
                     <SelectItem value="expense" className="text-white">Gider</SelectItem>
                     <SelectItem value="received" className="text-white">Alınan</SelectItem>
@@ -173,7 +173,7 @@ export default function AdvancedFilters({ onFilterChange, onExport }: FilterProp
                     <SelectValue placeholder="Personel seçin" />
                   </SelectTrigger>
                   <SelectContent className="bg-dark-primary border-dark-accent">
-                    <SelectItem value="" className="text-white">Tümü</SelectItem>
+                    <SelectItem value="all" className="text-white">Tümü</SelectItem>
                     {/* Personnel options will be populated dynamically */}
                   </SelectContent>
                 </Select>
