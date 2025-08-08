@@ -7,7 +7,8 @@ import {
   type Contractor, type InsertContractor,
   type Customer, type InsertCustomer,
   type CustomerTask, type InsertCustomerTask,
-  type CustomerPayment, type InsertCustomerPayment
+  type CustomerPayment, type InsertCustomerPayment,
+  type PersonnelPayment, type InsertPersonnelPayment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -70,6 +71,13 @@ export interface IStorage {
   getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]>;
   createCustomerPayment(payment: InsertCustomerPayment): Promise<CustomerPayment>;
   deleteCustomerPayment(id: string): Promise<boolean>;
+
+  // Personnel Payments
+  getPersonnelPayments(): Promise<PersonnelPayment[]>;
+  getPersonnelPaymentsByPersonnelId(personnelId: string): Promise<PersonnelPayment[]>;
+  createPersonnelPayment(payment: InsertPersonnelPayment): Promise<PersonnelPayment>;
+  updatePersonnelPayment(id: string, payment: Partial<InsertPersonnelPayment>): Promise<PersonnelPayment | undefined>;
+  deletePersonnelPayment(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -82,6 +90,7 @@ export class MemStorage implements IStorage {
   private customers: Map<string, Customer> = new Map();
   private customerTasks: Map<string, CustomerTask> = new Map();
   private customerPayments: Map<string, CustomerPayment> = new Map();
+  private personnelPayments: Map<string, PersonnelPayment> = new Map();
 
   constructor() {
     // Initialize with empty data
@@ -379,6 +388,41 @@ export class MemStorage implements IStorage {
 
   async deleteCustomerPayment(id: string): Promise<boolean> {
     return this.customerPayments.delete(id);
+  }
+
+  // Personnel Payments methods
+  async getPersonnelPayments(): Promise<PersonnelPayment[]> {
+    return Array.from(this.personnelPayments.values());
+  }
+
+  async getPersonnelPaymentsByPersonnelId(personnelId: string): Promise<PersonnelPayment[]> {
+    return Array.from(this.personnelPayments.values()).filter(payment => payment.personnelId === personnelId);
+  }
+
+  async createPersonnelPayment(insertPayment: InsertPersonnelPayment): Promise<PersonnelPayment> {
+    const id = randomUUID();
+    const payment: PersonnelPayment = {
+      ...insertPayment,
+      id,
+      createdAt: new Date(),
+      description: insertPayment.description || null,
+      notes: insertPayment.notes || null,
+    };
+    this.personnelPayments.set(id, payment);
+    return payment;
+  }
+
+  async updatePersonnelPayment(id: string, updates: Partial<InsertPersonnelPayment>): Promise<PersonnelPayment | undefined> {
+    const payment = this.personnelPayments.get(id);
+    if (!payment) return undefined;
+
+    const updated = { ...payment, ...updates };
+    this.personnelPayments.set(id, updated);
+    return updated;
+  }
+
+  async deletePersonnelPayment(id: string): Promise<boolean> {
+    return this.personnelPayments.delete(id);
   }
 }
 

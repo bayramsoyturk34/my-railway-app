@@ -235,12 +235,35 @@ export const insertReportSchema = createInsertSchema(reports).omit({
   createdAt: true,
 });
 
+// Personnel Payments table
+export const personnelPayments = pgTable("personnel_payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  personnelId: varchar("personnel_id").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentDate: timestamp("payment_date").notNull(),
+  paymentType: text("payment_type").notNull(), // "salary", "bonus", "advance", "deduction"
+  description: text("description"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertPersonnelPaymentSchema = createInsertSchema(personnelPayments).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  description: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
+
 // Types
 export type Personnel = typeof personnel.$inferSelect;
 export type InsertPersonnel = z.infer<typeof insertPersonnelSchema>;
 
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
+
+export type PersonnelPayment = typeof personnelPayments.$inferSelect;
+export type InsertPersonnelPayment = z.infer<typeof insertPersonnelPaymentSchema>;
 
 export type Timesheet = typeof timesheets.$inferSelect;
 export type InsertTimesheet = z.infer<typeof insertTimesheetSchema>;

@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { ArrowLeft, Plus, Edit, Trash2, User, Clock, Calendar, CreditCard, Banknote } from "lucide-react";
-import { type Personnel, type Timesheet } from "@shared/schema";
+import { type Personnel, type Timesheet, type PersonnelPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/layout/header";
 import PersonnelForm from "@/components/forms/personnel-form";
+import PersonnelPaymentForm from "@/components/forms/personnel-payment-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +16,9 @@ export default function Personnel() {
   const [, setLocation] = useLocation();
   const [showPersonnelForm, setShowPersonnelForm] = useState(false);
   const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | undefined>(undefined);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<PersonnelPayment | undefined>(undefined);
+  const [activePersonnelId, setActivePersonnelId] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -24,6 +28,10 @@ export default function Personnel() {
 
   const { data: timesheets = [] } = useQuery<Timesheet[]>({
     queryKey: ["/api/timesheets"],
+  });
+
+  const { data: personnelPayments = [] } = useQuery<PersonnelPayment[]>({
+    queryKey: ["/api/personnel-payments"],
   });
 
   const deletePersonnelMutation = useMutation({
@@ -53,6 +61,10 @@ export default function Personnel() {
 
   const getPersonnelTimesheets = (personnelId: string) => {
     return timesheets.filter(timesheet => timesheet.personnelId === personnelId);
+  };
+
+  const getPersonnelPayments = (personnelId: string) => {
+    return personnelPayments.filter(payment => payment.personnelId === personnelId);
   };
 
   const formatSalary = (salary: string | null) => {
@@ -402,16 +414,132 @@ export default function Personnel() {
                     <TabsContent value="odeme" className="mt-6">
                       <Card className="bg-dark-secondary border-dark-accent">
                         <CardContent className="p-4">
-                          <div className="flex items-center gap-2 mb-4">
-                            <Banknote className="h-5 w-5 text-purple-400" />
-                            <h3 className="text-white font-medium text-lg">Ödeme Kayıtları</h3>
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <Banknote className="h-5 w-5 text-purple-400" />
+                              <h3 className="text-white font-medium text-lg">Ödeme Kayıtları</h3>
+                            </div>
+                            <Button
+                              className="bg-purple-500 hover:bg-purple-600 text-white"
+                              onClick={() => {
+                                setActivePersonnelId(person.id);
+                                setSelectedPayment(undefined);
+                                setShowPaymentForm(true);
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Ödeme Ekle
+                            </Button>
                           </div>
                           
-                          <div className="text-center py-8">
-                            <Banknote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-400 text-lg mb-2">Ödeme sistemi yakında</p>
-                            <p className="text-gray-500 text-sm">Personel ödeme kayıtları burada görünecek.</p>
-                          </div>
+                          {(() => {
+                            const personPayments = getPersonnelPayments(person.id);
+                            
+                            return personPayments.length === 0 ? (
+                              <div className="text-center py-8">
+                                <Banknote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <p className="text-gray-400 text-lg mb-2">Henüz ödeme kaydı yok</p>
+                                <p className="text-gray-500 text-sm">Bu personel için henüz ödeme kaydı eklenmemiş.</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                {/* Ödeme Özeti */}
+                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                  <div className="bg-dark-accent p-4 rounded-lg">
+                                    <h4 className="text-purple-400 font-medium mb-2">Toplam Ödenen</h4>
+                                    <p className="text-2xl font-bold text-white">
+                                      {personPayments.reduce((sum, payment) => {
+                                        const amount = parseFloat(payment.amount);
+                                        return payment.paymentType === "deduction" ? sum - amount : sum + amount;
+                                      }, 0).toLocaleString('tr-TR', { maximumFractionDigits: 2 })} TL
+                                    </p>
+                                    <p className="text-gray-400 text-sm mt-1">
+                                      {personPayments.length} ödeme
+                                    </p>
+                                  </div>
+                                  
+                                  <div className="bg-dark-accent p-4 rounded-lg">
+                                    <h4 className="text-green-400 font-medium mb-2">Son Ödeme</h4>
+                                    <p className="text-xl font-bold text-white">
+                                      {personPayments.length > 0 
+                                        ? formatDate(personPayments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime())[0].paymentDate)
+                                        : "-"
+                                      }
+                                    </p>
+                                    <p className="text-gray-400 text-sm mt-1">son ödeme tarihi</p>
+                                  </div>
+                                </div>
+
+                                {/* Ödeme Listesi */}
+                                <div className="space-y-3">
+                                  {personPayments
+                                    .sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime())
+                                    .map((payment) => {
+                                      const paymentTypeLabels = {
+                                        salary: "Maaş",
+                                        bonus: "Prim/Bonus",
+                                        advance: "Avans",
+                                        deduction: "Kesinti"
+                                      };
+                                      
+                                      const isDeduction = payment.paymentType === "deduction";
+                                      
+                                      return (
+                                        <Card key={payment.id} className="bg-dark-accent border-gray-600">
+                                          <CardContent className="p-3">
+                                            <div className="flex justify-between items-center">
+                                              <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 ${isDeduction ? 'bg-red-500/20' : 'bg-purple-500/20'} rounded-full flex items-center justify-center`}>
+                                                  <Banknote className={`h-4 w-4 ${isDeduction ? 'text-red-400' : 'text-purple-400'}`} />
+                                                </div>
+                                                <div>
+                                                  <h4 className="text-white font-medium">
+                                                    {paymentTypeLabels[payment.paymentType as keyof typeof paymentTypeLabels]}
+                                                  </h4>
+                                                  <p className="text-gray-400 text-sm">
+                                                    {formatDate(payment.paymentDate)}
+                                                  </p>
+                                                  {payment.description && (
+                                                    <p className="text-gray-300 text-sm mt-1">{payment.description}</p>
+                                                  )}
+                                                </div>
+                                              </div>
+                                              
+                                              <div className="text-right">
+                                                <p className={`font-medium ${isDeduction ? 'text-red-400' : 'text-green-400'}`}>
+                                                  {isDeduction ? '-' : '+'}{parseFloat(payment.amount).toLocaleString('tr-TR', { maximumFractionDigits: 2 })} TL
+                                                </p>
+                                              </div>
+                                              
+                                              <div className="flex gap-1 ml-4">
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="h-8 w-8 text-blue-400 hover:text-blue-300 hover:bg-dark-primary"
+                                                  onClick={() => {
+                                                    setActivePersonnelId(person.id);
+                                                    setSelectedPayment(payment);
+                                                    setShowPaymentForm(true);
+                                                  }}
+                                                >
+                                                  <Edit className="h-3 w-3" />
+                                                </Button>
+                                              </div>
+                                            </div>
+                                            
+                                            {payment.notes && (
+                                              <div className="mt-2 pt-2 border-t border-gray-600">
+                                                <p className="text-gray-300 text-sm">{payment.notes}</p>
+                                              </div>
+                                            )}
+                                          </CardContent>
+                                        </Card>
+                                      );
+                                    })}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </CardContent>
                       </Card>
                     </TabsContent>
@@ -433,6 +561,22 @@ export default function Personnel() {
         }}
         personnel={selectedPersonnel}
       />
+
+      {activePersonnelId && (
+        <PersonnelPaymentForm
+          open={showPaymentForm}
+          onOpenChange={(open) => {
+            setShowPaymentForm(open);
+            if (!open) {
+              setSelectedPayment(undefined);
+              setActivePersonnelId("");
+            }
+          }}
+          personnelId={activePersonnelId}
+          personnelName={personnel.find(p => p.id === activePersonnelId)?.name || ""}
+          payment={selectedPayment}
+        />
+      )}
     </div>
   );
 }

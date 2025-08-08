@@ -13,7 +13,8 @@ import {
   insertCustomerPaymentSchema,
   insertInvoiceSchema,
   insertInvoiceItemSchema,
-  insertReportSchema
+  insertReportSchema,
+  insertPersonnelPaymentSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -537,6 +538,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(chartData);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard analytics" });
+    }
+  });
+
+  // Personnel Payments routes
+  app.get("/api/personnel-payments", async (req, res) => {
+    try {
+      const payments = await storage.getPersonnelPayments();
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch personnel payments" });
+    }
+  });
+
+  app.get("/api/personnel-payments/personnel/:personnelId", async (req, res) => {
+    try {
+      const { personnelId } = req.params;
+      const payments = await storage.getPersonnelPaymentsByPersonnelId(personnelId);
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch personnel payments" });
+    }
+  });
+
+  app.post("/api/personnel-payments", async (req, res) => {
+    try {
+      console.log("Personnel payment request body:", req.body);
+      // Convert string date to Date object
+      const processedBody = {
+        ...req.body,
+        paymentDate: new Date(req.body.paymentDate)
+      };
+      const validatedData = insertPersonnelPaymentSchema.parse(processedBody);
+      const payment = await storage.createPersonnelPayment(validatedData);
+      res.status(201).json(payment);
+    } catch (error) {
+      console.error("Personnel payment validation error:", error);
+      res.status(400).json({ message: "Invalid personnel payment data", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  app.put("/api/personnel-payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      // Convert string date to Date object if present
+      const processedBody = {
+        ...req.body,
+        ...(req.body.paymentDate && { paymentDate: new Date(req.body.paymentDate) })
+      };
+      const validatedData = insertPersonnelPaymentSchema.partial().parse(processedBody);
+      const payment = await storage.updatePersonnelPayment(id, validatedData);
+      if (!payment) {
+        return res.status(404).json({ message: "Personnel payment not found" });
+      }
+      res.json(payment);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid personnel payment data" });
+    }
+  });
+
+  app.delete("/api/personnel-payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deletePersonnelPayment(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Personnel payment not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete personnel payment" });
     }
   });
 
