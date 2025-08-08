@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ReportTemplate {
   id: string;
@@ -65,6 +67,31 @@ export default function ReportsPage() {
   });
   const { toast } = useToast();
 
+  // Fetch data for reports
+  const { data: customers = [] } = useQuery({
+    queryKey: ["/api/customers"],
+  });
+
+  const { data: transactions = [] } = useQuery({
+    queryKey: ["/api/transactions"],
+  });
+
+  const { data: personnel = [] } = useQuery({
+    queryKey: ["/api/personnel"],
+  });
+
+  const { data: timesheets = [] } = useQuery({
+    queryKey: ["/api/timesheets"],
+  });
+
+  const { data: financialSummary } = useQuery({
+    queryKey: ["/api/financial-summary"],
+  });
+
+  const { data: dashboardData } = useQuery({
+    queryKey: ["/api/analytics/dashboard"],
+  });
+
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
   };
@@ -76,27 +103,197 @@ export default function ReportsPage() {
     });
   };
 
-  const generateReport = async (templateId: string) => {
-    toast({
-      title: "Rapor Oluşturuluyor",
-      description: "Rapor hazırlanıyor, lütfen bekleyiniz...",
-    });
-
+  const generateReportPDF = (templateId: string) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const doc = new jsPDF();
+      doc.setFont("times", "normal");
+      
+      const currentDate = new Date().toLocaleDateString('tr-TR');
+      
+      switch (templateId) {
+        case "financial-summary":
+          doc.setFontSize(16);
+          doc.text("Finansal Özet Raporu", 20, 20);
+          doc.setFontSize(10);
+          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          
+          if (financialSummary) {
+            const financialData = [
+              ['Toplam Gelir', `₺${financialSummary.totalIncome?.toLocaleString('tr-TR') || 0}`],
+              ['Toplam Gider', `₺${financialSummary.totalExpenses?.toLocaleString('tr-TR') || 0}`],
+              ['Net Kar', `₺${financialSummary.netBalance?.toLocaleString('tr-TR') || 0}`],
+              ['Müşteri Ödemeleri', `₺${financialSummary.customerPayments?.total?.toLocaleString('tr-TR') || 0}`],
+              ['Bekleyen İşler', `₺${financialSummary.customerTasks?.total?.toLocaleString('tr-TR') || 0}`]
+            ];
+            
+            autoTable(doc, {
+              head: [['Kategori', 'Tutar']],
+              body: financialData,
+              startY: 40,
+            });
+          }
+          break;
+          
+        case "monthly-revenue":
+          doc.setFontSize(16);
+          doc.text("Aylık Gelir Raporu", 20, 20);
+          doc.setFontSize(10);
+          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          
+          if (dashboardData?.monthlyRevenue) {
+            const revenueData = dashboardData.monthlyRevenue.map((item: any) => [
+              item.month,
+              `₺${item.amount?.toLocaleString('tr-TR') || 0}`
+            ]);
+            
+            autoTable(doc, {
+              head: [['Ay', 'Gelir']],
+              body: revenueData,
+              startY: 40,
+            });
+          }
+          break;
+          
+        case "timesheet-summary":
+          doc.setFontSize(16);
+          doc.text("Puantaj Özet Raporu", 20, 20);
+          doc.setFontSize(10);
+          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          
+          if (timesheets.length > 0) {
+            const timesheetData = timesheets.map((item: any) => [
+              item.personnelName || 'Bilinmeyen',
+              item.date || '',
+              item.startTime || '',
+              item.endTime || '',
+              item.notes || ''
+            ]);
+            
+            autoTable(doc, {
+              head: [['Personel', 'Tarih', 'Başlangıç', 'Bitiş', 'Notlar']],
+              body: timesheetData,
+              startY: 40,
+              styles: { fontSize: 8 }
+            });
+          }
+          break;
+          
+        case "project-performance":
+          doc.setFontSize(16);
+          doc.text("Proje Performans Raporu", 20, 20);
+          doc.setFontSize(10);
+          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          
+          if (customers.length > 0) {
+            const projectData = customers.map((customer: any) => [
+              customer.name,
+              customer.company || '-',
+              customer.status === 'active' ? 'Aktif' : 'Pasif',
+              customer.email || '-'
+            ]);
+            
+            autoTable(doc, {
+              head: [['Müşteri', 'Şirket', 'Durum', 'E-posta']],
+              body: projectData,
+              startY: 40,
+            });
+          }
+          break;
+      }
+      
+      const template = reportTemplates.find(t => t.id === templateId);
+      const fileName = `${template?.name.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
       
       toast({
-        title: "Rapor Hazır",
-        description: "Rapor başarıyla oluşturuldu ve indirilebilir.",
+        title: "PDF İndirildi",
+        description: "Rapor PDF formatında başarıyla indirildi.",
       });
     } catch (error) {
+      console.error('PDF export error:', error);
       toast({
         title: "Hata",
-        description: "Rapor oluşturulurken hata oluştu.",
+        description: "PDF oluşturulurken hata oluştu.",
         variant: "destructive",
       });
     }
+  };
+
+  const generateReportExcel = (templateId: string) => {
+    try {
+      let csvContent = '';
+      let fileName = '';
+      
+      switch (templateId) {
+        case "financial-summary":
+          csvContent = "Kategori,Tutar\n";
+          if (financialSummary) {
+            csvContent += `Toplam Gelir,${financialSummary.totalIncome || 0}\n`;
+            csvContent += `Toplam Gider,${financialSummary.totalExpenses || 0}\n`;
+            csvContent += `Net Kar,${financialSummary.netBalance || 0}\n`;
+            csvContent += `Müşteri Ödemeleri,${financialSummary.customerPayments?.total || 0}\n`;
+            csvContent += `Bekleyen İşler,${financialSummary.customerTasks?.total || 0}\n`;
+          }
+          fileName = 'finansal_ozet_raporu';
+          break;
+          
+        case "monthly-revenue":
+          csvContent = "Ay,Gelir\n";
+          if (dashboardData?.monthlyRevenue) {
+            dashboardData.monthlyRevenue.forEach((item: any) => {
+              csvContent += `${item.month},${item.amount || 0}\n`;
+            });
+          }
+          fileName = 'aylik_gelir_raporu';
+          break;
+          
+        case "timesheet-summary":
+          csvContent = "Personel,Tarih,Başlangıç,Bitiş,Notlar\n";
+          timesheets.forEach((item: any) => {
+            csvContent += `${item.personnelName || 'Bilinmeyen'},${item.date || ''},${item.startTime || ''},${item.endTime || ''},${item.notes || ''}\n`;
+          });
+          fileName = 'puantaj_ozet_raporu';
+          break;
+          
+        case "project-performance":
+          csvContent = "Müşteri,Şirket,Durum,E-posta\n";
+          customers.forEach((customer: any) => {
+            csvContent += `${customer.name},${customer.company || ''},${customer.status === 'active' ? 'Aktif' : 'Pasif'},${customer.email || ''}\n`;
+          });
+          fileName = 'proje_performans_raporu';
+          break;
+      }
+      
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${fileName}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Excel İndirildi",
+        description: "Rapor Excel formatında başarıyla indirildi.",
+      });
+    } catch (error) {
+      console.error('Excel export error:', error);
+      toast({
+        title: "Hata",
+        description: "Excel oluşturulurken hata oluştu.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const generateReport = async (templateId: string) => {
+    generateReportPDF(templateId);
+  };
+
+  const downloadReport = async (templateId: string) => {
+    generateReportExcel(templateId);
   };
 
   const getTypeColor = (type: string) => {
@@ -260,7 +457,7 @@ export default function ReportsPage() {
                         variant="outline"
                         size="icon"
                         className="border-dark-accent hover:bg-dark-accent text-gray-400"
-                        onClick={() => generateReport(template.id)}
+                        onClick={() => downloadReport(template.id)}
                       >
                         <Download className="h-4 w-4" />
                       </Button>
