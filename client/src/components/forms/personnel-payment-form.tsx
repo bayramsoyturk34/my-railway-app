@@ -111,7 +111,7 @@ export default function PersonnelPaymentForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md">
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">
             {payment ? "Ödeme Düzenle" : "Yeni Ödeme"}
@@ -197,6 +197,7 @@ export default function PersonnelPaymentForm({
                       className="bg-dark-primary border-dark-accent text-white"
                       placeholder="Ödeme açıklaması..."
                       {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -215,6 +216,7 @@ export default function PersonnelPaymentForm({
                       className="bg-dark-primary border-dark-accent text-white h-20"
                       placeholder="Ek notlar..."
                       {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -222,7 +224,7 @@ export default function PersonnelPaymentForm({
               )}
             />
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-4 mt-6 border-t border-gray-600">
               <Button
                 type="button"
                 variant="secondary"
