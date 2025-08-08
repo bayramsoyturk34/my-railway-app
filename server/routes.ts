@@ -256,8 +256,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/financial-summary", async (req, res) => {
     try {
       const transactions = await storage.getTransactions();
-      const projects = await storage.getProjects();
-      const contractors = await storage.getContractors();
+      const customerTasks = await storage.getCustomerTasks();
+      const customerPayments = await storage.getCustomerPayments();
       
       console.log("All transactions:", transactions.map(t => ({ type: t.type, amount: t.amount, description: t.description })));
 
@@ -269,27 +269,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(t => t.type === "expense")
         .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
 
-      const givenProjects = projects.filter(p => p.type === "given");
-      const receivedProjects = projects.filter(p => p.type === "received");
+      // Calculate customer tasks totals
+      const customerTasksTotal = customerTasks.reduce((sum, task) => sum + parseFloat(task.amount), 0);
+      const pendingTasks = customerTasks.filter(task => task.status === "pending").length;
+      const completedTasks = customerTasks.filter(task => task.status === "completed").length;
+
+      // Calculate customer payments totals
+      const customerPaymentsTotal = customerPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+      const thisMonth = new Date();
+      const thisMonthPayments = customerPayments.filter(payment => {
+        const paymentDate = new Date(payment.paymentDate);
+        return paymentDate.getMonth() === thisMonth.getMonth() && 
+               paymentDate.getFullYear() === thisMonth.getFullYear();
+      }).reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
 
       const summary = {
         totalIncome: income,
         totalExpenses: expenses,
         netBalance: income - expenses,
-        givenProjects: {
-          total: givenProjects.reduce((sum, p) => sum + parseFloat(p.amount), 0),
-          active: givenProjects.filter(p => p.status === "active").length,
-          passive: givenProjects.filter(p => p.status === "passive").length,
+        customerTasks: {
+          total: customerTasksTotal,
+          pending: pendingTasks,
+          completed: completedTasks,
         },
-        receivedProjects: {
-          total: receivedProjects.reduce((sum, p) => sum + parseFloat(p.amount), 0),
-          active: receivedProjects.filter(p => p.status === "active").length,
-          completed: receivedProjects.filter(p => p.status === "completed").length,
-        },
-        contractors: {
-          total: contractors.reduce((sum, c) => sum + parseFloat(c.totalAmount), 0),
-          active: contractors.filter(c => c.status === "active").length,
-          completed: contractors.filter(c => c.status === "completed").length,
+        customerPayments: {
+          total: customerPaymentsTotal,
+          thisMonth: thisMonthPayments,
+          count: customerPayments.length,
         }
       };
 

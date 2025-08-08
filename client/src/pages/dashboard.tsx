@@ -11,7 +11,9 @@ import {
   UserCog,
   Plus,
   Info,
-  BarChart3
+  BarChart3,
+  Briefcase,
+  Calculator
 } from "lucide-react";
 import Header from "@/components/layout/header";
 import ProjectCard from "@/components/cards/project-card";
@@ -25,20 +27,15 @@ interface FinancialSummary {
   totalIncome: number;
   totalExpenses: number;
   netBalance: number;
-  givenProjects: {
+  customerTasks: {
     total: number;
-    active: number;
-    passive: number;
-  };
-  receivedProjects: {
-    total: number;
-    active: number;
+    pending: number;
     completed: number;
   };
-  contractors: {
+  customerPayments: {
     total: number;
-    active: number;
-    completed: number;
+    thisMonth: number;
+    count: number;
   };
 }
 
@@ -72,28 +69,39 @@ export default function Dashboard() {
       </div>
 
       <main className="p-4">
-        {/* Project Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {/* Customer Financial Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <ProjectCard
-            title="Verilen Projeler"
-            total={formatCurrency(summary?.givenProjects.total || 0)}
-            activeLabel="Aktif"
-            activeValue={`${summary?.givenProjects.active || 0} / ${formatCurrency(0)}`}
-            passiveLabel="Pasif"
-            passiveValue={`${summary?.givenProjects.passive || 0} / ${formatCurrency(summary?.givenProjects.total || 0)}`}
-            type="orange"
-            icon="home"
+            title="Müşteri İşleri"
+            total={formatCurrency(summary?.customerTasks.total || 0)}
+            activeLabel="Bekleyen"
+            activeValue={`${summary?.customerTasks.pending || 0} işlem`}
+            passiveLabel="Tamamlanan"
+            passiveValue={`${summary?.customerTasks.completed || 0} işlem`}
+            type="blue"
+            icon="briefcase"
           />
 
           <ProjectCard
-            title="Yükleniciler"
-            total={formatCurrency(summary?.contractors.total || 0)}
-            activeLabel="Aktif"
-            activeValue={`${summary?.contractors.active || 0} / ${formatCurrency(summary?.contractors.total || 0)}`}
-            passiveLabel="Tamamlanan"
-            passiveValue={`${summary?.contractors.completed || 0} / ${formatCurrency(0)}`}
-            type="teal"
-            icon="users"
+            title="Müşteri Ödemeleri"
+            total={formatCurrency(summary?.customerPayments.total || 0)}
+            activeLabel="Bu Ay"
+            activeValue={formatCurrency(summary?.customerPayments.thisMonth || 0)}
+            passiveLabel="Toplam Ödeme"
+            passiveValue={`${summary?.customerPayments.count || 0} ödeme`}
+            type="green"
+            icon="wallet"
+          />
+
+          <ProjectCard
+            title="Kalan Bakiye"
+            total={formatCurrency((summary?.customerTasks.total || 0) - (summary?.customerPayments.total || 0))}
+            activeLabel="Alacak"
+            activeValue={formatCurrency(Math.max(0, (summary?.customerTasks.total || 0) - (summary?.customerPayments.total || 0)))}
+            passiveLabel="Net Durum"
+            passiveValue={((summary?.customerTasks.total || 0) - (summary?.customerPayments.total || 0)) >= 0 ? "Alacaklı" : "Borçlu"}
+            type="purple"
+            icon="calculator"
           />
         </div>
 

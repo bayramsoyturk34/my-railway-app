@@ -1,4 +1,4 @@
-import { Home, Users } from "lucide-react";
+import { Home, Users, Briefcase, Wallet, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProjectCardProps {
@@ -8,8 +8,8 @@ interface ProjectCardProps {
   activeValue: string;
   passiveLabel: string;
   passiveValue: string;
-  type: "orange" | "teal";
-  icon?: "home" | "users";
+  type: "orange" | "teal" | "blue" | "green" | "purple";
+  icon?: "home" | "users" | "briefcase" | "wallet" | "calculator";
 }
 
 export default function ProjectCard({
@@ -22,12 +22,34 @@ export default function ProjectCard({
   type,
   icon = "home"
 }: ProjectCardProps) {
-  const IconComponent = icon === "home" ? Home : Users;
+  const getIconComponent = () => {
+    switch (icon) {
+      case "home": return Home;
+      case "users": return Users;
+      case "briefcase": return Briefcase;
+      case "wallet": return Wallet;
+      case "calculator": return Calculator;
+      default: return Home;
+    }
+  };
+  
+  const IconComponent = getIconComponent();
+  
+  const getGradientClass = () => {
+    switch (type) {
+      case "orange": return "gradient-orange";
+      case "teal": return "gradient-teal";
+      case "blue": return "bg-gradient-to-br from-blue-500 to-blue-700";
+      case "green": return "bg-gradient-to-br from-green-500 to-green-700";
+      case "purple": return "bg-gradient-to-br from-purple-500 to-purple-700";
+      default: return "gradient-orange";
+    }
+  };
   
   return (
     <div className={cn(
       "rounded-xl p-6 text-white relative overflow-hidden",
-      type === "orange" ? "gradient-orange" : "gradient-teal"
+      getGradientClass()
     )}>
       <div className="absolute top-4 right-4">
         <IconComponent className="h-8 w-8 text-white/30" />
