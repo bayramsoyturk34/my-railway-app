@@ -114,26 +114,7 @@ export default function Dashboard() {
             iconColor="text-orange-400"
           />
           
-          <NavigationCard
-            icon={Building}
-            label="Alınan Projeler"
-            onClick={() => setLocation("/projects")}
-            iconColor="text-yellow-400"
-          />
-          
-          <NavigationCard
-            icon={Home}
-            label="Verilen Projeler"
-            onClick={() => setLocation("/projects")}
-            iconColor="text-pink-400"
-          />
-          
-          <NavigationCard
-            icon={Users}
-            label="Yükleniciler"
-            onClick={() => setLocation("/projects")}
-            iconColor="text-green-400"
-          />
+
           
           <NavigationCard
             icon={Wallet}
