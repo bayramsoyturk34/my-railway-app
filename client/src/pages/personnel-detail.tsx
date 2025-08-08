@@ -130,7 +130,7 @@ export default function PersonnelDetailPage() {
               <h2 className="text-white font-semibold text-xl mb-1">{person.name}</h2>
               <p className="text-gray-400 mb-2">{person.position}</p>
               <p className="text-gray-400 text-sm mb-4">
-                Başlangıç: {formatDate(person.startDate.toISOString())}
+                Başlangıç: {formatDate(typeof person.startDate === 'string' ? person.startDate : person.startDate.toISOString())}
               </p>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -206,7 +206,7 @@ export default function PersonnelDetailPage() {
                       <CardContent className="p-3">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-white font-medium">{formatDate(timesheet.date.toISOString())}</p>
+                            <p className="text-white font-medium">{formatDate(typeof timesheet.date === 'string' ? timesheet.date : timesheet.date.toISOString())}</p>
                             <p className="text-gray-400 text-sm">
                               {timesheet.workType} • {timesheet.totalHours} saat
                               {timesheet.overtimeHours && ` • ${timesheet.overtimeHours} mesai`}
@@ -311,7 +311,7 @@ export default function PersonnelDetailPage() {
                               </span>
                               <span className="text-white font-medium">{formatSalary(parseFloat(payment.amount))}</span>
                             </div>
-                            <p className="text-gray-400 text-sm">{formatDate(payment.paymentDate.toISOString())}</p>
+                            <p className="text-gray-400 text-sm">{formatDate(typeof payment.paymentDate === 'string' ? payment.paymentDate : payment.paymentDate.toISOString())}</p>
                             {payment.notes && (
                               <p className="text-gray-500 text-sm mt-1">{payment.notes}</p>
                             )}

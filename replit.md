@@ -11,6 +11,10 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
 - ✅ Simplified dashboard card titles and removed customer data from cash management
 - ✅ Updated timesheet form with customer selection and work type (TAM/YARIM/MESAİ)
 - ✅ Removed overtime 50% bonus - mesai now uses normal hourly rate
+- ✅ Converted personnel management to individual card layout (tekil kartlar)
+- ✅ Added personnel detail pages with dedicated routes (/personnel/:id)
+- ✅ Implemented personnel detail page with tabs: Puantaj, Hakediş, Ödeme
+- ✅ Fixed date formatting issues in personnel detail views
 
 # User Preferences
 
