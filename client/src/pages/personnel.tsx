@@ -193,6 +193,47 @@ export default function Personnel() {
                                     {totalOvertimeHours.toFixed(1)}h mesai
                                   </p>
                                 )}
+                                
+                                {/* Hakediş Özeti */}
+                                <div className="mt-2 p-2 bg-dark-primary rounded border border-green-500/20">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <CreditCard className="h-4 w-4 text-green-400" />
+                                    <span className="text-green-400 font-medium">Toplam Hakediş:</span>
+                                  </div>
+                                  <p className="text-green-300 font-bold">
+                                    {(() => {
+                                      const totalEarnings = personTimesheets.reduce((sum, timesheet) => {
+                                        const dailyWage = person.salary ? (parseFloat(person.salary) / 30) : 0;
+                                        const wage = timesheet.workType === "tam" 
+                                          ? dailyWage 
+                                          : timesheet.workType === "yarim" 
+                                          ? dailyWage / 2 
+                                          : (dailyWage / 8) * parseFloat(timesheet.overtimeHours || "0");
+                                        return sum + wage;
+                                      }, 0);
+                                      return totalEarnings.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
+                                    })()} TL
+                                  </p>
+                                  <p className="text-orange-400 text-xs">
+                                    Kalan Borç: {(() => {
+                                      const personPayments = getPersonnelPayments(person.id);
+                                      const totalEarnings = personTimesheets.reduce((sum, timesheet) => {
+                                        const dailyWage = person.salary ? (parseFloat(person.salary) / 30) : 0;
+                                        const wage = timesheet.workType === "tam" 
+                                          ? dailyWage 
+                                          : timesheet.workType === "yarim" 
+                                          ? dailyWage / 2 
+                                          : (dailyWage / 8) * parseFloat(timesheet.overtimeHours || "0");
+                                        return sum + wage;
+                                      }, 0);
+                                      const totalPayments = personPayments.reduce((sum, payment) => {
+                                        const amount = parseFloat(payment.amount);
+                                        return payment.paymentType === "deduction" ? sum - amount : sum + amount;
+                                      }, 0);
+                                      return (totalEarnings - totalPayments).toLocaleString('tr-TR', { maximumFractionDigits: 2 });
+                                    })()} TL
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>

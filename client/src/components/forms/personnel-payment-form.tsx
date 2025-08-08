@@ -76,14 +76,38 @@ export default function PersonnelPaymentForm({
       const method = payment ? "PUT" : "POST";
       
       console.log("Submitting personnel payment data:", data);
-      return await apiRequest(endpoint, method, data);
+      const paymentResult = await apiRequest(endpoint, method, data);
+      
+      // If creating a new payment (not updating), also create a transaction entry
+      if (!payment && (data.paymentType === "salary" || data.paymentType === "bonus" || data.paymentType === "advance")) {
+        try {
+          const transactionData = {
+            type: "expense",
+            category: "Personel Ödemesi",
+            amount: data.amount,
+            description: `${personnelName} - ${data.paymentType === "salary" ? "Maaş" : data.paymentType === "bonus" ? "Prim/Bonus" : "Avans"} Ödemesi${data.description ? ` (${data.description})` : ""}`,
+            date: data.paymentDate,
+            notes: data.notes || ""
+          };
+          
+          console.log("Creating transaction for personnel payment:", transactionData);
+          await apiRequest("/api/transactions", "POST", transactionData);
+        } catch (transactionError) {
+          console.error("Failed to create transaction for personnel payment:", transactionError);
+          // Don't fail the whole operation if transaction creation fails
+        }
+      }
+      
+      return paymentResult;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/personnel-payments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/personnel-payments", "personnel", personnelId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
       toast({
         title: "Başarılı",
-        description: payment ? "Ödeme güncellendi." : "Ödeme kaydı oluşturuldu.",
+        description: payment ? "Ödeme güncellendi." : "Ödeme kaydı oluşturuldu ve kasa giderlerine eklendi.",
       });
       onOpenChange(false);
       form.reset();
