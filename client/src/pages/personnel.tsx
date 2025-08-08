@@ -60,6 +60,13 @@ export default function Personnel() {
     return `${parseFloat(salary).toLocaleString('tr-TR')} TL`;
   };
 
+  const calculateDailyWage = (salary: string | null) => {
+    if (!salary) return "Hesaplanamaz";
+    const monthlySalary = parseFloat(salary);
+    const dailyWage = monthlySalary / 30;
+    return `${dailyWage.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} TL/gün`;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-dark-primary text-white">
@@ -152,6 +159,7 @@ export default function Personnel() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
                               <div>
                                 <p className="text-gray-500 text-sm">💰 Maaş: {formatSalary(person.salary)}</p>
+                                <p className="text-blue-400 text-sm">💵 Yevmiye: {calculateDailyWage(person.salary)}</p>
                                 {person.phone && (
                                   <p className="text-gray-500 text-sm">📞 {person.phone}</p>
                                 )}
