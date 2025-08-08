@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { 
   Edit, 
   Users, 
@@ -18,6 +20,7 @@ import {
 import Header from "@/components/layout/header";
 import ProjectCard from "@/components/cards/project-card";
 import NavigationCard from "@/components/cards/navigation-card";
+import DraggableNavigationCard from "@/components/cards/draggable-navigation-card";
 import TimesheetForm from "@/components/forms/timesheet-form";
 import DashboardCharts from "@/components/analytics/dashboard-charts";
 import { Button } from "@/components/ui/button";
@@ -39,13 +42,39 @@ interface FinancialSummary {
   };
 }
 
+interface CardItem {
+  id: string;
+  type: 'financial' | 'navigation';
+  component: JSX.Element;
+}
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
 
+  // Navigation cards state for drag and drop
+  const [navCards, setNavCards] = useState([
+    { id: "timesheet", icon: Edit, label: "Puantaj Yaz", onClick: () => setShowTimesheetForm(true), iconColor: "text-blue-400" },
+    { id: "personnel", icon: Users, label: "Personeller", onClick: () => setLocation("/personnel"), iconColor: "text-orange-400" },
+    { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
+    { id: "daily", icon: CalendarDays, label: "Günlük İşlemleri", onClick: () => setLocation("/timesheet"), iconColor: "text-cyan-400" },
+    { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
+    { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
+  ]);
+
   const { data: summary } = useQuery<FinancialSummary>({
     queryKey: ["/api/financial-summary"],
   });
+
+  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
+    setNavCards((prevCards) => {
+      const newCards = [...prevCards];
+      const draggedCard = newCards[dragIndex];
+      newCards.splice(dragIndex, 1);
+      newCards.splice(hoverIndex, 0, draggedCard);
+      return newCards;
+    });
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -56,8 +85,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-primary text-white">
-      <Header />
+    <DndProvider backend={HTML5Backend}>
+      <div className="min-h-screen bg-dark-primary text-white">
+        <Header />
       
 
 
@@ -100,49 +130,18 @@ export default function Dashboard() {
 
         {/* Navigation Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-          <NavigationCard
-            icon={Edit}
-            label="Puantaj Yaz"
-            onClick={() => setShowTimesheetForm(true)}
-            iconColor="text-blue-400"
-          />
-          
-          <NavigationCard
-            icon={Users}
-            label="Personeller"
-            onClick={() => setLocation("/personnel")}
-            iconColor="text-orange-400"
-          />
-          
-
-          
-          <NavigationCard
-            icon={Wallet}
-            label="Kasa"
-            onClick={() => setLocation("/finances")}
-            iconColor="text-teal-400"
-          />
-          
-          <NavigationCard
-            icon={CalendarDays}
-            label="Günlük İşlemleri"
-            onClick={() => setLocation("/timesheet")}
-            iconColor="text-cyan-400"
-          />
-          
-          <NavigationCard
-            icon={UserCog}
-            label="Müşteriler"
-            onClick={() => setLocation("/customers")}
-            iconColor="text-orange-400"
-          />
-
-          <NavigationCard
-            icon={Info}
-            label="Raporlar"
-            onClick={() => setLocation("/reports")}
-            iconColor="text-pink-400"
-          />
+          {navCards.map((card, index) => (
+            <DraggableNavigationCard
+              key={card.id}
+              id={card.id}
+              index={index}
+              icon={card.icon}
+              label={card.label}
+              onClick={card.onClick}
+              iconColor={card.iconColor}
+              moveCard={moveCard}
+            />
+          ))}
         </div>
 
         {/* Analytics Section */}
@@ -182,6 +181,7 @@ export default function Dashboard() {
         open={showTimesheetForm} 
         onOpenChange={setShowTimesheetForm} 
       />
-    </div>
+      </div>
+    </DndProvider>
   );
 }
