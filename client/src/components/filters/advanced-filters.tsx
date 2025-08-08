@@ -5,10 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Filter, X, Search, Download } from "lucide-react";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface FilterProps {
   onFilterChange: (filters: FilterOptions) => void;
-  onExport: (format: 'csv' | 'pdf') => void;
+  onExport?: (format: 'csv' | 'pdf') => void;
+  exportData?: any[];
+  exportTitle?: string;
 }
 
 export interface FilterOptions {
@@ -20,7 +24,7 @@ export interface FilterOptions {
   personnel: string;
 }
 
-export default function AdvancedFilters({ onFilterChange, onExport }: FilterProps) {
+export default function AdvancedFilters({ onFilterChange, onExport, exportData = [], exportTitle = "Veri" }: FilterProps) {
   const [filters, setFilters] = useState<FilterOptions>({
     search: "",
     dateFrom: "",
@@ -51,6 +55,133 @@ export default function AdvancedFilters({ onFilterChange, onExport }: FilterProp
     onFilterChange(clearedFilters);
   };
 
+  const exportToPDF = () => {
+    try {
+      const doc = new jsPDF();
+      
+      // Turkish font support (fallback to Times if Turkish not available)
+      doc.setFont("times", "normal");
+      
+      // Title
+      doc.setFontSize(16);
+      doc.text(exportTitle + " Raporu", 20, 20);
+      
+      // Date
+      doc.setFontSize(10);
+      doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 30);
+      
+      if (exportData.length > 0) {
+        // Create table headers
+        const headers = Object.keys(exportData[0]).map(key => {
+          switch(key) {
+            case 'name': return 'İsim';
+            case 'company': return 'Şirket';
+            case 'phone': return 'Telefon';
+            case 'email': return 'E-posta';
+            case 'status': return 'Durum';
+            case 'amount': return 'Tutar';
+            case 'description': return 'Açıklama';
+            case 'type': return 'Tür';
+            case 'date': return 'Tarih';
+            default: return key;
+          }
+        });
+        
+        // Create table data
+        const data = exportData.map(item => 
+          Object.values(item).map(value => 
+            value === null || value === undefined ? '-' : String(value)
+          )
+        );
+        
+        autoTable(doc, {
+          head: [headers],
+          body: data,
+          startY: 40,
+          styles: {
+            fontSize: 8,
+            cellPadding: 2,
+          },
+          headStyles: {
+            fillColor: [41, 128, 185],
+            textColor: 255,
+          },
+          alternateRowStyles: {
+            fillColor: [245, 245, 245],
+          },
+        });
+      } else {
+        doc.text('Veri bulunamadı.', 20, 40);
+      }
+      
+      // Save the PDF
+      doc.save(`${exportTitle.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('PDF export error:', error);
+    }
+  };
+
+  const exportToExcel = () => {
+    try {
+      if (exportData.length === 0) {
+        alert('Dışa aktarılacak veri bulunamadı.');
+        return;
+      }
+
+      // Create CSV content
+      const headers = Object.keys(exportData[0]).map(key => {
+        switch(key) {
+          case 'name': return 'İsim';
+          case 'company': return 'Şirket';
+          case 'phone': return 'Telefon';
+          case 'email': return 'E-posta';
+          case 'status': return 'Durum';
+          case 'amount': return 'Tutar';
+          case 'description': return 'Açıklama';
+          case 'type': return 'Tür';
+          case 'date': return 'Tarih';
+          default: return key;
+        }
+      });
+      
+      const csvContent = [
+        headers.join(','),
+        ...exportData.map(item => 
+          Object.values(item).map(value => {
+            const str = value === null || value === undefined ? '' : String(value);
+            return str.includes(',') ? `"${str}"` : str;
+          }).join(',')
+        )
+      ].join('\n');
+      
+      // Create and download file
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${exportTitle.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Excel export error:', error);
+    }
+  };
+
+  const handleExport = (format: 'csv' | 'pdf') => {
+    if (format === 'pdf') {
+      exportToPDF();
+    } else if (format === 'csv') {
+      exportToExcel();
+    }
+    
+    // Also call the original onExport if provided
+    if (onExport) {
+      onExport(format);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Search and Filter Toggle */}
@@ -78,13 +209,13 @@ export default function AdvancedFilters({ onFilterChange, onExport }: FilterProp
             Filtreler
           </Button>
           
-          <Select onValueChange={(format: 'csv' | 'pdf') => onExport(format)}>
+          <Select onValueChange={(format: 'csv' | 'pdf') => handleExport(format)}>
             <SelectTrigger className="w-32 bg-dark-primary border-dark-accent text-white">
               <Download className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Dışa Aktar" />
             </SelectTrigger>
             <SelectContent className="bg-dark-primary border-dark-accent">
-              <SelectItem value="csv" className="text-white">CSV</SelectItem>
+              <SelectItem value="csv" className="text-white">Excel</SelectItem>
               <SelectItem value="pdf" className="text-white">PDF</SelectItem>
             </SelectContent>
           </Select>

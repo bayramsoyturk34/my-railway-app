@@ -234,6 +234,8 @@ export default function CustomersPage() {
         <AdvancedFilters
           onFilterChange={handleFilterChange}
           onExport={handleExport}
+          exportData={filteredCustomers}
+          exportTitle="Müşteriler"
         />
 
         <div className="mb-6 mt-6">
