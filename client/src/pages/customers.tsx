@@ -174,12 +174,16 @@ export default function CustomersPage() {
 
   // Filter customers based on search and filters
   const filteredCustomers = customers.filter(customer => {
+    console.log('Filtering customer:', customer.name, 'with search term:', filters.search);
+    
     const matchesSearch = !filters.search || 
       customer.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       customer.company?.toLowerCase().includes(filters.search.toLowerCase()) ||
       customer.email?.toLowerCase().includes(filters.search.toLowerCase());
     
     const matchesStatus = !filters.status || customer.status === filters.status;
+    
+    console.log('Search matches:', matchesSearch, 'Status matches:', matchesStatus);
     
     return matchesSearch && matchesStatus;
   });
