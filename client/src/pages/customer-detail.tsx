@@ -109,6 +109,7 @@ export default function CustomerDetailPage() {
     mutationFn: (data: InsertCustomerTask) => apiRequest("/api/customer-tasks", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customer-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
       toast({ title: "Başarılı", description: "Görev başarıyla eklendi" });
       setShowTaskForm(false);
       taskForm.reset();
@@ -124,6 +125,7 @@ export default function CustomerDetailPage() {
       apiRequest(`/api/customer-tasks/${id}`, "PUT", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customer-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
       toast({ title: "Başarılı", description: "Görev başarıyla güncellendi" });
       setShowTaskForm(false);
       taskForm.reset();
@@ -138,6 +140,8 @@ export default function CustomerDetailPage() {
     mutationFn: (data: InsertCustomerPayment) => apiRequest("/api/customer-payments", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customer-payments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
       toast({ title: "Başarılı", description: "Ödeme başarıyla kaydedildi" });
       setShowPaymentForm(false);
       paymentForm.reset();
