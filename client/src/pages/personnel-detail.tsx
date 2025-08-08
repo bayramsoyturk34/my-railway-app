@@ -60,11 +60,13 @@ export default function PersonnelDetailPage() {
       const overtimeHours = parseFloat(ts.overtimeHours || "0");
       const dailyWage = person && person.salary ? parseFloat(person.salary) / 30 : 0;
       
-      if (ts.workType === "TAM") {
+      const workType = ts.workType?.toUpperCase();
+      
+      if (workType === "TAM") {
         earnings += dailyWage;
-      } else if (ts.workType === "YARIM") {
+      } else if (workType === "YARIM") {
         earnings += dailyWage / 2;
-      } else if (ts.workType === "MESAİ") {
+      } else if (workType === "MESAİ" || workType === "MESAI") {
         earnings += dailyWage * overtimeHours;
       }
     });
