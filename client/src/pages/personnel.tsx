@@ -345,6 +345,8 @@ export default function Personnel() {
                           </div>
                           
                           {(() => {
+                            const personPayments = getPersonnelPayments(person.id);
+                            
                             const totalEarnings = personTimesheets.reduce((sum, timesheet) => {
                               const dailyWage = person.salary ? (parseFloat(person.salary) / 30) : 0;
                               const wage = timesheet.workType === "tam" 
@@ -354,6 +356,14 @@ export default function Personnel() {
                                 : (dailyWage / 8) * parseFloat(timesheet.overtimeHours || "0");
                               return sum + wage;
                             }, 0);
+
+                            // Calculate total payments (income - deductions)
+                            const totalPayments = personPayments.reduce((sum, payment) => {
+                              const amount = parseFloat(payment.amount);
+                              return payment.paymentType === "deduction" ? sum - amount : sum + amount;
+                            }, 0);
+
+                            const remainingDebt = totalEarnings - totalPayments;
                             
                             return (
                               <div className="space-y-4">
@@ -369,14 +379,34 @@ export default function Personnel() {
                                   </div>
                                   
                                   <div className="bg-dark-accent p-4 rounded-lg">
-                                    <h4 className="text-blue-400 font-medium mb-2">Ortalama Günlük</h4>
-                                    <p className="text-xl font-bold text-white">
-                                      {personTimesheets.length > 0 
-                                        ? (totalEarnings / personTimesheets.length).toLocaleString('tr-TR', { maximumFractionDigits: 2 })
-                                        : "0"
-                                      } TL
+                                    <h4 className={`font-medium mb-2 ${remainingDebt > 0 ? 'text-orange-400' : remainingDebt < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                      Kalan Borç
+                                    </h4>
+                                    <p className={`text-xl font-bold ${remainingDebt > 0 ? 'text-orange-300' : remainingDebt < 0 ? 'text-red-300' : 'text-green-300'}`}>
+                                      {remainingDebt.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} TL
                                     </p>
-                                    <p className="text-gray-400 text-sm mt-1">günlük ortalama</p>
+                                    <p className="text-gray-400 text-sm mt-1">
+                                      {remainingDebt > 0 ? 'ödenecek' : remainingDebt < 0 ? 'fazla ödendi' : 'ödenmiş'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Ödeme Özeti */}
+                                <div className="bg-dark-accent p-4 rounded-lg">
+                                  <h4 className="text-purple-400 font-medium mb-3">Ödeme Özeti</h4>
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <p className="text-gray-400">Toplam Ödenen</p>
+                                      <p className="text-white font-medium">
+                                        {totalPayments.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} TL
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-gray-400">Ödeme Sayısı</p>
+                                      <p className="text-white font-medium">
+                                        {personPayments.length} adet
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
                                 
