@@ -65,23 +65,23 @@ export default function Dashboard() {
         {/* Customer Financial Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <ProjectCard
-            title="Müşteri İşleri"
+            title="Alınan İşler"
             total={formatCurrency(summary?.customerTasks.total || 0)}
-            activeLabel="Bekleyen"
-            activeValue={`${summary?.customerTasks.pending || 0} işlem`}
-            passiveLabel="Tamamlanan"
-            passiveValue={`${summary?.customerTasks.completed || 0} işlem`}
+            activeLabel=""
+            activeValue=""
+            passiveLabel=""
+            passiveValue=""
             type="blue"
             icon="briefcase"
           />
 
           <ProjectCard
-            title="Müşteri Ödemeleri"
+            title="Alınan Ödemeler"
             total={formatCurrency(summary?.customerPayments.total || 0)}
-            activeLabel="Bu Ay"
-            activeValue={formatCurrency(summary?.customerPayments.thisMonth || 0)}
-            passiveLabel="Toplam Ödeme"
-            passiveValue={`${summary?.customerPayments.count || 0} ödeme`}
+            activeLabel=""
+            activeValue=""
+            passiveLabel=""
+            passiveValue=""
             type="green"
             icon="wallet"
           />
@@ -89,10 +89,10 @@ export default function Dashboard() {
           <ProjectCard
             title="Kalan Bakiye"
             total={formatCurrency((summary?.customerTasks.total || 0) - (summary?.customerPayments.total || 0))}
-            activeLabel="Alacak"
-            activeValue={formatCurrency(Math.max(0, (summary?.customerTasks.total || 0) - (summary?.customerPayments.total || 0)))}
-            passiveLabel="Net Durum"
-            passiveValue={((summary?.customerTasks.total || 0) - (summary?.customerPayments.total || 0)) >= 0 ? "Alacaklı" : "Borçlu"}
+            activeLabel=""
+            activeValue=""
+            passiveLabel=""
+            passiveValue=""
             type="purple"
             icon="calculator"
           />
