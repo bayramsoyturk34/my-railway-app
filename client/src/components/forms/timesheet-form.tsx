@@ -72,7 +72,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
           break;
         case "mesai":
           totalHours = "8.00";
-          hourlyRate = (dailyWage / 8 * 1.5).toFixed(2); // Mesai %50 fazla
+          hourlyRate = (dailyWage / 8).toFixed(2); // Mesai normal ücret
           calculatedWage = (parseFloat(hourlyRate) * 8).toFixed(2);
           break;
       }
