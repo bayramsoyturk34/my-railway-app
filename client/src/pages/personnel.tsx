@@ -132,14 +132,14 @@ export default function Personnel() {
           </Card>
         ) : (
           <Tabs defaultValue={personnel[0]?.id} className="w-full">
-            <TabsList className="grid w-full bg-dark-secondary border-dark-accent" style={{ gridTemplateColumns: `repeat(${personnel.length}, minmax(0, 1fr))` }}>
+            <TabsList className="flex flex-col h-auto w-full bg-dark-secondary border-dark-accent gap-1 p-2">
               {personnel.map((person) => {
                 const personTimesheets = getPersonnelTimesheets(person.id);
                 return (
                   <TabsTrigger 
                     key={person.id} 
                     value={person.id}
-                    className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-gray-400"
+                    className="w-full data-[state=active]:bg-blue-500 data-[state=active]:text-white text-gray-400 justify-start h-10 rounded-md"
                   >
                     {person.name}
                   </TabsTrigger>
