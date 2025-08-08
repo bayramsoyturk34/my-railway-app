@@ -71,9 +71,10 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
           hourlyRate = (dailyWage / 8).toFixed(2);
           break;
         case "mesai":
-          totalHours = "8.00";
+          const overtimeHours = parseFloat(form.watch("overtimeHours") || "0");
+          totalHours = overtimeHours.toFixed(2);
           hourlyRate = (dailyWage / 8).toFixed(2); // Mesai normal ücret
-          calculatedWage = (parseFloat(hourlyRate) * 8).toFixed(2);
+          calculatedWage = (parseFloat(hourlyRate) * overtimeHours).toFixed(2);
           break;
       }
       
@@ -221,6 +222,31 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
               )}
             />
 
+            {/* Mesai Saati Girişi */}
+            {workType === "mesai" && (
+              <FormField
+                control={form.control}
+                name="overtimeHours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Mesai Saati</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        max="12"
+                        className="bg-dark-primary border-dark-accent text-white"
+                        placeholder="Mesai saati giriniz..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             {/* Ücret Bilgileri */}
             {selectedPersonnel && workType && (
               <div className="bg-dark-accent p-4 rounded-lg space-y-2">
@@ -228,7 +254,9 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-400">Çalışma Saati:</span>
-                    <p className="text-white">{form.watch("totalHours")}h</p>
+                    <p className="text-white">
+                      {workType === "mesai" ? `${form.watch("overtimeHours") || 0}h (Mesai)` : `${form.watch("totalHours")}h`}
+                    </p>
                   </div>
                   <div>
                     <span className="text-gray-400">Saatlik Ücret:</span>
