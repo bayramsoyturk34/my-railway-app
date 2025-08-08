@@ -46,7 +46,7 @@ interface PersonnelPaymentFormProps {
   payment?: PersonnelPayment;
 }
 
-export default function PersonnelPaymentForm({
+function PersonnelPaymentForm({
   open,
   onOpenChange,
   personnelId,
@@ -271,3 +271,5 @@ export default function PersonnelPaymentForm({
     </Dialog>
   );
 }
+
+export default PersonnelPaymentForm;

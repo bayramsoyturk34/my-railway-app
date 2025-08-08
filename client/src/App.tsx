@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Personnel from "@/pages/personnel";
+import PersonnelDetail from "@/pages/personnel-detail";
 import Timesheet from "@/pages/timesheet";
 import Projects from "@/pages/projects";
 import Finances from "@/pages/finances";
@@ -19,6 +20,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/personnel" component={Personnel} />
+      <Route path="/personnel/:id" component={PersonnelDetail} />
       <Route path="/timesheet" component={Timesheet} />
       <Route path="/projects" component={Projects} />
       <Route path="/finances" component={Finances} />
