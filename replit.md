@@ -2,6 +2,14 @@
 
 PuantajPro is a Turkish personnel timesheet and project management application. It's a full-stack web application that helps businesses track employee work hours, manage projects, handle financial transactions, and maintain personnel records. The application features a dark-themed interface with Turkish language support and includes comprehensive CRUD operations for managing personnel, timesheets, projects, and financial data.
 
+## Recent Changes (August 2025)
+- ✅ Fixed customer search functionality in customer management page
+- ✅ Implemented drag-and-drop navigation cards on dashboard
+- ✅ Resolved SelectItem empty value prop errors in advanced filters
+- ✅ Dashboard navigation cards: Puantaj Yaz, Personeller, Verilen Projeler, Kasa, Müşteriler, Raporlar
+- ✅ Real-time data updates working properly with React Query cache invalidation
+- ✅ Simplified dashboard card titles and removed customer data from cash management
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
