@@ -117,55 +117,9 @@ export default function FinancesPage() {
           <h1 className="text-2xl font-bold">Kasa Yönetimi</h1>
         </div>
 
-        {/* Customer Financial Summary */}
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-300 mb-3">Müşteri Verileri</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-blue-500/20 border-blue-500/30">
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-              <div className="text-blue-400 text-2xl font-bold">
-                {formatCurrency(summary?.customerTasks.total || 0)}
-              </div>
-              <div className="text-blue-300 text-sm">Müşteri İşleri</div>
-              <div className="text-blue-200 text-xs mt-1">
-                {summary?.customerTasks.pending || 0} bekleyen
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-green-500/20 border-green-500/30">
-            <CardContent className="p-4 text-center">
-              <Wallet className="h-8 w-8 text-green-400 mx-auto mb-2" />
-              <div className="text-green-400 text-2xl font-bold">
-                {formatCurrency(summary?.customerPayments.total || 0)}
-              </div>
-              <div className="text-green-300 text-sm">Müşteri Ödemeleri</div>
-              <div className="text-green-200 text-xs mt-1">
-                {summary?.customerPayments.count || 0} ödeme
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-purple-500/20 border-purple-500/30">
-            <CardContent className="p-4 text-center">
-              <TrendingDown className="h-8 w-8 text-purple-400 mx-auto mb-2" />
-              <div className="text-purple-400 text-2xl font-bold">
-                {formatCurrency((summary?.customerTasks.total || 0) - (summary?.customerPayments.total || 0))}
-              </div>
-              <div className="text-purple-300 text-sm">Kalan Bakiye</div>
-              <div className="text-purple-200 text-xs mt-1">
-                Net Durum
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Manual Transaction Summary */}
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-300 mb-3">Manuel İşlemler</h2>
-        </div>
+        {/* Financial Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="bg-green-500/20 border-green-500/30">
             <CardContent className="p-4 text-center">
