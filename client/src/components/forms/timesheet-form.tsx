@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { insertTimesheetSchema, type InsertTimesheet, type Personnel } from "@shared/schema";
+import { insertTimesheetSchema, type InsertTimesheet, type Personnel, type Customer } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
 
 interface TimesheetFormProps {
   open: boolean;
@@ -20,15 +21,22 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | null>(null);
+  const [workType, setWorkType] = useState<string>("");
+
   const form = useForm<InsertTimesheet>({
     resolver: zodResolver(insertTimesheetSchema),
     defaultValues: {
       personnelId: "",
+      customerId: "",
       date: new Date(),
+      workType: "tam",
       startTime: "08:00",
       endTime: "17:00",
-      totalHours: "9.00",
+      totalHours: "8.00",
       overtimeHours: "0.00",
+      hourlyRate: "0.00",
+      dailyWage: "0.00",
       notes: "",
     },
   });
@@ -37,21 +45,47 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
     queryKey: ["/api/personnel"],
   });
 
+  const { data: customers = [] } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
+  });
+
+  // Çalışma şekli değiştiğinde ücret hesapla
+  useEffect(() => {
+    if (selectedPersonnel && workType) {
+      const salary = parseFloat(selectedPersonnel.salary || "0");
+      const dailyWage = salary / 30;
+      
+      let totalHours = "8.00";
+      let hourlyRate = "0.00";
+      let calculatedWage = "0.00";
+      
+      switch (workType) {
+        case "tam":
+          totalHours = "8.00";
+          calculatedWage = dailyWage.toFixed(2);
+          hourlyRate = (dailyWage / 8).toFixed(2);
+          break;
+        case "yarim":
+          totalHours = "4.00";
+          calculatedWage = (dailyWage / 2).toFixed(2);
+          hourlyRate = (dailyWage / 8).toFixed(2);
+          break;
+        case "mesai":
+          totalHours = "8.00";
+          hourlyRate = (dailyWage / 8 * 1.5).toFixed(2); // Mesai %50 fazla
+          calculatedWage = (parseFloat(hourlyRate) * 8).toFixed(2);
+          break;
+      }
+      
+      form.setValue("totalHours", totalHours);
+      form.setValue("hourlyRate", hourlyRate);
+      form.setValue("dailyWage", calculatedWage);
+    }
+  }, [selectedPersonnel, workType, form]);
+
   const createTimesheetMutation = useMutation({
     mutationFn: async (data: InsertTimesheet) => {
-      // Calculate total hours
-      const start = new Date(`2000-01-01T${data.startTime}:00`);
-      const end = new Date(`2000-01-01T${data.endTime}:00`);
-      const diffMs = end.getTime() - start.getTime();
-      const diffHours = diffMs / (1000 * 60 * 60);
-      
-      const timesheetData = {
-        ...data,
-        totalHours: diffHours.toFixed(2),
-        overtimeHours: data.overtimeHours || "0.00",
-      };
-
-      const response = await apiRequest("/api/timesheets", "POST", timesheetData);
+      const response = await apiRequest("/api/timesheets", "POST", data);
       return response.json();
     },
     onSuccess: () => {
@@ -61,6 +95,8 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
         description: "Puantaj kaydı oluşturuldu.",
       });
       form.reset();
+      setSelectedPersonnel(null);
+      setWorkType("");
       onOpenChange(false);
     },
     onError: () => {
@@ -92,7 +128,11 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-300">Personel Seç</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={(value) => {
+                    field.onChange(value);
+                    const person = personnel.find(p => p.id === value);
+                    setSelectedPersonnel(person || null);
+                  }} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
                         <SelectValue placeholder="Personel seçin" />
@@ -111,90 +151,102 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Giriş Saati</FormLabel>
+            <FormField
+              control={form.control}
+              name="customerId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Müşteri Seç</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
-                      <Input
-                        type="time"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        {...field}
-                      />
+                      <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                        <SelectValue placeholder="Müşteri seçin" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <SelectContent className="bg-dark-primary border-dark-accent">
+                      {customers.map((customer) => (
+                        <SelectItem key={customer.id} value={customer.id} className="text-white">
+                          {customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Çıkış Saati</FormLabel>
+            <FormField
+              control={form.control}
+              name="workType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Çalışma Şekli</FormLabel>
+                  <Select onValueChange={(value) => {
+                    field.onChange(value);
+                    setWorkType(value);
+                  }} defaultValue={field.value}>
                     <FormControl>
-                      <Input
-                        type="time"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        {...field}
-                      />
+                      <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                        <SelectValue placeholder="Çalışma şekli seçin" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <SelectContent className="bg-dark-primary border-dark-accent">
+                      <SelectItem value="tam" className="text-white">TAM GÜN</SelectItem>
+                      <SelectItem value="yarim" className="text-white">YARIM GÜN</SelectItem>
+                      <SelectItem value="mesai" className="text-white">MESAİ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Tarih</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
-                        onChange={(e) => field.onChange(new Date(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Tarih</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      className="bg-dark-primary border-dark-accent text-white"
+                      value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="overtimeHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Mesai Saati</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        max="12"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="0.00"
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {/* Ücret Bilgileri */}
+            {selectedPersonnel && workType && (
+              <div className="bg-dark-accent p-4 rounded-lg space-y-2">
+                <h4 className="text-white font-medium">Ücret Bilgileri</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-400">Çalışma Saati:</span>
+                    <p className="text-white">{form.watch("totalHours")}h</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Saatlik Ücret:</span>
+                    <p className="text-blue-400">{parseFloat(form.watch("hourlyRate") || "0").toLocaleString('tr-TR')} TL</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Günlük Ücret:</span>
+                    <p className="text-green-400">{parseFloat(form.watch("dailyWage") || "0").toLocaleString('tr-TR')} TL</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Çalışma Şekli:</span>
+                    <p className="text-white">
+                      {workType === "tam" ? "Tam Gün" : workType === "yarim" ? "Yarım Gün" : "Mesai"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <FormField
               control={form.control}
@@ -206,11 +258,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
                     <Textarea
                       className="bg-dark-primary border-dark-accent text-white h-20"
                       placeholder="Ek bilgiler..."
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

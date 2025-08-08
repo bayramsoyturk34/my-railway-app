@@ -31,11 +31,15 @@ export const projects = pgTable("projects", {
 export const timesheets = pgTable("timesheets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   personnelId: varchar("personnel_id").notNull(),
+  customerId: varchar("customer_id"),
   date: timestamp("date").notNull(),
-  startTime: text("start_time").notNull(),
-  endTime: text("end_time").notNull(),
+  workType: text("work_type").notNull(), // "tam", "yarim", "mesai"
+  startTime: text("start_time"),
+  endTime: text("end_time"),
   totalHours: decimal("total_hours", { precision: 4, scale: 2 }).notNull(),
   overtimeHours: decimal("overtime_hours", { precision: 4, scale: 2 }).default("0.00"),
+  hourlyRate: decimal("hourly_rate", { precision: 10, scale: 2 }),
+  dailyWage: decimal("daily_wage", { precision: 10, scale: 2 }),
   notes: text("notes"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
@@ -160,6 +164,11 @@ export const insertTimesheetSchema = createInsertSchema(timesheets).omit({
   id: true,
   createdAt: true,
 }).extend({
+  customerId: z.string().optional().nullable(),
+  startTime: z.string().optional().nullable(),
+  endTime: z.string().optional().nullable(),
+  hourlyRate: z.string().optional().nullable(),
+  dailyWage: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   overtimeHours: z.string().optional().nullable(),
 });
