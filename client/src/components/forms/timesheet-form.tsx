@@ -88,7 +88,8 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
           if (!personnelData) return null;
           
           const salary = parseFloat(personnelData.salary || "0");
-          const dailyWage = salary / 30;
+          const salaryType = personnelData.salaryType || "monthly";
+          const dailyWage = salaryType === "daily" ? salary : salary / 30;
           
           let totalHours = "8.00";
           let calculatedWage = "0.00";

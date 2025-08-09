@@ -76,8 +76,11 @@ export default function PersonnelDetailPage() {
     return `₺${amount.toLocaleString('tr-TR')}`;
   };
 
-  const calculateDailyWage = (monthlySalary: string | null) => {
+  const calculateDailyWage = (monthlySalary: string | null, salaryType?: string) => {
     if (!monthlySalary) return formatSalary(0);
+    if (salaryType === "daily") {
+      return formatSalary(parseFloat(monthlySalary));
+    }
     return formatSalary(Math.round(parseFloat(monthlySalary) / 30));
   };
 
@@ -156,12 +159,16 @@ export default function PersonnelDetailPage() {
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-gray-500 text-sm">Maaş</p>
+                  <p className="text-gray-500 text-sm">
+                    {person.salaryType === "daily" ? "Günlük" : "Maaş"}
+                  </p>
                   <p className="text-white font-medium">{person.salary ? formatSalary(parseFloat(person.salary)) : "₺0"}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-sm">Yevmiye</p>
-                  <p className="text-blue-400 font-medium">{calculateDailyWage(person.salary)}</p>
+                  <p className="text-gray-500 text-sm">
+                    {person.salaryType === "daily" ? "Günlük" : "Yevmiye"}
+                  </p>
+                  <p className="text-blue-400 font-medium">{calculateDailyWage(person.salary, person.salaryType || undefined)}</p>
                 </div>
                 <div>
                   <p className="text-gray-500 text-sm">Toplam Hakediş</p>

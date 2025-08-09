@@ -194,9 +194,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Personnel not found" });
       }
       
-      // Calculate wages based on work type
+      // Calculate wages based on work type and salary type
       const dailySalary = person.salary ? parseFloat(person.salary) : 0;
-      const dailyWage = dailySalary / 30;
+      const salaryType = person.salaryType || "monthly";
+      const dailyWage = salaryType === "daily" ? dailySalary : dailySalary / 30;
       
       let calculatedDailyWage = 0;
       const hourlyRate = dailyWage / 8; // 8 hour work day
