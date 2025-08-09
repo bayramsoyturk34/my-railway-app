@@ -91,6 +91,10 @@ export const customerTasks = pgTable("customer_tasks", {
   title: text("title").notNull(),
   description: text("description"),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  hasVAT: boolean("has_vat").default(false),
+  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default("20.00"), // %20 KDV
+  vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }).default("0.00"),
+  totalWithVAT: decimal("total_with_vat", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("pending"), // "pending", "in_progress", "completed"
   dueDate: timestamp("due_date"),
   createdAt: timestamp("created_at").default(sql`now()`),
@@ -103,6 +107,10 @@ export const customerQuotes = pgTable("customer_quotes", {
   title: text("title").notNull(),
   description: text("description"),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull().default("0"),
+  hasVAT: boolean("has_vat").default(false),
+  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default("20.00"), // %20 KDV
+  vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }).default("0.00"),
+  totalWithVAT: decimal("total_with_vat", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("pending"), // "pending", "approved", "rejected"
   isApproved: boolean("is_approved").default(false),
   quoteDate: timestamp("quote_date").notNull(),
@@ -118,6 +126,7 @@ export const customerQuoteItems = pgTable("customer_quote_items", {
   title: text("title").notNull(),
   description: text("description"),
   quantity: integer("quantity").notNull().default(1),
+  unit: text("unit").notNull().default("adet"), // "adet", "m2", "m"
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").default(sql`now()`),

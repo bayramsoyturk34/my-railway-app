@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X, Download, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X, Download, FileSpreadsheet, Calculator } from "lucide-react";
 import { type Customer, type CustomerTask, type CustomerQuote, type CustomerPayment, insertCustomerTaskSchema, insertCustomerQuoteSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerQuote, type InsertCustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -44,6 +44,15 @@ export default function CustomerDetailPage() {
     unitPrice: 0,
     unit: "adet"
   });
+
+  // KDV State for quotes
+  const [hasVAT, setHasVAT] = useState(false);
+  const [vatRate, setVatRate] = useState(20); // %20 KDV
+  
+  // KDV State for tasks
+  const [taskHasVAT, setTaskHasVAT] = useState(false);
+  const [taskVatRate, setTaskVatRate] = useState(20);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -256,11 +265,15 @@ export default function CustomerDetailPage() {
       return;
     }
 
-    const totalAmount = calculateTotalAmount();
+    const { subtotal, vatAmount, total } = getQuoteTotals();
     const quoteData = {
       ...data,
       customerId: customer?.id || "",
-      totalAmount: totalAmount.toString()
+      totalAmount: subtotal.toString(),
+      hasVAT,
+      vatRate: vatRate.toString(),
+      vatAmount: vatAmount.toString(),
+      totalWithVAT: total.toString()
     };
 
     if (editingQuote) {
@@ -285,6 +298,8 @@ export default function CustomerDetailPage() {
     setEditingQuote(null);
     setQuoteItems([]);
     setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0, unit: "adet" });
+    setHasVAT(false);
+    setVatRate(20);
     quoteForm.reset();
   };
 
@@ -335,6 +350,22 @@ export default function CustomerDetailPage() {
     return quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
   };
 
+  const calculateVATAmount = (baseAmount: number, vatRate: number) => {
+    return (baseAmount * vatRate) / 100;
+  };
+
+  const calculateTotalWithVAT = (baseAmount: number, vatRate: number) => {
+    return baseAmount + calculateVATAmount(baseAmount, vatRate);
+  };
+
+  const getQuoteTotals = () => {
+    const subtotal = calculateTotalAmount();
+    const vatAmount = hasVAT ? calculateVATAmount(subtotal, vatRate) : 0;
+    const total = hasVAT ? calculateTotalWithVAT(subtotal, vatRate) : subtotal;
+    
+    return { subtotal, vatAmount, total };
+  };
+
   const exportToExcel = () => {
     if (quoteItems.length === 0) {
       toast({
@@ -345,6 +376,8 @@ export default function CustomerDetailPage() {
       return;
     }
 
+    const { subtotal, vatAmount, total } = getQuoteTotals();
+    
     const data = quoteItems.map((item, index) => ({
       'Sıra': index + 1,
       'Görev Adı': item.title,
@@ -355,15 +388,37 @@ export default function CustomerDetailPage() {
       'Toplam (TL)': item.totalPrice.toFixed(2)
     }));
 
-    // Add total row
+    // Add total rows
     data.push({
       'Sıra': 0,
-      'Görev Adı': 'TOPLAM',
+      'Görev Adı': 'ARA TOPLAM',
       'Açıklama': '',
       'Miktar': 0,
       'Birim': '',
       'Birim Fiyat (TL)': '',
-      'Toplam (TL)': calculateTotalAmount().toFixed(2)
+      'Toplam (TL)': subtotal.toFixed(2)
+    });
+
+    if (hasVAT) {
+      data.push({
+        'Sıra': 0,
+        'Görev Adı': `KDV (%${vatRate})`,
+        'Açıklama': '',
+        'Miktar': 0,
+        'Birim': '',
+        'Birim Fiyat (TL)': '',
+        'Toplam (TL)': vatAmount.toFixed(2)
+      });
+    }
+
+    data.push({
+      'Sıra': 0,
+      'Görev Adı': 'GENEL TOPLAM',
+      'Açıklama': '',
+      'Miktar': 0,
+      'Birim': '',
+      'Birim Fiyat (TL)': '',
+      'Toplam (TL)': total.toFixed(2)
     });
 
     const csv = [
@@ -408,9 +463,17 @@ export default function CustomerDetailPage() {
     doc.text('TEKLİF FORMU', 20, 30);
     
     doc.setFontSize(12);
+    const { subtotal, vatAmount, total } = getQuoteTotals();
+    
     doc.text(`Müşteri: ${customer?.name || ''}`, 20, 50);
     doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 60);
-    doc.text(`Toplam Tutar: ${formatCurrency(calculateTotalAmount().toString())}`, 20, 70);
+    doc.text(`Ara Toplam: ${formatCurrency(subtotal.toString())}`, 20, 70);
+    if (hasVAT) {
+      doc.text(`KDV (%${vatRate}): ${formatCurrency(vatAmount.toString())}`, 20, 80);
+      doc.text(`Genel Toplam: ${formatCurrency(total.toString())}`, 20, 90);
+    } else {
+      doc.text(`Genel Toplam: ${formatCurrency(total.toString())}`, 20, 80);
+    }
 
     // Table
     const tableData = quoteItems.map((item, index) => [
@@ -423,11 +486,20 @@ export default function CustomerDetailPage() {
       `${item.totalPrice.toFixed(2)} TL`
     ]);
 
+    const startY = hasVAT ? 100 : 90;
+    const footerData = [];
+    
+    footerData.push(['', '', '', '', '', 'ARA TOPLAM:', `${subtotal.toFixed(2)} TL`]);
+    if (hasVAT) {
+      footerData.push(['', '', '', '', '', `KDV (%${vatRate}):`, `${vatAmount.toFixed(2)} TL`]);
+    }
+    footerData.push(['', '', '', '', '', 'GENEL TOPLAM:', `${total.toFixed(2)} TL`]);
+
     autoTable(doc, {
-      startY: 80,
+      startY,
       head: [['Sıra', 'Görev Adı', 'Açıklama', 'Miktar', 'Birim', 'Birim Fiyat', 'Toplam']],
       body: tableData,
-      foot: [['', '', '', '', '', 'TOPLAM:', `${calculateTotalAmount().toFixed(2)} TL`]],
+      foot: footerData,
       theme: 'striped'
     });
 
@@ -1282,6 +1354,68 @@ export default function CustomerDetailPage() {
                       </FormItem>
                     )}
                   />
+
+                  {/* KDV Seçenekleri */}
+                  <div className="border-t border-dark-accent pt-4">
+                    <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                      <Calculator className="h-4 w-4 text-blue-400" />
+                      KDV Ayarları
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          id="hasVAT"
+                          checked={hasVAT}
+                          onChange={(e) => setHasVAT(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-dark-primary border-dark-accent rounded focus:ring-blue-500"
+                        />
+                        <label htmlFor="hasVAT" className="text-white text-sm font-medium">
+                          KDV Dahil Et
+                        </label>
+                      </div>
+                      
+                      {hasVAT && (
+                        <div className="grid grid-cols-3 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setVatRate(18)}
+                            className={`p-2 rounded text-sm font-medium border ${
+                              vatRate === 18 
+                                ? 'bg-blue-500 border-blue-500 text-white' 
+                                : 'bg-dark-primary border-dark-accent text-gray-300 hover:border-blue-500'
+                            }`}
+                          >
+                            %18 KDV
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setVatRate(20)}
+                            className={`p-2 rounded text-sm font-medium border ${
+                              vatRate === 20 
+                                ? 'bg-blue-500 border-blue-500 text-white' 
+                                : 'bg-dark-primary border-dark-accent text-gray-300 hover:border-blue-500'
+                            }`}
+                          >
+                            %20 KDV
+                          </button>
+                          <div className="flex items-center">
+                            <span className="text-gray-300 text-xs mr-2">Özel:</span>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="0.01"
+                              value={vatRate}
+                              onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
+                              className="w-full bg-dark-primary border-dark-accent text-white rounded px-2 py-1 text-sm"
+                              placeholder="%"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </Form>
             </div>
@@ -1416,11 +1550,27 @@ export default function CustomerDetailPage() {
                 
                 {/* Toplam Tutar ve Export Butonları */}
                 <div className="mt-4 pt-3 border-t border-dark-accent">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-white font-medium">Toplam Teklif Tutarı:</span>
-                    <span className="text-2xl font-bold text-orange-400">
-                      {formatCurrency(calculateTotalAmount().toString())}
-                    </span>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300 text-sm">Ara Toplam:</span>
+                      <span className="text-white font-medium">
+                        {formatCurrency(getQuoteTotals().subtotal.toString())}
+                      </span>
+                    </div>
+                    {hasVAT && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300 text-sm">KDV (%{vatRate}):</span>
+                        <span className="text-white font-medium">
+                          {formatCurrency(getQuoteTotals().vatAmount.toString())}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t border-dark-accent">
+                      <span className="text-white font-bold">Genel Toplam:</span>
+                      <span className="text-2xl font-bold text-orange-400">
+                        {formatCurrency(getQuoteTotals().total.toString())}
+                      </span>
+                    </div>
                   </div>
                   
                   {/* Export Buttons */}
