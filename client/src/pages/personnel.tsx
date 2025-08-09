@@ -123,7 +123,7 @@ export default function PersonnelPage() {
                   <div className="flex-1 min-w-0">
                     <h4 className="text-white font-medium text-lg truncate">{person.name}</h4>
                     <p className="text-gray-400 text-sm truncate">{person.position}</p>
-                    <p className="text-green-400 text-sm">₺{person.salary.toLocaleString('tr-TR')}/ay</p>
+                    <p className="text-green-400 text-sm">₺{(person.salary || 0).toLocaleString('tr-TR')}/ay</p>
                   </div>
                   
                   {/* Actions */}
@@ -146,7 +146,9 @@ export default function PersonnelPage() {
                       className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-dark-accent"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deletePersonnelMutation.mutate(person.id);
+                        if (confirm(`${person.name} adlı personeli silmek istediğinizden emin misiniz?`)) {
+                          deletePersonnelMutation.mutate(person.id);
+                        }
                       }}
                       disabled={deletePersonnelMutation.isPending}
                     >

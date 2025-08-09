@@ -118,8 +118,8 @@ export default function TimesheetPage() {
             {timesheets.map((timesheet) => (
               <Card key={timesheet.id} className="bg-dark-secondary border-dark-accent">
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-start min-h-0">
-                    <div className="flex-1">
+                  <div className="w-full">
+                    <div className="w-full">
                       <div className="flex items-center gap-3 mb-3">
                         <Calendar className="h-5 w-5 text-blue-400" />
                         <h4 className="text-white font-medium text-lg">
@@ -181,31 +181,31 @@ export default function TimesheetPage() {
                           <p className="text-gray-300 text-sm">{timesheet.notes}</p>
                         </div>
                       )}
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-1 ml-2 flex-shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 border-blue-500/20 h-10 w-10 p-0"
-                        onClick={() => {
-                          setEditingTimesheet(timesheet);
-                          setShowTimesheetForm(true);
-                        }}
-                        title="Düzenle"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/20 h-10 w-10 p-0"
-                        onClick={() => handleDeleteTimesheet(timesheet.id)}
-                        title="Sil"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-dark-accent">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 border-blue-500/20"
+                          onClick={() => {
+                            setEditingTimesheet(timesheet);
+                            setShowTimesheetForm(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Düzenle
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/20"
+                          onClick={() => handleDeleteTimesheet(timesheet.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Sil
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
