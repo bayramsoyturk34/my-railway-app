@@ -27,23 +27,23 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
   const queryClient = useQueryClient();
 
   const [selectedPersonnelIds, setSelectedPersonnelIds] = useState<string[]>([]);
-  const [workType, setWorkType] = useState<string>("");
+  const [workType, setWorkType] = useState<string>("tam");
   const [showPersonnelDropdown, setShowPersonnelDropdown] = useState(false);
 
   const form = useForm<InsertTimesheet>({
     resolver: zodResolver(insertTimesheetSchema),
     defaultValues: {
-      personnelId: editingTimesheet?.personnelId || "",
-      customerId: editingTimesheet?.customerId || "",
-      date: editingTimesheet?.date ? new Date(editingTimesheet.date) : new Date(),
-      workType: editingTimesheet?.workType || "tam",
-      startTime: editingTimesheet?.startTime || "08:00",
-      endTime: editingTimesheet?.endTime || "17:00",
-      totalHours: editingTimesheet?.totalHours || "8.00",
-      overtimeHours: editingTimesheet?.overtimeHours || "0.00",
-      hourlyRate: editingTimesheet?.hourlyRate || "0.00",
-      dailyWage: editingTimesheet?.dailyWage || "0.00",
-      notes: editingTimesheet?.notes || "",
+      personnelId: "",
+      customerId: "",
+      date: new Date(),
+      workType: "tam",
+      startTime: "08:00",
+      endTime: "17:00",
+      totalHours: "8.00",
+      overtimeHours: "0.00",
+      hourlyRate: "0.00",
+      dailyWage: "0.00",
+      notes: "",
     },
   });
 
@@ -58,6 +58,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
   // Dialog açıldığında değerleri güncelle
   const handleDialogOpen = () => {
     if (editingTimesheet) {
+      // Edit mode
       setSelectedPersonnelIds([editingTimesheet.personnelId || ""]);
       setWorkType(editingTimesheet.workType || "tam");
       form.reset({
@@ -74,6 +75,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
         notes: editingTimesheet.notes || "",
       });
     } else {
+      // New record mode
       setSelectedPersonnelIds([]);
       setWorkType("tam");
       form.reset({
@@ -91,8 +93,6 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
       });
     }
   };
-
-
 
   const createTimesheetMutation = useMutation({
     mutationFn: async (data: InsertTimesheet) => {
@@ -198,7 +198,6 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
       return;
     }
     
-    console.log("Submitting timesheet data for personnel:", selectedPersonnelIds);
     createTimesheetMutation.mutate(data);
   };
   
@@ -283,14 +282,18 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
                           <div
                             key={person.id}
                             className="flex items-center space-x-2 cursor-pointer hover:bg-dark-accent p-2 rounded"
-                            onClick={() => togglePersonnelSelection(person.id)}
                           >
                             <Checkbox
                               checked={selectedPersonnelIds.includes(person.id)}
                               onCheckedChange={() => togglePersonnelSelection(person.id)}
                               className="border-gray-400"
                             />
-                            <span className="text-white text-sm">{person.name}</span>
+                            <span 
+                              className="text-white text-sm flex-1"
+                              onClick={() => togglePersonnelSelection(person.id)}
+                            >
+                              {person.name}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -332,8 +335,8 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               name="customerId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Müşteri Seç</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                  <FormLabel className="text-gray-300">Müşteri</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
                         <SelectValue placeholder="Müşteri seçin" />
@@ -352,50 +355,6 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               )}
             />
 
-            {!editingTimesheet && (
-              <div className="space-y-2">
-                <FormLabel className="text-gray-300">Çalışma Şekli</FormLabel>
-                <Select onValueChange={setWorkType} value={workType}>
-                  <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                    <SelectValue placeholder="Çalışma şekli seçin" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-dark-primary border-dark-accent">
-                    <SelectItem value="tam" className="text-white">TAM GÜN</SelectItem>
-                    <SelectItem value="yarim" className="text-white">YARIM GÜN</SelectItem>
-                    <SelectItem value="mesai" className="text-white">MESAİ</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {editingTimesheet && (
-              <FormField
-                control={form.control}
-                name="workType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Çalışma Şekli</FormLabel>
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      setWorkType(value);
-                    }} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                          <SelectValue placeholder="Çalışma şekli seçin" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-dark-primary border-dark-accent">
-                        <SelectItem value="tam" className="text-white">TAM GÜN</SelectItem>
-                        <SelectItem value="yarim" className="text-white">YARIM GÜN</SelectItem>
-                        <SelectItem value="mesai" className="text-white">MESAİ</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
             <FormField
               control={form.control}
               name="date"
@@ -406,7 +365,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
                     <Input
                       type="date"
                       className="bg-dark-primary border-dark-accent text-white"
-                      value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                      value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : ''}
                       onChange={(e) => field.onChange(new Date(e.target.value))}
                     />
                   </FormControl>
@@ -415,8 +374,30 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               )}
             />
 
-            {/* Mesai Saati Girişi */}
-            {workType === "mesai" && (
+            {!editingTimesheet && (
+              <div className="space-y-2">
+                <FormLabel className="text-gray-300">Çalışma Şekli</FormLabel>
+                <div className="flex gap-2">
+                  {["tam", "yarim", "mesai"].map((type) => (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant={workType === type ? "default" : "outline"}
+                      size="sm"
+                      className={workType === type 
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-dark-primary border-dark-accent text-white hover:bg-dark-accent"
+                      }
+                      onClick={() => setWorkType(type)}
+                    >
+                      {type === "tam" ? "TAM" : type === "yarim" ? "YARIM" : "MESAİ"}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(editingTimesheet || workType === "mesai") && (
               <FormField
                 control={form.control}
                 name="overtimeHours"
@@ -426,16 +407,10 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
                     <FormControl>
                       <Input
                         type="number"
-                        step="0.5"
-                        min="0"
-                        max="12"
+                        step="0.01"
+                        placeholder="0.00"
                         className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="Mesai saati giriniz..."
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -444,72 +419,17 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               />
             )}
 
-            {/* Ücret Bilgileri - Multi-selection Preview */}
-            {!editingTimesheet && selectedPersonnelIds.length > 0 && workType && (
-              <div className="bg-dark-accent p-4 rounded-lg space-y-2">
-                <h4 className="text-white font-medium">Ücret Önizlemesi ({selectedPersonnelIds.length} personel)</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-400">Çalışma Şekli:</span>
-                    <p className="text-white">
-                      {workType === "tam" ? "Tam Gün (8h)" : workType === "yarim" ? "Yarım Gün (4h)" : `Mesai (${form.watch("overtimeHours") || 0}h)`}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Toplam Personel:</span>
-                    <p className="text-blue-400">{selectedPersonnelIds.length} kişi</p>
-                  </div>
-                </div>
-                <div className="text-xs text-gray-400 mt-2">
-                  * Her personelin kendi maaşına göre ücret hesaplanacak
-                </div>
-              </div>
-            )}
-
-            {/* Ücret Bilgileri - Edit Mode */}
-            {editingTimesheet && workType && (
-              <div className="bg-dark-accent p-4 rounded-lg space-y-2">
-                <h4 className="text-white font-medium">Ücret Bilgileri</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-400">Çalışma Saati:</span>
-                    <p className="text-white">
-                      {workType === "mesai" ? `${form.watch("overtimeHours") || 0}h (Mesai)` : `${form.watch("totalHours")}h`}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Saatlik Ücret:</span>
-                    <p className="text-blue-400">{parseFloat(form.watch("hourlyRate") || "0").toLocaleString('tr-TR')} TL</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Günlük Ücret:</span>
-                    <p className="text-green-400">{parseFloat(form.watch("dailyWage") || "0").toLocaleString('tr-TR')} TL</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Çalışma Şekli:</span>
-                    <p className="text-white">
-                      {workType === "tam" ? "Tam Gün" : workType === "yarim" ? "Yarım Gün" : "Mesai"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             <FormField
               control={form.control}
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Not</FormLabel>
+                  <FormLabel className="text-gray-300">Notlar</FormLabel>
                   <FormControl>
                     <Textarea
-                      className="bg-dark-primary border-dark-accent text-white h-20"
-                      placeholder="Ek bilgiler..."
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
+                      placeholder="Ek notlar..."
+                      className="bg-dark-primary border-dark-accent text-white"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -517,21 +437,23 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               )}
             />
 
-            <div className="flex gap-3">
+            <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
-                variant="secondary"
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                variant="outline"
                 onClick={() => onOpenChange(false)}
+                className="border-dark-accent text-white hover:bg-dark-accent"
               >
                 İptal
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
                 disabled={createTimesheetMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {createTimesheetMutation.isPending ? "Kaydediliyor..." : "Kaydet"}
+                {createTimesheetMutation.isPending 
+                  ? "Kaydediliyor..." 
+                  : editingTimesheet ? "Güncelle" : "Kaydet"}
               </Button>
             </div>
           </form>
