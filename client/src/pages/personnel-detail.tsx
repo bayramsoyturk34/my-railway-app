@@ -232,11 +232,11 @@ export default function PersonnelDetailPage() {
                               {timesheet.workType} • {timesheet.totalHours} saat
                               {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 && ` • ${timesheet.overtimeHours} mesai`}
                             </p>
-                            {timesheet.workType === 'mesai' && (
-                              <p className="text-green-400 text-sm font-medium">
-                                Mesai Ücreti: {formatSalary(parseFloat(timesheet.dailyWage || "0"))}
-                              </p>
-                            )}
+                            <p className="text-green-400 text-sm font-medium">
+                              {timesheet.workType === 'tam' && `TAM Günlük: ${formatSalary(parseFloat(timesheet.dailyWage || "0"))}`}
+                              {timesheet.workType === 'yarim' && `YARIM Günlük: ${formatSalary(parseFloat(timesheet.dailyWage || "0"))}`}
+                              {timesheet.workType === 'mesai' && `Mesai Ücreti: ${formatSalary(parseFloat(timesheet.dailyWage || "0"))}`}
+                            </p>
                             {timesheet.notes && (
                               <p className="text-gray-500 text-sm mt-1">{timesheet.notes}</p>
                             )}
