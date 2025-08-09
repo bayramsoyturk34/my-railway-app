@@ -240,6 +240,18 @@ export default function CustomerDetailPage() {
     },
   });
 
+  const deleteTaskMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/customer-tasks/${id}`, "DELETE"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      toast({ title: "Başarılı", description: "Görev silindi" });
+    },
+    onError: () => {
+      toast({ title: "Hata", description: "Görev silinemedi", variant: "destructive" });
+    },
+  });
+
   const createPaymentMutation = useMutation({
     mutationFn: (data: InsertCustomerPayment) => apiRequest("/api/customer-payments", "POST", data),
     onSuccess: () => {
@@ -744,6 +756,18 @@ export default function CustomerDetailPage() {
                                 }}
                               >
                                 <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-red-400 hover:text-red-300"
+                                onClick={() => {
+                                  if (confirm("Bu görevi silmek istediğinizden emin misiniz?")) {
+                                    deleteTaskMutation.mutate(task.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
                           </div>
