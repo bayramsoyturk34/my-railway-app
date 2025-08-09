@@ -22,6 +22,11 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Enhanced quote form UI with item addition/removal functionality
   - Implemented automatic total calculation for multi-task quotes
   - Updated backend storage layer for multi-item quote operations
+  - Added unit selection (adet, m², m) for each quote item
+  - Implemented edit/delete functionality for quote items
+  - Added professional quote form design with detailed sections
+  - Implemented Excel (CSV) and PDF export functionality
+  - Enhanced form with visual feedback and better UX
 
 # User Preferences
 

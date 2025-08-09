@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X, Download, FileSpreadsheet } from "lucide-react";
 import { type Customer, type CustomerTask, type CustomerQuote, type CustomerPayment, insertCustomerTaskSchema, insertCustomerQuoteSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerQuote, type InsertCustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -317,8 +317,126 @@ export default function CustomerDetailPage() {
     setQuoteItems(prev => prev.filter(item => item.id !== itemId));
   };
 
+  const editQuoteItem = (itemId: string) => {
+    const item = quoteItems.find(q => q.id === itemId);
+    if (item) {
+      setCurrentItem({
+        title: item.title,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        unit: item.unit
+      });
+      removeQuoteItem(itemId);
+    }
+  };
+
   const calculateTotalAmount = () => {
     return quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
+  };
+
+  const exportToExcel = () => {
+    if (quoteItems.length === 0) {
+      toast({
+        title: "Boş Teklif",
+        description: "Export edilecek görev bulunamadı",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const data = quoteItems.map((item, index) => ({
+      'Sıra': index + 1,
+      'Görev Adı': item.title,
+      'Açıklama': item.description || '-',
+      'Miktar': item.quantity,
+      'Birim': item.unit,
+      'Birim Fiyat (TL)': item.unitPrice.toFixed(2),
+      'Toplam (TL)': item.totalPrice.toFixed(2)
+    }));
+
+    // Add total row
+    data.push({
+      'Sıra': 0,
+      'Görev Adı': 'TOPLAM',
+      'Açıklama': '',
+      'Miktar': 0,
+      'Birim': '',
+      'Birim Fiyat (TL)': '',
+      'Toplam (TL)': calculateTotalAmount().toFixed(2)
+    });
+
+    const csv = [
+      Object.keys(data[0]).join(','),
+      ...data.map(row => Object.values(row).map(val => `"${val}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `teklif_${customer?.name}_${new Date().toLocaleDateString('tr-TR')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Excel Export",
+      description: "Teklif Excel formatında indirildi"
+    });
+  };
+
+  const exportToPDF = async () => {
+    if (quoteItems.length === 0) {
+      toast({
+        title: "Boş Teklif",
+        description: "Export edilecek görev bulunamadı",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Dynamic import to reduce bundle size
+    const jsPDF = (await import('jspdf')).default;
+    const autoTable = (await import('jspdf-autotable')).default;
+
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.text('TEKLİF FORMU', 20, 30);
+    
+    doc.setFontSize(12);
+    doc.text(`Müşteri: ${customer?.name || ''}`, 20, 50);
+    doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 60);
+    doc.text(`Toplam Tutar: ${formatCurrency(calculateTotalAmount().toString())}`, 20, 70);
+
+    // Table
+    const tableData = quoteItems.map((item, index) => [
+      index + 1,
+      item.title,
+      item.description || '-',
+      item.quantity,
+      item.unit,
+      `${item.unitPrice.toFixed(2)} TL`,
+      `${item.totalPrice.toFixed(2)} TL`
+    ]);
+
+    autoTable(doc, {
+      startY: 80,
+      head: [['Sıra', 'Görev Adı', 'Açıklama', 'Miktar', 'Birim', 'Birim Fiyat', 'Toplam']],
+      body: tableData,
+      foot: [['', '', '', '', '', 'TOPLAM:', `${calculateTotalAmount().toFixed(2)} TL`]],
+      theme: 'striped'
+    });
+
+    doc.save(`teklif_${customer?.name}_${new Date().toLocaleDateString('tr-TR')}.pdf`);
+
+    toast({
+      title: "PDF Export",
+      description: "Teklif PDF formatında indirildi"
+    });
   };
 
   const handleQuoteApprove = (quoteId: string) => {
@@ -1053,49 +1171,45 @@ export default function CustomerDetailPage() {
 
       {/* Quote Form Dialog */}
       <Dialog open={showQuoteForm} onOpenChange={handleCloseQuoteForm}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg">{editingQuote ? "Teklif Düzenle" : "Yeni Çoklu Görev Teklifi"}</DialogTitle>
-            <DialogDescription className="text-gray-400 text-sm">
-              Birden fazla görev içeren teklif oluşturun
-            </DialogDescription>
+        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="border-b border-dark-accent pb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-500/20 p-2 rounded-lg">
+                <FileText className="h-5 w-5 text-orange-400" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl text-white">
+                  {editingQuote ? "Teklif Düzenle" : "Yeni Çoklu Görev Teklifi"}
+                </DialogTitle>
+                <DialogDescription className="text-gray-400 text-sm mt-1">
+                  Birden fazla görev içeren kapsamlı teklif oluşturun. Her görev için ayrı miktar, birim ve fiyat belirleyebilirsiniz.
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Teklif Temel Bilgileri */}
-            <Form {...quoteForm}>
-              <div className="space-y-3">
-                <FormField
-                  control={quoteForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white text-sm">Teklif Başlığı</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Teklif başlığı"
-                          className="bg-dark-primary border-dark-accent text-white h-9"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-3">
+            <div className="bg-dark-primary/50 rounded-lg p-4 border border-dark-accent">
+              <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-orange-400" />
+                Teklif Bilgileri
+              </h3>
+              <Form {...quoteForm}>
+                <div className="space-y-4">
                   <FormField
                     control={quoteForm.control}
-                    name="quoteDate"
+                    name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white text-sm">Teklif Tarihi</FormLabel>
+                        <FormLabel className="text-white text-sm font-medium">
+                          Teklif Başlığı *
+                        </FormLabel>
                         <FormControl>
                           <Input 
-                            type="date"
-                            className="bg-dark-primary border-dark-accent text-white h-9"
-                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                            onChange={(e) => field.onChange(new Date(e.target.value))}
+                            placeholder="Örn: Ofis Tadilat Projesi Teklifi"
+                            className="bg-dark-primary border-dark-accent text-white h-10"
+                            {...field} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -1103,18 +1217,65 @@ export default function CustomerDetailPage() {
                     )}
                   />
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={quoteForm.control}
+                      name="quoteDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white text-sm font-medium">
+                            Teklif Tarihi *
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="date"
+                              className="bg-dark-primary border-dark-accent text-white h-10"
+                              value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              onChange={(e) => field.onChange(new Date(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={quoteForm.control}
+                      name="validUntil"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white text-sm font-medium">
+                            Geçerlilik Tarihi
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="date"
+                              className="bg-dark-primary border-dark-accent text-white h-10"
+                              value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <FormField
                     control={quoteForm.control}
-                    name="validUntil"
+                    name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white text-sm">Geçerlilik</FormLabel>
+                        <FormLabel className="text-white text-sm font-medium">
+                          Genel Açıklama
+                        </FormLabel>
                         <FormControl>
-                          <Input 
-                            type="date"
-                            className="bg-dark-primary border-dark-accent text-white h-9"
-                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                            onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                          <Textarea 
+                            placeholder="Teklif hakkında genel bilgiler, şartlar ve notlar"
+                            className="bg-dark-primary border-dark-accent text-white"
+                            rows={3}
+                            {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1122,109 +1283,98 @@ export default function CustomerDetailPage() {
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={quoteForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white text-sm">Teklif Açıklaması</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Genel teklif açıklaması"
-                          className="bg-dark-primary border-dark-accent text-white"
-                          rows={2}
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </Form>
+              </Form>
+            </div>
 
             {/* Görev Ekleme Formu */}
-            <div className="border-t border-dark-accent pt-4">
-              <h4 className="text-white font-medium mb-3">Görev Ekle</h4>
-              <div className="space-y-3">
-                <Input
-                  placeholder="Görev adı"
-                  value={currentItem.title}
-                  onChange={(e) => setCurrentItem(prev => ({ ...prev, title: e.target.value }))}
-                  className="bg-dark-primary border-dark-accent text-white h-9"
-                />
-                <Textarea
-                  placeholder="Görev açıklaması (opsiyonel)"
-                  value={currentItem.description}
-                  onChange={(e) => setCurrentItem(prev => ({ ...prev, description: e.target.value }))}
-                  className="bg-dark-primary border-dark-accent text-white"
-                  rows={2}
-                />
+            <div className="bg-dark-primary/50 rounded-lg p-4 border border-dark-accent">
+              <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                <Plus className="h-4 w-4 text-blue-400" />
+                Görev Ekle
+                <span className="text-xs text-gray-400 ml-2">
+                  (Her görev için ayrı miktar, birim ve fiyat belirleyin)
+                </span>
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    placeholder="Görev adı (Örn: Duvar boyası)"
+                    value={currentItem.title}
+                    onChange={(e) => setCurrentItem(prev => ({ ...prev, title: e.target.value }))}
+                    className="bg-dark-primary border-dark-accent text-white h-10"
+                  />
+                  <Textarea
+                    placeholder="Görev detayları (Opsiyonel)"
+                    value={currentItem.description}
+                    onChange={(e) => setCurrentItem(prev => ({ ...prev, description: e.target.value }))}
+                    className="bg-dark-primary border-dark-accent text-white"
+                    rows={1}
+                  />
+                </div>
                 <div className="grid grid-cols-4 gap-3">
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Miktar</label>
+                    <label className="text-sm text-gray-300 mb-2 block font-medium">Miktar</label>
                     <Input
                       type="number"
                       min="1"
                       value={currentItem.quantity}
                       onChange={(e) => setCurrentItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
-                      className="bg-dark-primary border-dark-accent text-white h-9"
+                      className="bg-dark-primary border-dark-accent text-white h-10"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Birim</label>
+                    <label className="text-sm text-gray-300 mb-2 block font-medium">Birim</label>
                     <Select 
                       value={currentItem.unit} 
                       onValueChange={(value) => setCurrentItem(prev => ({ ...prev, unit: value }))}
                     >
-                      <SelectTrigger className="bg-dark-primary border-dark-accent text-white h-9">
+                      <SelectTrigger className="bg-dark-primary border-dark-accent text-white h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-dark-secondary border-dark-accent">
                         <SelectItem value="adet">Adet</SelectItem>
                         <SelectItem value="m2">m²</SelectItem>
-                        <SelectItem value="m">m</SelectItem>
+                        <SelectItem value="m">m (Metre)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Birim Fiyat (TL)</label>
+                    <label className="text-sm text-gray-300 mb-2 block font-medium">Birim Fiyat (TL)</label>
                     <Input
                       type="number"
                       step="0.01"
                       min="0"
                       value={currentItem.unitPrice}
                       onChange={(e) => setCurrentItem(prev => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 }))}
-                      className="bg-dark-primary border-dark-accent text-white h-9"
+                      className="bg-dark-primary border-dark-accent text-white h-10"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Toplam</label>
-                    <Input
-                      value={(currentItem.quantity * currentItem.unitPrice).toFixed(2)}
-                      disabled
-                      className="bg-dark-primary border-dark-accent text-gray-300 h-9"
-                    />
+                    <label className="text-sm text-gray-300 mb-2 block font-medium">Ara Toplam</label>
+                    <div className="bg-orange-500/20 border border-orange-500/30 rounded-md h-10 flex items-center px-3 text-orange-400 font-medium">
+                      ₺{(currentItem.quantity * currentItem.unitPrice).toFixed(2)}
+                    </div>
                   </div>
                 </div>
                 <Button
                   type="button"
                   onClick={addQuoteItem}
-                  className="w-full bg-blue-500 hover:bg-blue-600 h-9"
+                  className="w-full bg-blue-500 hover:bg-blue-600 h-10"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Görevi Ekle
+                  Listiye Ekle
                 </Button>
               </div>
             </div>
 
             {/* Eklenen Görevler Listesi */}
             {quoteItems.length > 0 && (
-              <div className="border-t border-dark-accent pt-4">
-                <h4 className="text-white font-medium mb-3">Eklenen Görevler ({quoteItems.length})</h4>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="bg-dark-primary/30 rounded-lg p-4 border border-dark-accent">
+                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-green-400" />
+                  Eklenen Görevler ({quoteItems.length})
+                </h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
                   {quoteItems.map((item) => (
                     <div key={item.id} className="bg-dark-primary rounded-lg p-3 border border-dark-accent">
                       <div className="flex justify-between items-start">
@@ -1239,49 +1389,94 @@ export default function CustomerDetailPage() {
                             <span className="text-orange-400 font-medium">{formatCurrency(item.totalPrice.toString())}</span>
                           </div>
                         </div>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeQuoteItem(item.id)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-6 w-6 p-0"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => editQuoteItem(item.id)}
+                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-6 w-6 p-0"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeQuoteItem(item.id)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-6 w-6 p-0"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
                 
-                {/* Toplam Tutar */}
+                {/* Toplam Tutar ve Export Butonları */}
                 <div className="mt-4 pt-3 border-t border-dark-accent">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-3">
                     <span className="text-white font-medium">Toplam Teklif Tutarı:</span>
                     <span className="text-2xl font-bold text-orange-400">
                       {formatCurrency(calculateTotalAmount().toString())}
                     </span>
+                  </div>
+                  
+                  {/* Export Buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={exportToExcel}
+                      className="flex-1 border-green-500 text-green-400 hover:bg-green-500/10 h-8"
+                    >
+                      <FileSpreadsheet className="h-3 w-3 mr-2" />
+                      Excel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={exportToPDF}
+                      className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10 h-8"
+                    >
+                      <Download className="h-3 w-3 mr-2" />
+                      PDF
+                    </Button>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Form Buttons */}
-            <div className="flex gap-3 pt-4 border-t border-dark-accent">
+            <div className="flex gap-3 pt-6 border-t border-dark-accent">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handleCloseQuoteForm}
-                className="flex-1 border-dark-accent text-gray-300 hover:bg-dark-accent h-9"
+                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-600/20 h-11"
               >
                 İptal
               </Button>
               <Button 
                 type="button"
                 onClick={quoteForm.handleSubmit(onSubmitQuote)}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 h-9"
+                className="flex-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 h-11 text-white font-medium"
                 disabled={createQuoteMutation.isPending || updateQuoteMutation.isPending || quoteItems.length === 0}
               >
-                {editingQuote ? "Teklifi Güncelle" : "Teklifi Oluştur"}
+                {createQuoteMutation.isPending || updateQuoteMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {editingQuote ? "Güncelleniyor..." : "Oluşturuluyor..."}
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 mr-2" />
+                    {editingQuote ? "Teklifi Güncelle" : "Teklifi Oluştur"}
+                  </>
+                )}
               </Button>
             </div>
           </div>
