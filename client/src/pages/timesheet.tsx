@@ -27,9 +27,7 @@ export default function TimesheetPage() {
 
   const deleteTimesheetMutation = useMutation({
     mutationFn: async (timesheetId: string) => {
-      await apiRequest(`/api/timesheets/${timesheetId}`, {
-        method: "DELETE",
-      });
+      await apiRequest(`/api/timesheets/${timesheetId}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/timesheets"] });
@@ -120,7 +118,7 @@ export default function TimesheetPage() {
             {timesheets.map((timesheet) => (
               <Card key={timesheet.id} className="bg-dark-secondary border-dark-accent">
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start min-h-0">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <Calendar className="h-5 w-5 text-blue-400" />
@@ -186,25 +184,27 @@ export default function TimesheetPage() {
                     </div>
                     
                     {/* Action Buttons */}
-                    <div className="flex flex-col gap-2 ml-4">
+                    <div className="flex flex-col gap-1 ml-2 flex-shrink-0">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="text-blue-400 hover:text-blue-300 hover:bg-dark-accent h-8 w-8 p-0"
+                        className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 border-blue-500/20 h-10 w-10 p-0"
                         onClick={() => {
                           setEditingTimesheet(timesheet);
                           setShowTimesheetForm(true);
                         }}
+                        title="Düzenle"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-5 w-5" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="text-red-400 hover:text-red-300 hover:bg-dark-accent h-8 w-8 p-0"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/20 h-10 w-10 p-0"
                         onClick={() => handleDeleteTimesheet(timesheet.id)}
+                        title="Sil"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </div>
                   </div>
