@@ -312,6 +312,9 @@ export default function ProjectsPage() {
             <DialogTitle className="text-xl font-semibold">
               {editingProject ? "Proje Düzenle" : "Yeni Proje"}
             </DialogTitle>
+            <p className="text-gray-400 text-sm">
+              Yeni proje bilgilerini girin
+            </p>
           </DialogHeader>
 
           <Form {...form}>
@@ -321,78 +324,11 @@ export default function ProjectsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Proje Adı</FormLabel>
+                    <FormLabel className="text-gray-300">Proje Adı *</FormLabel>
                     <FormControl>
                       <Input
-                        className="bg-dark-primary border-dark-accent text-white"
+                        className="bg-dark-primary border-blue-500 text-white focus:border-blue-400 h-12"
                         placeholder="Proje adını girin"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Tür</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-dark-primary border-dark-accent">
-                          <SelectItem value="received" className="text-white">Alınan</SelectItem>
-                          <SelectItem value="given" className="text-white">Verilen</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Durum</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-dark-primary border-dark-accent">
-                          <SelectItem value="active" className="text-white">Aktif</SelectItem>
-                          <SelectItem value="passive" className="text-white">Pasif</SelectItem>
-                          <SelectItem value="completed" className="text-white">Tamamlandı</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Tutar</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="0.00"
                         {...field}
                       />
                     </FormControl>
@@ -406,42 +342,13 @@ export default function ProjectsPage() {
                 name="clientName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Müşteri Adı</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
-                      value={field.value || "none"}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                          <SelectValue placeholder="Müşteri seçin" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-dark-primary border-dark-accent">
-                        <SelectItem value="none" className="text-white">Müşteri seçmeyin</SelectItem>
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.name} className="text-white">
-                            {customer.name} {customer.company && `(${customer.company})`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Başlangıç Tarihi</FormLabel>
+                    <FormLabel className="text-gray-300">Müşteri</FormLabel>
                     <FormControl>
                       <Input
-                        type="date"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
-                        onChange={(e) => field.onChange(new Date(e.target.value))}
+                        className="bg-dark-primary border-blue-500 text-white focus:border-blue-400 h-12"
+                        placeholder="Müşteri adını girin"
+                        {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -454,22 +361,61 @@ export default function ProjectsPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Açıklama</FormLabel>
+                    <FormLabel className="text-gray-300">Şirket</FormLabel>
                     <FormControl>
-                      <Textarea
-                        className="bg-dark-primary border-dark-accent text-white h-20"
-                        placeholder="Proje açıklaması"
+                      <Input
+                        className="bg-dark-primary border-blue-500 text-white focus:border-blue-400 h-12"
+                        placeholder="Şirket adını girin"
+                        {...field}
                         value={field.value || ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Telefon</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          className="bg-dark-primary border-dark-accent text-white h-12"
+                          placeholder="Telefon numarası"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">E-posta</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          className="bg-dark-primary border-dark-accent text-white h-12"
+                          placeholder="E-posta adresi"
+                          value=""
+                          onChange={() => {}}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="flex gap-3">
                 <Button
