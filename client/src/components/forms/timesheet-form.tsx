@@ -10,6 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface TimesheetFormProps {
@@ -22,8 +26,9 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | null>(null);
+  const [selectedPersonnelIds, setSelectedPersonnelIds] = useState<string[]>([]);
   const [workType, setWorkType] = useState<string>("");
+  const [showPersonnelDropdown, setShowPersonnelDropdown] = useState(false);
 
   const form = useForm<InsertTimesheet>({
     resolver: zodResolver(insertTimesheetSchema),
@@ -50,46 +55,10 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
     queryKey: ["/api/customers"],
   });
 
-  // Çalışma şekli değiştiğinde ücret hesapla
-  useEffect(() => {
-    if (selectedPersonnel && workType) {
-      const salary = parseFloat(selectedPersonnel.salary || "0");
-      const dailyWage = salary / 30;
-      
-      let totalHours = "8.00";
-      let hourlyRate = "0.00";
-      let calculatedWage = "0.00";
-      
-      switch (workType) {
-        case "tam":
-          totalHours = "8.00";
-          calculatedWage = dailyWage.toFixed(2);
-          hourlyRate = (dailyWage / 8).toFixed(2);
-          break;
-        case "yarim":
-          totalHours = "4.00";
-          calculatedWage = (dailyWage / 2).toFixed(2);
-          hourlyRate = (dailyWage / 8).toFixed(2);
-          break;
-        case "mesai":
-          const overtimeHours = parseFloat(form.watch("overtimeHours") || "0");
-          totalHours = overtimeHours.toFixed(2);
-          hourlyRate = (dailyWage / 8).toFixed(2); // Mesai normal ücret
-          calculatedWage = (parseFloat(hourlyRate) * overtimeHours).toFixed(2);
-          break;
-      }
-      
-      form.setValue("totalHours", totalHours);
-      form.setValue("hourlyRate", hourlyRate);
-      form.setValue("dailyWage", calculatedWage);
-    }
-  }, [selectedPersonnel, workType]);
-
   // Düzenleme modunda form değerlerini güncelle
   useEffect(() => {
     if (editingTimesheet) {
-      const person = personnel.find(p => p.id === editingTimesheet.personnelId);
-      setSelectedPersonnel(person || null);
+      setSelectedPersonnelIds([editingTimesheet.personnelId || ""]);
       setWorkType(editingTimesheet.workType || "tam");
       
       form.reset({
@@ -106,8 +75,8 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
         notes: editingTimesheet.notes || "",
       });
     } else {
-      setSelectedPersonnel(null);
-      setWorkType("");
+      setSelectedPersonnelIds([]);
+      setWorkType("tam");
       form.reset({
         personnelId: "",
         customerId: "",
@@ -122,39 +91,133 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
         notes: "",
       });
     }
-  }, [editingTimesheet, personnel, form]);
+  }, [editingTimesheet, personnel]);
+
+
 
   const createTimesheetMutation = useMutation({
     mutationFn: async (data: InsertTimesheet) => {
-      const url = editingTimesheet ? `/api/timesheets/${editingTimesheet.id}` : "/api/timesheets";
-      const method = editingTimesheet ? "PUT" : "POST";
-      const response = await apiRequest(url, method, data);
-      return response.json();
+      if (editingTimesheet) {
+        // Düzenleme modu - tek kayıt güncelle
+        const response = await apiRequest(`/api/timesheets/${editingTimesheet.id}`, "PUT", data);
+        return response.json();
+      } else {
+        // Yeni kayıt modu - seçili personeller için toplu kayıt
+        const promises = selectedPersonnelIds.map(async (personnelId) => {
+          const personnelData = personnel.find(p => p.id === personnelId);
+          if (!personnelData) return null;
+          
+          const salary = parseFloat(personnelData.salary || "0");
+          const dailyWage = salary / 30;
+          
+          let totalHours = "8.00";
+          let hourlyRate = "0.00";
+          let calculatedWage = "0.00";
+          
+          switch (workType) {
+            case "tam":
+              totalHours = "8.00";
+              calculatedWage = dailyWage.toFixed(2);
+              hourlyRate = (dailyWage / 8).toFixed(2);
+              break;
+            case "yarim":
+              totalHours = "4.00";
+              calculatedWage = (dailyWage / 2).toFixed(2);
+              hourlyRate = (dailyWage / 8).toFixed(2);
+              break;
+            case "mesai":
+              const overtimeHours = parseFloat(data.overtimeHours || "0");
+              totalHours = overtimeHours.toFixed(2);
+              hourlyRate = (dailyWage / 8).toFixed(2);
+              calculatedWage = (parseFloat(hourlyRate) * overtimeHours).toFixed(2);
+              break;
+          }
+          
+          const timesheetData = {
+            ...data,
+            personnelId,
+            totalHours,
+            hourlyRate,
+            dailyWage: calculatedWage,
+            workType,
+          };
+          
+          const response = await apiRequest("/api/timesheets", "POST", timesheetData);
+          return response.json();
+        });
+        
+        const results = await Promise.all(promises);
+        return results.filter(r => r !== null);
+      }
     },
-    onSuccess: () => {
+    onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ["/api/timesheets"] });
+      const count = editingTimesheet ? 1 : selectedPersonnelIds.length;
       toast({
         title: "Başarılı",
-        description: editingTimesheet ? "Puantaj kaydı güncellendi." : "Puantaj kaydı oluşturuldu.",
+        description: editingTimesheet 
+          ? "Puantaj kaydı güncellendi." 
+          : `${count} personel için puantaj kaydı oluşturuldu.`,
       });
       form.reset();
-      setSelectedPersonnel(null);
-      setWorkType("");
+      setSelectedPersonnelIds([]);
+      setWorkType("tam");
       onOpenChange(false);
     },
     onError: () => {
       toast({
         title: "Hata",
-        description: editingTimesheet ? "Puantaj kaydı güncellenemedi." : "Puantaj kaydı oluşturulamadı.",
+        description: editingTimesheet ? "Puantaj kaydı güncellenemedi." : "Puantaj kayıtları oluşturulamadı.",
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: InsertTimesheet) => {
-    console.log("Submitting timesheet data:", data);
+    // Düzenleme modunda validation
+    if (editingTimesheet) {
+      createTimesheetMutation.mutate(data);
+      return;
+    }
+    
+    // Yeni kayıt modunda multi-selection validation
+    if (selectedPersonnelIds.length === 0) {
+      toast({
+        title: "Uyarı",
+        description: "Lütfen en az bir personel seçin.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!workType) {
+      toast({
+        title: "Uyarı", 
+        description: "Lütfen çalışma şekli seçin.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log("Submitting timesheet data for personnel:", selectedPersonnelIds);
     createTimesheetMutation.mutate(data);
   };
+  
+  const togglePersonnelSelection = (personnelId: string) => {
+    setSelectedPersonnelIds(prev => {
+      if (prev.includes(personnelId)) {
+        return prev.filter(id => id !== personnelId);
+      } else {
+        return [...prev, personnelId];
+      }
+    });
+  };
+  
+  const removePersonnel = (personnelId: string) => {
+    setSelectedPersonnelIds(prev => prev.filter(id => id !== personnelId));
+  };
+  
+  const selectedPersonnelList = personnel.filter(p => selectedPersonnelIds.includes(p.id));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -167,34 +230,95 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="personnelId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Personel Seç</FormLabel>
-                  <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    const person = personnel.find(p => p.id === value);
-                    setSelectedPersonnel(person || null);
-                  }} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                        <SelectValue placeholder="Personel seçin" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-dark-primary border-dark-accent">
-                      {personnel.map((person) => (
-                        <SelectItem key={person.id} value={person.id} className="text-white">
+            {!editingTimesheet && (
+              <div className="space-y-3">
+                <FormLabel className="text-gray-300">Personel Seç</FormLabel>
+                
+                {/* Seçili Personeller */}
+                {selectedPersonnelList.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-400">Seçili Personeller:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPersonnelList.map((person) => (
+                        <Badge
+                          key={person.id}
+                          variant="secondary"
+                          className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1"
+                        >
                           {person.name}
-                        </SelectItem>
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => removePersonnel(person.id)}
+                          />
+                        </Badge>
                       ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Personel Listesi */}
+                <div className="space-y-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start bg-dark-primary border-dark-accent text-white hover:bg-dark-accent"
+                    onClick={() => setShowPersonnelDropdown(!showPersonnelDropdown)}
+                  >
+                    {selectedPersonnelIds.length > 0 
+                      ? `${selectedPersonnelIds.length} personel seçildi` 
+                      : "Personel seçin"}
+                  </Button>
+                  
+                  {showPersonnelDropdown && (
+                    <ScrollArea className="h-40 w-full border border-dark-accent rounded-md bg-dark-primary">
+                      <div className="p-2 space-y-1">
+                        {personnel.map((person) => (
+                          <div
+                            key={person.id}
+                            className="flex items-center space-x-2 cursor-pointer hover:bg-dark-accent p-2 rounded"
+                            onClick={() => togglePersonnelSelection(person.id)}
+                          >
+                            <Checkbox
+                              checked={selectedPersonnelIds.includes(person.id)}
+                              onChange={() => {}}
+                              className="border-gray-400"
+                            />
+                            <span className="text-white text-sm">{person.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {editingTimesheet && (
+              <FormField
+                control={form.control}
+                name="personnelId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Personel</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                          <SelectValue placeholder="Personel seçin" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-dark-primary border-dark-accent">
+                        {personnel.map((person) => (
+                          <SelectItem key={person.id} value={person.id} className="text-white">
+                            {person.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
@@ -221,31 +345,49 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="workType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Çalışma Şekli</FormLabel>
-                  <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    setWorkType(value);
-                  }} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                        <SelectValue placeholder="Çalışma şekli seçin" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-dark-primary border-dark-accent">
-                      <SelectItem value="tam" className="text-white">TAM GÜN</SelectItem>
-                      <SelectItem value="yarim" className="text-white">YARIM GÜN</SelectItem>
-                      <SelectItem value="mesai" className="text-white">MESAİ</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!editingTimesheet && (
+              <div className="space-y-2">
+                <FormLabel className="text-gray-300">Çalışma Şekli</FormLabel>
+                <Select onValueChange={setWorkType} value={workType}>
+                  <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                    <SelectValue placeholder="Çalışma şekli seçin" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-dark-primary border-dark-accent">
+                    <SelectItem value="tam" className="text-white">TAM GÜN</SelectItem>
+                    <SelectItem value="yarim" className="text-white">YARIM GÜN</SelectItem>
+                    <SelectItem value="mesai" className="text-white">MESAİ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {editingTimesheet && (
+              <FormField
+                control={form.control}
+                name="workType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Çalışma Şekli</FormLabel>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      setWorkType(value);
+                    }} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                          <SelectValue placeholder="Çalışma şekli seçin" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-dark-primary border-dark-accent">
+                        <SelectItem value="tam" className="text-white">TAM GÜN</SelectItem>
+                        <SelectItem value="yarim" className="text-white">YARIM GÜN</SelectItem>
+                        <SelectItem value="mesai" className="text-white">MESAİ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
@@ -295,8 +437,30 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               />
             )}
 
-            {/* Ücret Bilgileri */}
-            {selectedPersonnel && workType && (
+            {/* Ücret Bilgileri - Multi-selection Preview */}
+            {!editingTimesheet && selectedPersonnelIds.length > 0 && workType && (
+              <div className="bg-dark-accent p-4 rounded-lg space-y-2">
+                <h4 className="text-white font-medium">Ücret Önizlemesi ({selectedPersonnelIds.length} personel)</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-400">Çalışma Şekli:</span>
+                    <p className="text-white">
+                      {workType === "tam" ? "Tam Gün (8h)" : workType === "yarim" ? "Yarım Gün (4h)" : `Mesai (${form.watch("overtimeHours") || 0}h)`}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Toplam Personel:</span>
+                    <p className="text-blue-400">{selectedPersonnelIds.length} kişi</p>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 mt-2">
+                  * Her personelin kendi maaşına göre ücret hesaplanacak
+                </div>
+              </div>
+            )}
+
+            {/* Ücret Bilgileri - Edit Mode */}
+            {editingTimesheet && workType && (
               <div className="bg-dark-accent p-4 rounded-lg space-y-2">
                 <h4 className="text-white font-medium">Ücret Bilgileri</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
