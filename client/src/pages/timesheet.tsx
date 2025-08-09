@@ -96,18 +96,18 @@ export default function TimesheetPage() {
                         </h4>
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-7 gap-4 text-sm">
                         <div>
                           <p className="text-gray-400">Tarih</p>
                           <p className="text-white font-medium">{formatDate(timesheet.date)}</p>
                         </div>
                         <div>
                           <p className="text-gray-400">Giriş</p>
-                          <p className="text-white font-medium">{formatTime(timesheet.startTime)}</p>
+                          <p className="text-white font-medium">{formatTime(timesheet.startTime || "08:00")}</p>
                         </div>
                         <div>
                           <p className="text-gray-400">Çıkış</p>
-                          <p className="text-white font-medium">{formatTime(timesheet.endTime)}</p>
+                          <p className="text-white font-medium">{formatTime(timesheet.endTime || "17:00")}</p>
                         </div>
                         <div>
                           <p className="text-gray-400">Normal Saat</p>
@@ -119,6 +119,26 @@ export default function TimesheetPage() {
                             {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 
                               ? `${timesheet.overtimeHours}h` 
                               : "0h"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Günlük Ücret</p>
+                          <p className="text-green-400 font-medium">
+                            ₺{parseFloat(timesheet.dailyWage || "0").toLocaleString('tr-TR', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2
+                            })}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Mesai Ücreti</p>
+                          <p className="text-yellow-400 font-medium">
+                            {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 
+                              ? `₺${(parseFloat(timesheet.hourlyRate || "0") * parseFloat(timesheet.overtimeHours || "0")).toLocaleString('tr-TR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })}`
+                              : "₺0,00"}
                           </p>
                         </div>
                       </div>
