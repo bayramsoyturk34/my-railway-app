@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Clock, Edit, Trash2 } from "lucide-react";
 import { type Timesheet, type Personnel } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/layout/header";
 import TimesheetForm from "@/components/forms/timesheet-form";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,9 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function TimesheetPage() {
   const [, setLocation] = useLocation();
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
+  const [editingTimesheet, setEditingTimesheet] = useState<Timesheet | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: timesheets = [], isLoading: timesheetsLoading } = useQuery<Timesheet[]>({
     queryKey: ["/api/timesheets"],
@@ -19,6 +24,34 @@ export default function TimesheetPage() {
   const { data: personnel = [] } = useQuery<Personnel[]>({
     queryKey: ["/api/personnel"],
   });
+
+  const deleteTimesheetMutation = useMutation({
+    mutationFn: async (timesheetId: string) => {
+      await apiRequest(`/api/timesheets/${timesheetId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/timesheets"] });
+      toast({
+        title: "Başarılı",
+        description: "Puantaj kaydı başarıyla silindi.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Hata",
+        description: "Puantaj kaydı silinirken bir hata oluştu.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteTimesheet = (timesheetId: string) => {
+    if (confirm("Bu puantaj kaydını silmek istediğinizden emin misiniz?")) {
+      deleteTimesheetMutation.mutate(timesheetId);
+    }
+  };
 
   const getPersonnelName = (personnelId: string) => {
     const person = personnel.find(p => p.id === personnelId);
@@ -89,34 +122,31 @@ export default function TimesheetPage() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <Calendar className="h-5 w-5 text-blue-400" />
-                          <h4 className="text-white font-medium text-lg">
-                            {getPersonnelName(timesheet.personnelId)}
-                          </h4>
-                        </div>
-                        <div className="flex gap-4 text-sm">
-                          <div className="text-right">
-                            <p className="text-gray-400">Günlük Ücret</p>
-                            <p className="text-green-400 font-medium">
-                              ₺{parseFloat(timesheet.dailyWage || "0").toLocaleString('tr-TR', {
+                      <div className="flex items-center gap-3 mb-3">
+                        <Calendar className="h-5 w-5 text-blue-400" />
+                        <h4 className="text-white font-medium text-lg">
+                          {getPersonnelName(timesheet.personnelId)}
+                        </h4>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-4 text-sm">
+                            <span className="text-green-400 font-medium">
+                              Günlük: ₺{parseFloat(timesheet.dailyWage || "0").toLocaleString('tr-TR', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                               })}
-                            </p>
-                          </div>
-                          {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 && (
-                            <div className="text-right">
-                              <p className="text-gray-400">Mesai Ücreti</p>
-                              <p className="text-yellow-400 font-medium">
-                                ₺{(parseFloat(timesheet.hourlyRate || "0") * parseFloat(timesheet.overtimeHours || "0")).toLocaleString('tr-TR', {
+                            </span>
+                            {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 && (
+                              <span className="text-yellow-400 font-medium">
+                                Mesai: ₺{(parseFloat(timesheet.hourlyRate || "0") * parseFloat(timesheet.overtimeHours || "0")).toLocaleString('tr-TR', {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2
                                 })}
-                              </p>
-                            </div>
-                          )}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       
@@ -154,6 +184,29 @@ export default function TimesheetPage() {
                         </div>
                       )}
                     </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-400 hover:text-blue-300 hover:bg-dark-accent h-8 w-8 p-0"
+                        onClick={() => {
+                          setEditingTimesheet(timesheet);
+                          setShowTimesheetForm(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-dark-accent h-8 w-8 p-0"
+                        onClick={() => handleDeleteTimesheet(timesheet.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -164,7 +217,13 @@ export default function TimesheetPage() {
 
       <TimesheetForm 
         open={showTimesheetForm} 
-        onOpenChange={setShowTimesheetForm} 
+        onOpenChange={(open) => {
+          setShowTimesheetForm(open);
+          if (!open) {
+            setEditingTimesheet(null);
+          }
+        }}
+        editingTimesheet={editingTimesheet}
       />
     </div>
   );

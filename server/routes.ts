@@ -175,6 +175,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/timesheets/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log("Timesheet update request body:", req.body);
+      // Convert string date to Date object
+      const processedBody = {
+        ...req.body,
+        date: new Date(req.body.date)
+      };
+      const validatedData = insertTimesheetSchema.parse(processedBody);
+      const timesheet = await storage.updateTimesheet(id, validatedData);
+      if (!timesheet) {
+        return res.status(404).json({ message: "Timesheet not found" });
+      }
+      res.json(timesheet);
+    } catch (error) {
+      console.error("Timesheet update error:", error);
+      res.status(400).json({ message: "Invalid timesheet data", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  app.delete("/api/timesheets/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteTimesheet(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Timesheet not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete timesheet" });
+    }
+  });
+
   // Transactions routes
   app.get("/api/transactions", async (req, res) => {
     try {
