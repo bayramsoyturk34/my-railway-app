@@ -89,14 +89,38 @@ export default function TimesheetPage() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Calendar className="h-5 w-5 text-blue-400" />
-                        <h4 className="text-white font-medium text-lg">
-                          {getPersonnelName(timesheet.personnelId)}
-                        </h4>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <Calendar className="h-5 w-5 text-blue-400" />
+                          <h4 className="text-white font-medium text-lg">
+                            {getPersonnelName(timesheet.personnelId)}
+                          </h4>
+                        </div>
+                        <div className="flex gap-4 text-sm">
+                          <div className="text-right">
+                            <p className="text-gray-400">Günlük Ücret</p>
+                            <p className="text-green-400 font-medium">
+                              ₺{parseFloat(timesheet.dailyWage || "0").toLocaleString('tr-TR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })}
+                            </p>
+                          </div>
+                          {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 && (
+                            <div className="text-right">
+                              <p className="text-gray-400">Mesai Ücreti</p>
+                              <p className="text-yellow-400 font-medium">
+                                ₺{(parseFloat(timesheet.hourlyRate || "0") * parseFloat(timesheet.overtimeHours || "0")).toLocaleString('tr-TR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-7 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                         <div>
                           <p className="text-gray-400">Tarih</p>
                           <p className="text-white font-medium">{formatDate(timesheet.date)}</p>
@@ -119,26 +143,6 @@ export default function TimesheetPage() {
                             {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 
                               ? `${timesheet.overtimeHours}h` 
                               : "0h"}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Günlük Ücret</p>
-                          <p className="text-green-400 font-medium">
-                            ₺{parseFloat(timesheet.dailyWage || "0").toLocaleString('tr-TR', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Mesai Ücreti</p>
-                          <p className="text-yellow-400 font-medium">
-                            {timesheet.overtimeHours && parseFloat(timesheet.overtimeHours) > 0 
-                              ? `₺${(parseFloat(timesheet.hourlyRate || "0") * parseFloat(timesheet.overtimeHours || "0")).toLocaleString('tr-TR', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2
-                                })}`
-                              : "₺0,00"}
                           </p>
                         </div>
                       </div>
