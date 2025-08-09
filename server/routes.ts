@@ -700,11 +700,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/customer-quote-items", async (req, res) => {
     try {
-      const validatedData = insertCustomerQuoteItemSchema.parse(req.body);
+      console.log("Quote item request body:", req.body);
+      
+      // Convert numeric values to strings for decimal fields
+      const processedBody = {
+        ...req.body,
+        unitPrice: req.body.unitPrice?.toString() || "0",
+        totalPrice: req.body.totalPrice?.toString() || "0",
+        quantity: parseInt(req.body.quantity) || 1
+      };
+      
+      console.log("Processed quote item body:", processedBody);
+      const validatedData = insertCustomerQuoteItemSchema.parse(processedBody);
       const item = await storage.createCustomerQuoteItem(validatedData);
       res.status(201).json(item);
     } catch (error) {
-      res.status(400).json({ message: "Invalid quote item data" });
+      console.error("Quote item validation error:", error);
+      res.status(400).json({ 
+        message: "Invalid quote item data", 
+        error: error instanceof Error ? error.message : String(error),
+        originalBody: req.body 
+      });
     }
   });
 
