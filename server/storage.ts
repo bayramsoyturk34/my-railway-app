@@ -392,6 +392,18 @@ export class MemStorage implements IStorage {
 
   async createCustomerTask(insertTask: InsertCustomerTask): Promise<CustomerTask> {
     const id = randomUUID();
+    
+    // Calculate VAT amounts if VAT is enabled
+    let vatAmount = "0";
+    let totalWithVAT = insertTask.amount;
+    
+    if (insertTask.hasVAT && insertTask.vatRate) {
+      const amount = parseFloat(insertTask.amount.toString());
+      const rate = parseFloat(insertTask.vatRate.toString());
+      vatAmount = (amount * rate / 100).toFixed(2);
+      totalWithVAT = (amount + parseFloat(vatAmount)).toFixed(2);
+    }
+    
     const task: CustomerTask = {
       ...insertTask,
       id,
@@ -399,6 +411,10 @@ export class MemStorage implements IStorage {
       description: insertTask.description || null,
       dueDate: insertTask.dueDate || null,
       status: insertTask.status || "pending",
+      hasVAT: insertTask.hasVAT || false,
+      vatRate: insertTask.vatRate || "20.00",
+      vatAmount,
+      totalWithVAT,
     };
     this.customerTasks.set(id, task);
     return task;
@@ -408,7 +424,30 @@ export class MemStorage implements IStorage {
     const task = this.customerTasks.get(id);
     if (!task) return undefined;
 
-    const updated = { ...task, ...updates };
+    // Recalculate VAT if amount, hasVAT, or vatRate changed
+    let vatAmount = task.vatAmount;
+    let totalWithVAT = task.totalWithVAT;
+    
+    const finalAmount = updates.amount !== undefined ? updates.amount : task.amount;
+    const finalHasVAT = updates.hasVAT !== undefined ? updates.hasVAT : task.hasVAT;
+    const finalVatRate = updates.vatRate !== undefined ? updates.vatRate : task.vatRate;
+    
+    if (finalHasVAT && finalVatRate) {
+      const amount = parseFloat(finalAmount.toString());
+      const rate = parseFloat(finalVatRate.toString());
+      vatAmount = (amount * rate / 100).toFixed(2);
+      totalWithVAT = (amount + parseFloat(vatAmount)).toFixed(2);
+    } else {
+      vatAmount = "0";
+      totalWithVAT = finalAmount;
+    }
+
+    const updated = { 
+      ...task, 
+      ...updates, 
+      vatAmount, 
+      totalWithVAT 
+    };
     this.customerTasks.set(id, updated);
     return updated;
   }

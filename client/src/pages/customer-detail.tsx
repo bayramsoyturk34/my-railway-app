@@ -465,15 +465,13 @@ export default function CustomerDetailPage() {
     doc.setFontSize(12);
     const { subtotal, vatAmount, total } = getQuoteTotals();
     
-    doc.text(`Müşteri: ${customer?.name || ''}`, 20, 50);
-    doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 60);
-    doc.text(`Ara Toplam: ${formatCurrency(subtotal.toString())}`, 20, 70);
-    if (hasVAT) {
-      doc.text(`KDV (%${vatRate}): ${formatCurrency(vatAmount.toString())}`, 20, 80);
-      doc.text(`Genel Toplam: ${formatCurrency(total.toString())}`, 20, 90);
-    } else {
-      doc.text(`Genel Toplam: ${formatCurrency(total.toString())}`, 20, 80);
-    }
+    const today = new Date();
+    const validityDate = new Date(today);
+    validityDate.setDate(today.getDate() + 30); // 30 gün geçerlilik
+    
+    doc.text(`Sayın: ${customer?.name || ''}`, 20, 50);
+    doc.text(`Teklif Tarihi: ${today.toLocaleDateString('tr-TR')}`, 20, 60);
+    doc.text(`Geçerlilik Tarihi: ${validityDate.toLocaleDateString('tr-TR')}`, 20, 70);
 
     // Table
     const tableData = quoteItems.map((item, index) => [
@@ -486,7 +484,7 @@ export default function CustomerDetailPage() {
       `${item.totalPrice.toFixed(2)} TL`
     ]);
 
-    const startY = hasVAT ? 100 : 90;
+    const startY = 90;
     const footerData = [];
     
     footerData.push(['', '', '', '', '', 'ARA TOPLAM:', `${subtotal.toFixed(2)} TL`]);
@@ -501,6 +499,23 @@ export default function CustomerDetailPage() {
       body: tableData,
       foot: footerData,
       theme: 'striped'
+    });
+
+    // Teklif Şartları
+    const finalY = (doc as any).lastAutoTable.finalY || startY + 100;
+    doc.setFontSize(14);
+    doc.text('TEKLİF ŞARTLARI', 20, finalY + 20);
+    doc.setFontSize(10);
+    const terms = [
+      '• Bu teklif 30 gün süreyle geçerlidir.',
+      '• Fiyatlar KDV dahildir/hariçtir.',
+      '• Ödeme şartları: %50 peşin, %50 teslimatta.',
+      '• İş süresi: Anlaşma imzalandıktan sonra 15 iş günü.',
+      '• Force majeure durumlarında süre uzayabilir.'
+    ];
+    
+    terms.forEach((term, index) => {
+      doc.text(term, 20, finalY + 35 + (index * 8));
     });
 
     doc.save(`teklif_${customer?.name}_${new Date().toLocaleDateString('tr-TR')}.pdf`);
@@ -721,10 +736,24 @@ export default function CustomerDetailPage() {
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div>
-                            <p className="text-gray-400">Tutar</p>
+                            <p className="text-gray-400">Ana Tutar</p>
                             <p className="text-white font-semibold">{formatCurrency(task.amount)}</p>
+                            {task.hasVAT && (
+                              <p className="text-xs text-gray-400">
+                                KDV (%{task.vatRate}): {formatCurrency(task.vatAmount || "0")}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Toplam Tutar</p>
+                            <p className="text-green-400 font-bold">
+                              {formatCurrency(task.hasVAT && task.totalWithVAT ? task.totalWithVAT : task.amount)}
+                            </p>
+                            {task.hasVAT && (
+                              <p className="text-xs text-blue-400">KDV Dahil</p>
+                            )}
                           </div>
                           {task.dueDate && (
                             <div>
@@ -1104,6 +1133,88 @@ export default function CustomerDetailPage() {
                 )}
               />
 
+              {/* KDV Seçenekleri */}
+              <div className="border-t border-dark-accent pt-4">
+                <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-blue-400" />
+                  KDV Ayarları
+                </h4>
+                <div className="space-y-3">
+                  <FormField
+                    control={taskForm.control}
+                    name="hasVAT"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-3">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value || false}
+                            onChange={field.onChange}
+                            className="w-4 h-4 text-blue-600 bg-dark-primary border-dark-accent rounded focus:ring-blue-500"
+                          />
+                        </FormControl>
+                        <FormLabel className="text-white text-sm font-medium">
+                          KDV Dahil Et
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {taskForm.watch("hasVAT") && (
+                    <FormField
+                      control={taskForm.control}
+                      name="vatRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">KDV Oranı (%)</FormLabel>
+                          <div className="grid grid-cols-3 gap-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => field.onChange("18")}
+                              className={`${
+                                field.value === "18" 
+                                  ? 'bg-blue-500 border-blue-500 text-white' 
+                                  : 'border-dark-accent text-gray-300 hover:border-blue-500'
+                              }`}
+                            >
+                              %18
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => field.onChange("20")}
+                              className={`${
+                                field.value === "20" 
+                                  ? 'bg-blue-500 border-blue-500 text-white' 
+                                  : 'border-dark-accent text-gray-300 hover:border-blue-500'
+                              }`}
+                            >
+                              %20
+                            </Button>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                placeholder="Özel"
+                                className="bg-dark-primary border-dark-accent text-white text-sm"
+                                value={field.value || ""}
+                                onChange={(e) => field.onChange(e.target.value)}
+                              />
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <Button
                   type="button"
@@ -1269,6 +1380,18 @@ export default function CustomerDetailPage() {
               </h3>
               <Form {...quoteForm}>
                 <div className="space-y-4">
+                  {/* Sayın Alanı */}
+                  <div>
+                    <label className="text-white text-sm font-medium block mb-2">
+                      Sayın
+                    </label>
+                    <Input 
+                      value={customer?.name || ""}
+                      disabled
+                      className="bg-dark-primary border-dark-accent text-gray-300 h-10"
+                    />
+                  </div>
+
                   <FormField
                     control={quoteForm.control}
                     name="title"
@@ -1296,7 +1419,7 @@ export default function CustomerDetailPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-white text-sm font-medium">
-                            Teklif Tarihi *
+                            Teklif Tarihi
                           </FormLabel>
                           <FormControl>
                             <Input 
@@ -1550,27 +1673,11 @@ export default function CustomerDetailPage() {
                 
                 {/* Toplam Tutar ve Export Butonları */}
                 <div className="mt-4 pt-3 border-t border-dark-accent">
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300 text-sm">Ara Toplam:</span>
-                      <span className="text-white font-medium">
-                        {formatCurrency(getQuoteTotals().subtotal.toString())}
-                      </span>
-                    </div>
-                    {hasVAT && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300 text-sm">KDV (%{vatRate}):</span>
-                        <span className="text-white font-medium">
-                          {formatCurrency(getQuoteTotals().vatAmount.toString())}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center pt-2 border-t border-dark-accent">
-                      <span className="text-white font-bold">Genel Toplam:</span>
-                      <span className="text-2xl font-bold text-orange-400">
-                        {formatCurrency(getQuoteTotals().total.toString())}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-white font-bold">Toplam Teklif Tutarı:</span>
+                    <span className="text-2xl font-bold text-orange-400">
+                      {formatCurrency(getQuoteTotals().total.toString())}
+                    </span>
                   </div>
                   
                   {/* Export Buttons */}
@@ -1599,6 +1706,36 @@ export default function CustomerDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Teklif Şartları */}
+            <div className="bg-dark-primary/50 rounded-lg p-4 border border-dark-accent">
+              <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-blue-400" />
+                Teklif Şartları
+              </h3>
+              <div className="space-y-2 text-sm text-gray-300">
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-400 mt-1">•</span>
+                  <span>Bu teklif 30 gün süreyle geçerlidir.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-400 mt-1">•</span>
+                  <span>Fiyatlar {hasVAT ? 'KDV dahildir' : 'KDV hariçtir'}.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-400 mt-1">•</span>
+                  <span>Ödeme şartları: %50 peşin, %50 teslimatta.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-400 mt-1">•</span>
+                  <span>İş süresi: Anlaşma imzalandıktan sonra 15 iş günü.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-400 mt-1">•</span>
+                  <span>Force majeure durumlarında süre uzayabilir.</span>
+                </div>
+              </div>
+            </div>
 
             {/* Form Buttons */}
             <div className="flex gap-3 pt-6 border-t border-dark-accent">
