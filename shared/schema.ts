@@ -102,11 +102,24 @@ export const customerQuotes = pgTable("customer_quotes", {
   customerId: varchar("customer_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("pending"), // "pending", "approved", "rejected"
   isApproved: boolean("is_approved").default(false),
   quoteDate: timestamp("quote_date").notNull(),
   validUntil: timestamp("valid_until"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Customer Quote Items (Teklif Kalemleri)
+export const customerQuoteItems = pgTable("customer_quote_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quoteId: varchar("quote_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
@@ -255,9 +268,15 @@ export const insertCustomerTaskSchema = createInsertSchema(customerTasks).omit({
 export const insertCustomerQuoteSchema = createInsertSchema(customerQuotes).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 }).extend({
   description: z.string().optional().nullable(),
   validUntil: z.date().optional().nullable(),
+});
+
+export const insertCustomerQuoteItemSchema = createInsertSchema(customerQuoteItems).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertCustomerPaymentSchema = createInsertSchema(customerPayments).omit({
@@ -348,6 +367,9 @@ export type InsertCustomerTask = z.infer<typeof insertCustomerTaskSchema>;
 
 export type CustomerQuote = typeof customerQuotes.$inferSelect;
 export type InsertCustomerQuote = z.infer<typeof insertCustomerQuoteSchema>;
+
+export type CustomerQuoteItem = typeof customerQuoteItems.$inferSelect;
+export type InsertCustomerQuoteItem = z.infer<typeof insertCustomerQuoteItemSchema>;
 
 export type CustomerPayment = typeof customerPayments.$inferSelect;
 export type InsertCustomerPayment = z.infer<typeof insertCustomerPaymentSchema>;

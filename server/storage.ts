@@ -8,12 +8,13 @@ import {
   type Customer, type InsertCustomer,
   type CustomerTask, type InsertCustomerTask,
   type CustomerQuote, type InsertCustomerQuote,
+  type CustomerQuoteItem, type InsertCustomerQuoteItem,
   type CustomerPayment, type InsertCustomerPayment,
   type ContractorTask, type InsertContractorTask,
   type ContractorPayment, type InsertContractorPayment,
   type PersonnelPayment, type InsertPersonnelPayment,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
-  customerTasks, customerQuotes, customerPayments, contractorTasks, contractorPayments, personnelPayments
+  customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -79,6 +80,13 @@ export interface IStorage {
   createCustomerQuote(quote: InsertCustomerQuote): Promise<CustomerQuote>;
   updateCustomerQuote(id: string, quote: Partial<InsertCustomerQuote>): Promise<CustomerQuote | undefined>;
   deleteCustomerQuote(id: string): Promise<boolean>;
+  
+  // Customer Quote Items
+  getCustomerQuoteItems(): Promise<CustomerQuoteItem[]>;
+  getCustomerQuoteItemsByQuoteId(quoteId: string): Promise<CustomerQuoteItem[]>;
+  createCustomerQuoteItem(item: InsertCustomerQuoteItem): Promise<CustomerQuoteItem>;
+  updateCustomerQuoteItem(id: string, item: Partial<InsertCustomerQuoteItem>): Promise<CustomerQuoteItem | undefined>;
+  deleteCustomerQuoteItem(id: string): Promise<boolean>;
 
   // Customer Payments
   getCustomerPayments(): Promise<CustomerPayment[]>;
@@ -123,6 +131,8 @@ export class MemStorage implements IStorage {
   private contractors: Map<string, Contractor> = new Map();
   private customers: Map<string, Customer> = new Map();
   private customerTasks: Map<string, CustomerTask> = new Map();
+  private customerQuotes: Map<string, CustomerQuote> = new Map();
+  private customerQuoteItems: Map<string, CustomerQuoteItem> = new Map();
   private customerPayments: Map<string, CustomerPayment> = new Map();
   private contractorTasks: Map<string, ContractorTask> = new Map();
   private contractorPayments: Map<string, ContractorPayment> = new Map();
@@ -150,6 +160,7 @@ export class MemStorage implements IStorage {
       phone: insertPersonnel.phone || null,
       email: insertPersonnel.email || null,
       salary: insertPersonnel.salary || null,
+      salaryType: insertPersonnel.salaryType ?? null,
       isActive: insertPersonnel.isActive ?? true,
     };
     this.personnel.set(id, personnel);
@@ -541,6 +552,87 @@ export class MemStorage implements IStorage {
   async getProject(id: string): Promise<Project | undefined> {
     return this.projects.get(id);
   }
+
+  // Customer Quotes methods
+  async getCustomerQuotes(): Promise<CustomerQuote[]> {
+    return Array.from(this.customerQuotes.values());
+  }
+
+  async getCustomerQuotesByCustomerId(customerId: string): Promise<CustomerQuote[]> {
+    return Array.from(this.customerQuotes.values()).filter(quote => quote.customerId === customerId);
+  }
+
+  async createCustomerQuote(insertQuote: InsertCustomerQuote): Promise<CustomerQuote> {
+    const id = randomUUID();
+    const quote: CustomerQuote = {
+      ...insertQuote,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      description: insertQuote.description || null,
+      isApproved: insertQuote.isApproved || false,
+      validUntil: insertQuote.validUntil || null,
+    };
+    this.customerQuotes.set(id, quote);
+    return quote;
+  }
+
+  async updateCustomerQuote(id: string, updates: Partial<InsertCustomerQuote>): Promise<CustomerQuote | undefined> {
+    const quote = this.customerQuotes.get(id);
+    if (!quote) return undefined;
+
+    const updated = { ...quote, ...updates, updatedAt: new Date() };
+    this.customerQuotes.set(id, updated);
+
+    // If quote is approved, create a task automatically
+    if (updates.isApproved && updated) {
+      const taskData: InsertCustomerTask = {
+        customerId: updated.customerId,
+        title: `${updated.title} (Onaylanan Teklif)`,
+        description: updated.description || "",
+        amount: updated.totalAmount,
+        status: "pending",
+        dueDate: null
+      };
+      await this.createCustomerTask(taskData);
+    }
+
+    return updated;
+  }
+
+  async deleteCustomerQuote(id: string): Promise<boolean> {
+    return this.customerQuotes.delete(id);
+  }
+
+  // Customer Quote Items methods
+  async getCustomerQuoteItemsByQuoteId(quoteId: string): Promise<CustomerQuoteItem[]> {
+    return Array.from(this.customerQuoteItems.values()).filter(item => item.quoteId === quoteId);
+  }
+
+  async createCustomerQuoteItem(insertItem: InsertCustomerQuoteItem): Promise<CustomerQuoteItem> {
+    const id = randomUUID();
+    const item: CustomerQuoteItem = {
+      ...insertItem,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.customerQuoteItems.set(id, item);
+    return item;
+  }
+
+  async updateCustomerQuoteItem(id: string, updates: Partial<InsertCustomerQuoteItem>): Promise<CustomerQuoteItem | undefined> {
+    const item = this.customerQuoteItems.get(id);
+    if (!item) return undefined;
+
+    const updated = { ...item, ...updates, updatedAt: new Date() };
+    this.customerQuoteItems.set(id, updated);
+    return updated;
+  }
+
+  async deleteCustomerQuoteItem(id: string): Promise<boolean> {
+    return this.customerQuoteItems.delete(id);
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -752,14 +844,11 @@ export class DatabaseStorage implements IStorage {
     // If quote is approved, create a task automatically
     if (updates.isApproved && result) {
       await db.insert(customerTasks).values({
-        id: randomUUID(),
         customerId: result.customerId,
         title: `${result.title} (Onaylanan Teklif)`,
         description: result.description || undefined,
-        amount: result.amount,
+        amount: result.totalAmount,
         status: "pending",
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
     }
     
@@ -768,6 +857,30 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomerQuote(id: string): Promise<boolean> {
     const result = await db.delete(customerQuotes).where(eq(customerQuotes.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Customer Quote Items methods
+  async getCustomerQuoteItems(): Promise<CustomerQuoteItem[]> {
+    return await db.select().from(customerQuoteItems);
+  }
+
+  async getCustomerQuoteItemsByQuoteId(quoteId: string): Promise<CustomerQuoteItem[]> {
+    return await db.select().from(customerQuoteItems).where(eq(customerQuoteItems.quoteId, quoteId));
+  }
+
+  async createCustomerQuoteItem(insertItem: InsertCustomerQuoteItem): Promise<CustomerQuoteItem> {
+    const [result] = await db.insert(customerQuoteItems).values(insertItem).returning();
+    return result;
+  }
+
+  async updateCustomerQuoteItem(id: string, updates: Partial<InsertCustomerQuoteItem>): Promise<CustomerQuoteItem | undefined> {
+    const [result] = await db.update(customerQuoteItems).set(updates).where(eq(customerQuoteItems.id, id)).returning();
+    return result;
+  }
+
+  async deleteCustomerQuoteItem(id: string): Promise<boolean> {
+    const result = await db.delete(customerQuoteItems).where(eq(customerQuoteItems.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 

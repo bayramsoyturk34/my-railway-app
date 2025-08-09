@@ -362,9 +362,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const completedTasks = customerTasks.filter(task => task.status === "completed").length;
 
       // Calculate customer quotes totals
-      const totalQuoteValue = customerQuotes.reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
-      const approvedQuoteValue = customerQuotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
-      const pendingQuoteValue = customerQuotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
+      const totalQuoteValue = customerQuotes.reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
+      const approvedQuoteValue = customerQuotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
+      const pendingQuoteValue = customerQuotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
       const approvedQuotes = customerQuotes.filter(q => q.isApproved).length;
       const pendingQuotes = customerQuotes.filter(q => !q.isApproved).length;
 
@@ -670,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             customerId: quote.customerId,
             title: quote.title,
             description: quote.description || "",
-            amount: quote.amount,
+            amount: quote.totalAmount,
             status: "pending" as const,
             dueDate: null
           };

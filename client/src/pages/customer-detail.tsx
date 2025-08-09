@@ -82,9 +82,9 @@ export default function CustomerDetailPage() {
   };
 
   const totalTaskValue = tasks.reduce((sum, task) => sum + parseFloat(task.amount), 0);
-  const totalQuoteValue = quotes.reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
-  const approvedQuoteValue = quotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
-  const pendingQuoteValue = quotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
+  const totalQuoteValue = quotes.reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
+  const approvedQuoteValue = quotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
+  const pendingQuoteValue = quotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
   const totalPaidAmount = payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
   const remainingAmount = totalTaskValue - totalPaidAmount;
   const completedTasks = tasks.filter(t => t.status === "completed").length;
@@ -111,7 +111,7 @@ export default function CustomerDetailPage() {
       customerId: customer?.id || "",
       title: "",
       description: "",
-      amount: "0",
+      totalAmount: "0",
       status: "pending",
       isApproved: false,
       quoteDate: new Date(),
@@ -276,7 +276,7 @@ export default function CustomerDetailPage() {
   if (editingQuote && showQuoteForm) {
     quoteForm.setValue("title", editingQuote.title);
     quoteForm.setValue("description", editingQuote.description || "");
-    quoteForm.setValue("amount", editingQuote.amount);
+    quoteForm.setValue("totalAmount", editingQuote.totalAmount);
     quoteForm.setValue("status", editingQuote.status);
     quoteForm.setValue("isApproved", editingQuote.isApproved || false);
     quoteForm.setValue("quoteDate", new Date(editingQuote.quoteDate));
@@ -523,7 +523,7 @@ export default function CustomerDetailPage() {
                                 {quote.isApproved ? 'Onaylandı' : 'Bekliyor'}
                               </span>
                               <span className="text-2xl font-bold text-orange-400">
-                                {formatCurrency(quote.amount)}
+                                {formatCurrency(quote.totalAmount)}
                               </span>
                             </div>
                           </div>
@@ -1035,7 +1035,7 @@ export default function CustomerDetailPage() {
               <div className="grid grid-cols-2 gap-3">
                 <FormField
                   control={quoteForm.control}
-                  name="amount"
+                  name="totalAmount"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-white text-sm">Tutar (TL)</FormLabel>
