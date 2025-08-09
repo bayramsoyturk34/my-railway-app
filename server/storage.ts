@@ -74,12 +74,14 @@ export interface IStorage {
 
   // Customer Payments
   getCustomerPayments(): Promise<CustomerPayment[]>;
+  getCustomerPayment(id: string): Promise<CustomerPayment | undefined>;
   getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]>;
   createCustomerPayment(payment: InsertCustomerPayment): Promise<CustomerPayment>;
   deleteCustomerPayment(id: string): Promise<boolean>;
 
   // Personnel Payments
   getPersonnelPayments(): Promise<PersonnelPayment[]>;
+  getPersonnelPayment(id: string): Promise<PersonnelPayment | undefined>;
   getPersonnelPaymentsByPersonnelId(personnelId: string): Promise<PersonnelPayment[]>;
   createPersonnelPayment(payment: InsertPersonnelPayment): Promise<PersonnelPayment>;
   updatePersonnelPayment(id: string, payment: Partial<InsertPersonnelPayment>): Promise<PersonnelPayment | undefined>;
@@ -94,6 +96,7 @@ export interface IStorage {
 
   // Contractor Payments
   getContractorPayments(): Promise<ContractorPayment[]>;
+  getContractorPayment(id: string): Promise<ContractorPayment | undefined>;
   getContractorPaymentsByContractorId(contractorId: string): Promise<ContractorPayment[]>;
   createContractorPayment(payment: InsertContractorPayment): Promise<ContractorPayment>;
   updateContractorPayment(id: string, payment: Partial<InsertContractorPayment>): Promise<ContractorPayment | undefined>;
@@ -726,6 +729,11 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(customerPayments);
   }
 
+  async getCustomerPayment(id: string): Promise<CustomerPayment | undefined> {
+    const [result] = await db.select().from(customerPayments).where(eq(customerPayments.id, id));
+    return result;
+  }
+
   async getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]> {
     return await db.select().from(customerPayments).where(eq(customerPayments.customerId, customerId));
   }
@@ -743,6 +751,11 @@ export class DatabaseStorage implements IStorage {
   // Personnel Payments methods
   async getPersonnelPayments(): Promise<PersonnelPayment[]> {
     return await db.select().from(personnelPayments);
+  }
+
+  async getPersonnelPayment(id: string): Promise<PersonnelPayment | undefined> {
+    const [result] = await db.select().from(personnelPayments).where(eq(personnelPayments.id, id));
+    return result;
   }
 
   async getPersonnelPaymentsByPersonnelId(personnelId: string): Promise<PersonnelPayment[]> {
@@ -791,6 +804,11 @@ export class DatabaseStorage implements IStorage {
   // Contractor Payments methods
   async getContractorPayments(): Promise<ContractorPayment[]> {
     return await db.select().from(contractorPayments);
+  }
+
+  async getContractorPayment(id: string): Promise<ContractorPayment | undefined> {
+    const [result] = await db.select().from(contractorPayments).where(eq(contractorPayments.id, id));
+    return result;
   }
 
   async getContractorPaymentsByContractorId(contractorId: string): Promise<ContractorPayment[]> {

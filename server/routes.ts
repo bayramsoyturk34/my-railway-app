@@ -546,12 +546,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/customer-payments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Get payment details before deletion
+      const payment = await storage.getCustomerPayment(id);
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      
+      // Get customer name for transaction lookup
+      const customer = await storage.getCustomer(payment.customerId);
+      const customerName = customer?.name || "Bilinmeyen Müşteri";
+      
+      // Find and delete related transaction
+      const transactions = await storage.getTransactions();
+      const relatedTransaction = transactions.find(t => 
+        t.type === "income" && 
+        t.description.includes(customerName) && 
+        t.description.includes("Müşteri Ödemesi") &&
+        parseFloat(t.amount.toString()) === parseFloat(payment.amount.toString())
+      );
+      
+      if (relatedTransaction) {
+        await storage.deleteTransaction(relatedTransaction.id);
+      }
+      
+      // Delete the payment
       const deleted = await storage.deleteCustomerPayment(id);
       if (!deleted) {
         return res.status(404).json({ message: "Payment not found" });
       }
       res.status(204).send();
     } catch (error) {
+      console.error("Customer payment deletion error:", error);
       res.status(500).json({ message: "Failed to delete payment" });
     }
   });
@@ -697,12 +723,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/contractor-payments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Get payment details before deletion
+      const payment = await storage.getContractorPayment(id);
+      if (!payment) {
+        return res.status(404).json({ message: "Contractor payment not found" });
+      }
+      
+      // Get contractor name for transaction lookup  
+      const contractor = await storage.getProject(payment.contractorId);
+      const contractorName = contractor?.name || "Bilinmeyen Yüklenici";
+      
+      // Find and delete related transaction
+      const transactions = await storage.getTransactions();
+      const relatedTransaction = transactions.find(t => 
+        t.type === "expense" && 
+        t.description.includes(contractorName) && 
+        t.description.includes("Yüklenici Ödemesi") &&
+        parseFloat(t.amount.toString()) === parseFloat(payment.amount.toString())
+      );
+      
+      if (relatedTransaction) {
+        await storage.deleteTransaction(relatedTransaction.id);
+      }
+      
+      // Delete the payment
       const deleted = await storage.deleteContractorPayment(id);
       if (!deleted) {
         return res.status(404).json({ message: "Contractor payment not found" });
       }
       res.status(204).send();
     } catch (error) {
+      console.error("Contractor payment deletion error:", error);
       res.status(500).json({ message: "Failed to delete contractor payment" });
     }
   });
@@ -814,12 +866,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/personnel-payments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Get payment details before deletion
+      const payment = await storage.getPersonnelPayment(id);
+      if (!payment) {
+        return res.status(404).json({ message: "Personnel payment not found" });
+      }
+      
+      // Get personnel name for transaction lookup
+      const personnel = await storage.getPersonnel();
+      const person = personnel.find(p => p.id === payment.personnelId);
+      const personnelName = person?.name || "Bilinmeyen Personel";
+      
+      // Find and delete related transaction
+      const transactions = await storage.getTransactions();
+      const relatedTransaction = transactions.find(t => 
+        t.type === "expense" && 
+        t.description.includes(personnelName) && 
+        t.description.includes("Maaş Ödemesi") &&
+        parseFloat(t.amount.toString()) === parseFloat(payment.amount.toString())
+      );
+      
+      if (relatedTransaction) {
+        await storage.deleteTransaction(relatedTransaction.id);
+      }
+      
+      // Delete the payment
       const deleted = await storage.deletePersonnelPayment(id);
       if (!deleted) {
         return res.status(404).json({ message: "Personnel payment not found" });
       }
       res.status(204).send();
     } catch (error) {
+      console.error("Personnel payment deletion error:", error);
       res.status(500).json({ message: "Failed to delete personnel payment" });
     }
   });
