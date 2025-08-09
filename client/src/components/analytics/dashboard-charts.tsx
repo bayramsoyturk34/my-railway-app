@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { Calendar, TrendingUp, Users, Building } from "lucide-react";
+import { Calendar, TrendingUp, Users, Building, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ChartData {
   monthlyRevenue: Array<{ month: string; income: number; expenses: number; }>;
@@ -14,9 +15,19 @@ interface ChartData {
 const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
 
 export default function DashboardCharts() {
-  const { data: chartData } = useQuery<ChartData>({
+  const queryClient = useQueryClient();
+  const { data: chartData, refetch } = useQuery<ChartData>({
     queryKey: ["/api/analytics/dashboard"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
+
+  console.log("Chart data:", chartData);
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/dashboard"] });
+    refetch();
+  };
 
   if (!chartData) {
     return (
@@ -36,7 +47,21 @@ export default function DashboardCharts() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-white">Veri Analizi ve Raporlar</h2>
+        <Button
+          onClick={handleRefresh}
+          variant="outline"
+          size="sm"
+          className="border-dark-accent hover:bg-dark-accent text-gray-400 hover:text-white"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Yenile
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Monthly Revenue Chart */}
       <Card className="bg-dark-secondary border-dark-accent">
         <CardHeader className="pb-2">
@@ -51,7 +76,7 @@ export default function DashboardCharts() {
               <BarChart data={chartData.monthlyRevenue}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="month" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" tickFormatter={(value) => value.toLocaleString('tr-TR')} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#1F2937', 
@@ -166,6 +191,7 @@ export default function DashboardCharts() {
           </ChartContainer>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
