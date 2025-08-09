@@ -637,17 +637,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/customer-quotes", async (req, res) => {
     try {
+      console.log("Quote creation request body:", req.body);
       const processedBody = {
         ...req.body,
         quoteDate: new Date(req.body.quoteDate),
         validUntil: req.body.validUntil ? new Date(req.body.validUntil) : null
       };
+      console.log("Processed quote body:", processedBody);
       const validatedData = insertCustomerQuoteSchema.parse(processedBody);
+      console.log("Validated quote data:", validatedData);
       const quote = await storage.createCustomerQuote(validatedData);
+      console.log("Created quote result:", quote);
       res.status(201).json(quote);
     } catch (error) {
       console.error("Customer quote creation error:", error);
-      res.status(400).json({ message: "Invalid customer quote data" });
+      res.status(400).json({ message: "Invalid customer quote data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 

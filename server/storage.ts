@@ -911,7 +911,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCustomerQuote(insertQuote: InsertCustomerQuote): Promise<CustomerQuote> {
+    console.log("Storage: Creating quote with data:", insertQuote);
     const [result] = await db.insert(customerQuotes).values(insertQuote).returning();
+    console.log("Storage: Quote creation result:", result);
     return result;
   }
 
