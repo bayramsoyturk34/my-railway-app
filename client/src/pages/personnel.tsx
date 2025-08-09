@@ -27,7 +27,8 @@ export default function PersonnelPage() {
         method: 'DELETE' 
       });
       if (!response.ok) throw new Error('Silme işlemi başarısız');
-      return response.json();
+      // 204 response has no content, don't try to parse JSON
+      return response.status === 204 ? null : response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/personnel'] });
