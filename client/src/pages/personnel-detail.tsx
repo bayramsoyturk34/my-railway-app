@@ -85,19 +85,9 @@ export default function PersonnelDetailPage() {
     let earnings = 0;
     
     personTimesheets.forEach(ts => {
-      const hours = parseFloat(ts.totalHours || "0");
-      const overtimeHours = parseFloat(ts.overtimeHours || "0");
-      const dailyWage = person && person.salary ? parseFloat(person.salary) / 30 : 0;
-      
-      const workType = ts.workType?.toUpperCase();
-      
-      if (workType === "TAM") {
-        earnings += dailyWage;
-      } else if (workType === "YARIM") {
-        earnings += dailyWage / 2;
-      } else if (workType === "MESAİ" || workType === "MESAI") {
-        earnings += dailyWage * overtimeHours;
-      }
+      // Backend'den gelen dailyWage değerini kullan
+      const dailyWage = parseFloat(ts.dailyWage || "0");
+      earnings += dailyWage;
     });
     
     return earnings;
