@@ -563,7 +563,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         t.type === "income" && 
         t.description.includes(customerName) && 
         t.description.includes("Müşteri Ödemesi") &&
-        parseFloat(t.amount.toString()) === parseFloat(payment.amount.toString())
+        Math.abs(parseFloat(t.amount.toString()) - parseFloat(payment.amount.toString())) < 0.01 &&
+        new Date(t.date).toDateString() === new Date(payment.paymentDate).toDateString()
       );
       
       if (relatedTransaction) {
@@ -740,7 +741,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         t.type === "expense" && 
         t.description.includes(contractorName) && 
         t.description.includes("Yüklenici Ödemesi") &&
-        parseFloat(t.amount.toString()) === parseFloat(payment.amount.toString())
+        Math.abs(parseFloat(t.amount.toString()) - parseFloat(payment.amount.toString())) < 0.01 &&
+        new Date(t.date).toDateString() === new Date(payment.paymentDate).toDateString()
       );
       
       if (relatedTransaction) {
@@ -884,7 +886,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         t.type === "expense" && 
         t.description.includes(personnelName) && 
         t.description.includes("Maaş Ödemesi") &&
-        parseFloat(t.amount.toString()) === parseFloat(payment.amount.toString())
+        Math.abs(parseFloat(t.amount.toString()) - parseFloat(payment.amount.toString())) < 0.01 &&
+        new Date(t.date).toDateString() === new Date(payment.paymentDate).toDateString()
       );
       
       if (relatedTransaction) {
