@@ -10,8 +10,12 @@ import {
   type CustomerPayment, type InsertCustomerPayment,
   type ContractorTask, type InsertContractorTask,
   type ContractorPayment, type InsertContractorPayment,
-  type PersonnelPayment, type InsertPersonnelPayment
+  type PersonnelPayment, type InsertPersonnelPayment,
+  personnel, projects, timesheets, transactions, notes, contractors, customers,
+  customerTasks, customerPayments, contractorTasks, contractorPayments, personnelPayments
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -528,4 +532,285 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // Personnel methods
+  async getPersonnel(): Promise<Personnel[]> {
+    return await db.select().from(personnel);
+  }
+
+  async getPersonnelById(id: string): Promise<Personnel | undefined> {
+    const [result] = await db.select().from(personnel).where(eq(personnel.id, id));
+    return result;
+  }
+
+  async createPersonnel(insertPersonnel: InsertPersonnel): Promise<Personnel> {
+    const [result] = await db.insert(personnel).values(insertPersonnel).returning();
+    return result;
+  }
+
+  async updatePersonnel(id: string, updates: Partial<InsertPersonnel>): Promise<Personnel | undefined> {
+    const [result] = await db.update(personnel).set(updates).where(eq(personnel.id, id)).returning();
+    return result;
+  }
+
+  async deletePersonnel(id: string): Promise<boolean> {
+    const result = await db.delete(personnel).where(eq(personnel.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Projects methods
+  async getProjects(): Promise<Project[]> {
+    return await db.select().from(projects);
+  }
+
+  async getProjectById(id: string): Promise<Project | undefined> {
+    const [result] = await db.select().from(projects).where(eq(projects.id, id));
+    return result;
+  }
+
+  async getProject(id: string): Promise<Project | undefined> {
+    const [result] = await db.select().from(projects).where(eq(projects.id, id));
+    return result;
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const [result] = await db.insert(projects).values(insertProject).returning();
+    return result;
+  }
+
+  async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined> {
+    const [result] = await db.update(projects).set(updates).where(eq(projects.id, id)).returning();
+    return result;
+  }
+
+  async deleteProject(id: string): Promise<boolean> {
+    const result = await db.delete(projects).where(eq(projects.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Timesheets methods
+  async getTimesheets(): Promise<Timesheet[]> {
+    return await db.select().from(timesheets);
+  }
+
+  async getTimesheetsByPersonnel(personnelId: string): Promise<Timesheet[]> {
+    return await db.select().from(timesheets).where(eq(timesheets.personnelId, personnelId));
+  }
+
+  async createTimesheet(insertTimesheet: InsertTimesheet): Promise<Timesheet> {
+    const [result] = await db.insert(timesheets).values(insertTimesheet).returning();
+    return result;
+  }
+
+  async updateTimesheet(id: string, updates: Partial<InsertTimesheet>): Promise<Timesheet | undefined> {
+    const [result] = await db.update(timesheets).set(updates).where(eq(timesheets.id, id)).returning();
+    return result;
+  }
+
+  async deleteTimesheet(id: string): Promise<boolean> {
+    const result = await db.delete(timesheets).where(eq(timesheets.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Transactions methods
+  async getTransactions(): Promise<Transaction[]> {
+    return await db.select().from(transactions);
+  }
+
+  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+    const [result] = await db.insert(transactions).values(insertTransaction).returning();
+    return result;
+  }
+
+  async updateTransaction(id: string, updates: Partial<InsertTransaction>): Promise<Transaction | undefined> {
+    const [result] = await db.update(transactions).set(updates).where(eq(transactions.id, id)).returning();
+    return result;
+  }
+
+  async deleteTransaction(id: string): Promise<boolean> {
+    const result = await db.delete(transactions).where(eq(transactions.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Notes methods
+  async getNotes(): Promise<Note[]> {
+    return await db.select().from(notes);
+  }
+
+  async createNote(insertNote: InsertNote): Promise<Note> {
+    const [result] = await db.insert(notes).values(insertNote).returning();
+    return result;
+  }
+
+  async deleteNote(id: string): Promise<boolean> {
+    const result = await db.delete(notes).where(eq(notes.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Contractors methods
+  async getContractors(): Promise<Contractor[]> {
+    return await db.select().from(contractors);
+  }
+
+  async createContractor(insertContractor: InsertContractor): Promise<Contractor> {
+    const [result] = await db.insert(contractors).values(insertContractor).returning();
+    return result;
+  }
+
+  async updateContractor(id: string, updates: Partial<InsertContractor>): Promise<Contractor | undefined> {
+    const [result] = await db.update(contractors).set(updates).where(eq(contractors.id, id)).returning();
+    return result;
+  }
+
+  async deleteContractor(id: string): Promise<boolean> {
+    const result = await db.delete(contractors).where(eq(contractors.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Customers methods
+  async getCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers);
+  }
+
+  async getCustomer(id: string): Promise<Customer | undefined> {
+    const [result] = await db.select().from(customers).where(eq(customers.id, id));
+    return result;
+  }
+
+  async getCustomerById(id: string): Promise<Customer | undefined> {
+    const [result] = await db.select().from(customers).where(eq(customers.id, id));
+    return result;
+  }
+
+  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+    const [result] = await db.insert(customers).values(insertCustomer).returning();
+    return result;
+  }
+
+  async updateCustomer(id: string, updates: Partial<InsertCustomer>): Promise<Customer | undefined> {
+    const [result] = await db.update(customers).set(updates).where(eq(customers.id, id)).returning();
+    return result;
+  }
+
+  async deleteCustomer(id: string): Promise<boolean> {
+    const result = await db.delete(customers).where(eq(customers.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Customer Tasks methods
+  async getCustomerTasks(): Promise<CustomerTask[]> {
+    return await db.select().from(customerTasks);
+  }
+
+  async getCustomerTasksByCustomerId(customerId: string): Promise<CustomerTask[]> {
+    return await db.select().from(customerTasks).where(eq(customerTasks.customerId, customerId));
+  }
+
+  async createCustomerTask(insertTask: InsertCustomerTask): Promise<CustomerTask> {
+    const [result] = await db.insert(customerTasks).values(insertTask).returning();
+    return result;
+  }
+
+  async updateCustomerTask(id: string, updates: Partial<InsertCustomerTask>): Promise<CustomerTask | undefined> {
+    const [result] = await db.update(customerTasks).set(updates).where(eq(customerTasks.id, id)).returning();
+    return result;
+  }
+
+  async deleteCustomerTask(id: string): Promise<boolean> {
+    const result = await db.delete(customerTasks).where(eq(customerTasks.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Customer Payments methods
+  async getCustomerPayments(): Promise<CustomerPayment[]> {
+    return await db.select().from(customerPayments);
+  }
+
+  async getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]> {
+    return await db.select().from(customerPayments).where(eq(customerPayments.customerId, customerId));
+  }
+
+  async createCustomerPayment(insertPayment: InsertCustomerPayment): Promise<CustomerPayment> {
+    const [result] = await db.insert(customerPayments).values(insertPayment).returning();
+    return result;
+  }
+
+  async deleteCustomerPayment(id: string): Promise<boolean> {
+    const result = await db.delete(customerPayments).where(eq(customerPayments.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Personnel Payments methods
+  async getPersonnelPayments(): Promise<PersonnelPayment[]> {
+    return await db.select().from(personnelPayments);
+  }
+
+  async getPersonnelPaymentsByPersonnelId(personnelId: string): Promise<PersonnelPayment[]> {
+    return await db.select().from(personnelPayments).where(eq(personnelPayments.personnelId, personnelId));
+  }
+
+  async createPersonnelPayment(insertPayment: InsertPersonnelPayment): Promise<PersonnelPayment> {
+    const [result] = await db.insert(personnelPayments).values(insertPayment).returning();
+    return result;
+  }
+
+  async updatePersonnelPayment(id: string, updates: Partial<InsertPersonnelPayment>): Promise<PersonnelPayment | undefined> {
+    const [result] = await db.update(personnelPayments).set(updates).where(eq(personnelPayments.id, id)).returning();
+    return result;
+  }
+
+  async deletePersonnelPayment(id: string): Promise<boolean> {
+    const result = await db.delete(personnelPayments).where(eq(personnelPayments.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Contractor Tasks methods
+  async getContractorTasks(): Promise<ContractorTask[]> {
+    return await db.select().from(contractorTasks);
+  }
+
+  async getContractorTasksByContractorId(contractorId: string): Promise<ContractorTask[]> {
+    return await db.select().from(contractorTasks).where(eq(contractorTasks.contractorId, contractorId));
+  }
+
+  async createContractorTask(insertTask: InsertContractorTask): Promise<ContractorTask> {
+    const [result] = await db.insert(contractorTasks).values(insertTask).returning();
+    return result;
+  }
+
+  async updateContractorTask(id: string, updates: Partial<InsertContractorTask>): Promise<ContractorTask | undefined> {
+    const [result] = await db.update(contractorTasks).set(updates).where(eq(contractorTasks.id, id)).returning();
+    return result;
+  }
+
+  async deleteContractorTask(id: string): Promise<boolean> {
+    const result = await db.delete(contractorTasks).where(eq(contractorTasks.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Contractor Payments methods
+  async getContractorPayments(): Promise<ContractorPayment[]> {
+    return await db.select().from(contractorPayments);
+  }
+
+  async getContractorPaymentsByContractorId(contractorId: string): Promise<ContractorPayment[]> {
+    return await db.select().from(contractorPayments).where(eq(contractorPayments.contractorId, contractorId));
+  }
+
+  async createContractorPayment(insertPayment: InsertContractorPayment): Promise<ContractorPayment> {
+    const [result] = await db.insert(contractorPayments).values(insertPayment).returning();
+    return result;
+  }
+
+  async updateContractorPayment(id: string, updates: Partial<InsertContractorPayment>): Promise<ContractorPayment | undefined> {
+    const [result] = await db.update(contractorPayments).set(updates).where(eq(contractorPayments.id, id)).returning();
+    return result;
+  }
+
+  async deleteContractorPayment(id: string): Promise<boolean> {
+    const result = await db.delete(contractorPayments).where(eq(contractorPayments.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+}
+
+export const storage = new DatabaseStorage();
