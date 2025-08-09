@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Building, CheckSquare, Banknote, User, Info, Plus, Edit } from "lucide-react";
+import { ArrowLeft, Building, CheckSquare, Banknote, User, Info, Plus, Edit, Trash2 } from "lucide-react";
 import ContractorTaskForm from "@/components/forms/contractor-task-form";
 import ContractorPaymentForm from "@/components/forms/contractor-payment-form";
 import type { Project } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +19,8 @@ export default function ProjectDetailPage() {
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Queries
   const { data: projects } = useQuery<Project[]>({
@@ -34,6 +38,27 @@ export default function ProjectDetailPage() {
   });
 
   const project = projects?.find(p => p.id === projectId);
+
+  // Delete contractor task mutation
+  const deleteContractorTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      await apiRequest(`/api/contractor-tasks/${taskId}`, "DELETE");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/contractor-tasks/contractor/${projectId}`] });
+      toast({
+        title: "Başarılı",
+        description: "Görev silindi.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Görev silinemedi.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Helper functions
   const formatDate = (dateStr: string) => {
@@ -217,6 +242,15 @@ export default function ProjectDetailPage() {
                               onClick={() => setEditingTask(task)}
                             >
                               <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 px-2 text-xs border-red-500/20 hover:bg-red-500/20 text-red-400 hover:text-red-300"
+                              onClick={() => deleteContractorTaskMutation.mutate(task.id)}
+                              disabled={deleteContractorTaskMutation.isPending}
+                            >
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                             <span className={`px-2 py-1 rounded text-xs ${
                               task.status === 'completed' ? 'bg-green-500/20 text-green-400' :
