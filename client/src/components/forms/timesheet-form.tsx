@@ -360,10 +360,30 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
                   <SelectValue placeholder="Mesai saati seçin" />
                 </SelectTrigger>
                 <SelectContent className="bg-dark-primary border-dark-accent">
+                  <SelectItem value="0.50" className="text-white">0.5 saat</SelectItem>
                   <SelectItem value="1.00" className="text-white">1 saat</SelectItem>
                   <SelectItem value="1.50" className="text-white">1.5 saat</SelectItem>
                   <SelectItem value="2.00" className="text-white">2 saat</SelectItem>
                   <SelectItem value="2.50" className="text-white">2.5 saat</SelectItem>
+                  <SelectItem value="3.00" className="text-white">3 saat</SelectItem>
+                  <SelectItem value="3.50" className="text-white">3.5 saat</SelectItem>
+                  <SelectItem value="4.00" className="text-white">4 saat</SelectItem>
+                  <SelectItem value="4.50" className="text-white">4.5 saat</SelectItem>
+                  <SelectItem value="5.00" className="text-white">5 saat</SelectItem>
+                  <SelectItem value="5.50" className="text-white">5.5 saat</SelectItem>
+                  <SelectItem value="6.00" className="text-white">6 saat</SelectItem>
+                  <SelectItem value="6.50" className="text-white">6.5 saat</SelectItem>
+                  <SelectItem value="7.00" className="text-white">7 saat</SelectItem>
+                  <SelectItem value="7.50" className="text-white">7.5 saat</SelectItem>
+                  <SelectItem value="8.00" className="text-white">8 saat</SelectItem>
+                  <SelectItem value="8.50" className="text-white">8.5 saat</SelectItem>
+                  <SelectItem value="9.00" className="text-white">9 saat</SelectItem>
+                  <SelectItem value="9.50" className="text-white">9.5 saat</SelectItem>
+                  <SelectItem value="10.00" className="text-white">10 saat</SelectItem>
+                  <SelectItem value="10.50" className="text-white">10.5 saat</SelectItem>
+                  <SelectItem value="11.00" className="text-white">11 saat</SelectItem>
+                  <SelectItem value="11.50" className="text-white">11.5 saat</SelectItem>
+                  <SelectItem value="12.00" className="text-white">12 saat</SelectItem>
                 </SelectContent>
               </Select>
             </div>
