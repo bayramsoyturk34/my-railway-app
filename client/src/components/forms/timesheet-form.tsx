@@ -55,43 +55,46 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
     queryKey: ["/api/customers"],
   });
 
-  // Düzenleme modunda form değerlerini güncelle
+  // Dialog açıldığında form değerlerini ayarla
   useEffect(() => {
-    if (editingTimesheet) {
-      setSelectedPersonnelIds([editingTimesheet.personnelId || ""]);
-      setWorkType(editingTimesheet.workType || "tam");
-      
-      form.reset({
-        personnelId: editingTimesheet.personnelId || "",
-        customerId: editingTimesheet.customerId || "",
-        date: editingTimesheet.date ? new Date(editingTimesheet.date) : new Date(),
-        workType: editingTimesheet.workType || "tam",
-        startTime: editingTimesheet.startTime || "08:00",
-        endTime: editingTimesheet.endTime || "17:00",
-        totalHours: editingTimesheet.totalHours || "8.00",
-        overtimeHours: editingTimesheet.overtimeHours || "0.00",
-        hourlyRate: editingTimesheet.hourlyRate || "0.00",
-        dailyWage: editingTimesheet.dailyWage || "0.00",
-        notes: editingTimesheet.notes || "",
-      });
-    } else {
-      setSelectedPersonnelIds([]);
-      setWorkType("tam");
-      form.reset({
-        personnelId: "",
-        customerId: "",
-        date: new Date(),
-        workType: "tam",
-        startTime: "08:00",
-        endTime: "17:00",
-        totalHours: "8.00",
-        overtimeHours: "0.00",
-        hourlyRate: "0.00",
-        dailyWage: "0.00",
-        notes: "",
-      });
+    if (open) {
+      if (editingTimesheet) {
+        // Edit mode
+        setSelectedPersonnelIds([editingTimesheet.personnelId || ""]);
+        setWorkType(editingTimesheet.workType || "tam");
+        form.reset({
+          personnelId: editingTimesheet.personnelId || "",
+          customerId: editingTimesheet.customerId || "",
+          date: editingTimesheet.date ? new Date(editingTimesheet.date) : new Date(),
+          workType: editingTimesheet.workType || "tam",
+          startTime: editingTimesheet.startTime || "08:00",
+          endTime: editingTimesheet.endTime || "17:00",
+          totalHours: editingTimesheet.totalHours || "8.00",
+          overtimeHours: editingTimesheet.overtimeHours || "0.00",
+          hourlyRate: editingTimesheet.hourlyRate || "0.00",
+          dailyWage: editingTimesheet.dailyWage || "0.00",
+          notes: editingTimesheet.notes || "",
+        });
+      } else {
+        // New record mode
+        setSelectedPersonnelIds([]);
+        setWorkType("");
+        form.reset({
+          personnelId: "",
+          customerId: "",
+          date: new Date(),
+          workType: "tam",
+          startTime: "08:00",
+          endTime: "17:00",
+          totalHours: "8.00",
+          overtimeHours: "0.00",
+          hourlyRate: "0.00",
+          dailyWage: "0.00",
+          notes: "",
+        });
+      }
     }
-  }, [editingTimesheet, personnel]);
+  }, [open, editingTimesheet]);
 
 
 
@@ -280,7 +283,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
                           >
                             <Checkbox
                               checked={selectedPersonnelIds.includes(person.id)}
-                              onChange={() => {}}
+                              onCheckedChange={() => togglePersonnelSelection(person.id)}
                               className="border-gray-400"
                             />
                             <span className="text-white text-sm">{person.name}</span>
