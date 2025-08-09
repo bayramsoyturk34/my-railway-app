@@ -386,6 +386,7 @@ export default function CustomerDetailPage() {
     mutationFn: async (data: InsertCustomerQuote) => {
       // First create the quote
       const quote = await apiRequest("/api/customer-quotes", "POST", data) as any;
+      console.log("Created quote:", quote);
       
       // Then create quote items if any exist
       if (quoteItems.length > 0) {
@@ -401,6 +402,7 @@ export default function CustomerDetailPage() {
             status: "pending",
             isApproved: false
           };
+          console.log("Creating quote item with data:", quoteItemData);
           await apiRequest("/api/customer-quote-items", "POST", quoteItemData);
         }
       }
