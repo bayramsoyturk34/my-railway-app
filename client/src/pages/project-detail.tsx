@@ -131,7 +131,9 @@ export default function ProjectDetailPage() {
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm">Toplam Tutar</p>
-                    <p className="text-green-400 font-medium">{formatCurrency(project.amount)}</p>
+                    <p className="text-green-400 font-medium">
+                      {formatCurrency(contractorTasks.reduce((sum: number, task: any) => sum + parseFloat(task.amount), 0).toString())}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm">Yapılan Ödeme</p>
@@ -142,7 +144,7 @@ export default function ProjectDetailPage() {
                   <div>
                     <p className="text-gray-500 text-sm">Kalan Bakiye</p>
                     <p className="text-red-400 font-medium">
-                      {formatCurrency((parseFloat(project.amount) - contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0)).toString())}
+                      {formatCurrency((contractorTasks.reduce((sum: number, task: any) => sum + parseFloat(task.amount), 0) - contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0)).toString())}
                     </p>
                   </div>
                 </div>
