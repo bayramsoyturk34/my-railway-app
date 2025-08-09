@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { insertTimesheetSchema, type InsertTimesheet, type Personnel, type Customer } from "@shared/schema";
+import { insertTimesheetSchema, type InsertTimesheet, type Personnel, type Customer, type Timesheet } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,10 @@ import { useState, useEffect } from "react";
 interface TimesheetFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingTimesheet?: Timesheet | null;
 }
 
-export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps) {
+export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: TimesheetFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -27,17 +28,17 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
   const form = useForm<InsertTimesheet>({
     resolver: zodResolver(insertTimesheetSchema),
     defaultValues: {
-      personnelId: "",
-      customerId: "",
-      date: new Date(),
-      workType: "tam",
-      startTime: "08:00",
-      endTime: "17:00",
-      totalHours: "8.00",
-      overtimeHours: "0.00",
-      hourlyRate: "0.00",
-      dailyWage: "0.00",
-      notes: "",
+      personnelId: editingTimesheet?.personnelId || "",
+      customerId: editingTimesheet?.customerId || "",
+      date: editingTimesheet?.date ? new Date(editingTimesheet.date) : new Date(),
+      workType: editingTimesheet?.workType || "tam",
+      startTime: editingTimesheet?.startTime || "08:00",
+      endTime: editingTimesheet?.endTime || "17:00",
+      totalHours: editingTimesheet?.totalHours || "8.00",
+      overtimeHours: editingTimesheet?.overtimeHours || "0.00",
+      hourlyRate: editingTimesheet?.hourlyRate || "0.00",
+      dailyWage: editingTimesheet?.dailyWage || "0.00",
+      notes: editingTimesheet?.notes || "",
     },
   });
 
@@ -84,16 +85,57 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
     }
   }, [selectedPersonnel, workType, form]);
 
+  // Düzenleme modunda form değerlerini güncelle
+  useEffect(() => {
+    if (editingTimesheet) {
+      const person = personnel.find(p => p.id === editingTimesheet.personnelId);
+      setSelectedPersonnel(person || null);
+      setWorkType(editingTimesheet.workType || "tam");
+      
+      form.reset({
+        personnelId: editingTimesheet.personnelId || "",
+        customerId: editingTimesheet.customerId || "",
+        date: editingTimesheet.date ? new Date(editingTimesheet.date) : new Date(),
+        workType: editingTimesheet.workType || "tam",
+        startTime: editingTimesheet.startTime || "08:00",
+        endTime: editingTimesheet.endTime || "17:00",
+        totalHours: editingTimesheet.totalHours || "8.00",
+        overtimeHours: editingTimesheet.overtimeHours || "0.00",
+        hourlyRate: editingTimesheet.hourlyRate || "0.00",
+        dailyWage: editingTimesheet.dailyWage || "0.00",
+        notes: editingTimesheet.notes || "",
+      });
+    } else {
+      setSelectedPersonnel(null);
+      setWorkType("");
+      form.reset({
+        personnelId: "",
+        customerId: "",
+        date: new Date(),
+        workType: "tam",
+        startTime: "08:00",
+        endTime: "17:00",
+        totalHours: "8.00",
+        overtimeHours: "0.00",
+        hourlyRate: "0.00",
+        dailyWage: "0.00",
+        notes: "",
+      });
+    }
+  }, [editingTimesheet, personnel]);
+
   const createTimesheetMutation = useMutation({
     mutationFn: async (data: InsertTimesheet) => {
-      const response = await apiRequest("/api/timesheets", "POST", data);
+      const url = editingTimesheet ? `/api/timesheets/${editingTimesheet.id}` : "/api/timesheets";
+      const method = editingTimesheet ? "PUT" : "POST";
+      const response = await apiRequest(url, method, data);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/timesheets"] });
       toast({
         title: "Başarılı",
-        description: "Puantaj kaydı oluşturuldu.",
+        description: editingTimesheet ? "Puantaj kaydı güncellendi." : "Puantaj kaydı oluşturuldu.",
       });
       form.reset();
       setSelectedPersonnel(null);
@@ -103,7 +145,7 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
     onError: () => {
       toast({
         title: "Hata",
-        description: "Puantaj kaydı oluşturulamadı.",
+        description: editingTimesheet ? "Puantaj kaydı güncellenemedi." : "Puantaj kaydı oluşturulamadı.",
         variant: "destructive",
       });
     },
@@ -118,7 +160,9 @@ export default function TimesheetForm({ open, onOpenChange }: TimesheetFormProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Puantaj Yaz</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {editingTimesheet ? "Puantaj Düzenle" : "Puantaj Yaz"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>

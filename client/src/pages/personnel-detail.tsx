@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PersonnelPaymentForm from "@/components/forms/personnel-payment-form";
+import TimesheetForm from "@/components/forms/timesheet-form";
 import { queryClient } from "@/lib/queryClient";
 import type { Personnel, Timesheet, PersonnelPayment, Transaction } from "@shared/schema";
 
@@ -16,6 +17,7 @@ export default function PersonnelDetailPage() {
   
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PersonnelPayment | undefined>();
+  const [editingTimesheet, setEditingTimesheet] = useState<Timesheet | null>(null);
 
   // Queries
   const { data: personnel } = useQuery<Personnel[]>({
@@ -207,7 +209,7 @@ export default function PersonnelDetailPage() {
                     <Card key={timesheet.id} className="bg-dark-primary border-dark-accent">
                       <CardContent className="p-3">
                         <div className="flex justify-between items-start">
-                          <div>
+                          <div className="flex-1">
                             <p className="text-white font-medium">{formatDate(typeof timesheet.date === 'string' ? timesheet.date : timesheet.date.toISOString())}</p>
                             <p className="text-gray-400 text-sm">
                               {timesheet.workType} • {timesheet.totalHours} saat
@@ -217,6 +219,14 @@ export default function PersonnelDetailPage() {
                               <p className="text-gray-500 text-sm mt-1">{timesheet.notes}</p>
                             )}
                           </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs border-dark-accent hover:bg-dark-accent text-gray-400 hover:text-white ml-2 flex-shrink-0"
+                            onClick={() => setEditingTimesheet(timesheet)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -352,6 +362,15 @@ export default function PersonnelDetailPage() {
         personnelId={personnelId}
         personnelName={person.name}
         payment={selectedPayment}
+      />
+
+      {/* Timesheet Edit Form */}
+      <TimesheetForm
+        open={!!editingTimesheet}
+        onOpenChange={(open) => {
+          if (!open) setEditingTimesheet(null);
+        }}
+        editingTimesheet={editingTimesheet}
       />
     </div>
   );
