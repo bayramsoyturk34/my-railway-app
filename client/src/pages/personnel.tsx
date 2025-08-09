@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { ArrowLeft, Plus, User, Edit, Trash2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import PersonnelForm from "@/components/forms/personnel-form";
-import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Personnel } from "@shared/schema";
 
 export default function PersonnelPage() {
   const [, setLocation] = useLocation();
   const [showPersonnelForm, setShowPersonnelForm] = useState(false);
   const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | undefined>();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Personnel query
   const { data: personnel = [], isLoading } = useQuery<Personnel[]>({
@@ -29,6 +31,17 @@ export default function PersonnelPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/personnel'] });
+      toast({
+        title: "Başarılı",
+        description: "Personel başarıyla silindi.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Personel silinirken bir hata oluştu.",
+        variant: "destructive",
+      });
     },
   });
 
