@@ -675,47 +675,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { status: "Tamamlandı", count: projects.filter(p => p.status === "completed").length },
       ];
 
-      const personnelActivity = personnel.map(p => {
-        const personalTimesheets = timesheets.filter(t => t.personnelId === p.id);
-        const totalHours = personalTimesheets.reduce((sum, t) => sum + parseFloat(t.totalHours || "0"), 0);
-        return {
-          name: p.name.split(' ')[0],
-          hours: totalHours
-        };
-      });
 
-      // Calculate last 7 days activity
-      const dailyActivity = [];
-      const today = new Date();
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateStr = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        
-        const dayTimesheets = timesheets.filter(t => {
-          const timesheetDate = new Date(t.date);
-          return timesheetDate.toDateString() === date.toDateString();
-        }).length;
-        
-        const dayTransactions = transactions.filter(t => {
-          const transactionDate = new Date(t.date);
-          return transactionDate.toDateString() === date.toDateString();
-        }).length;
-        
-        dailyActivity.push({ 
-          date: dateStr, 
-          timesheets: dayTimesheets, 
-          transactions: dayTransactions 
-        });
-      }
 
       const chartData = {
         monthlyRevenue,
         projectsByStatus,
-        personnelActivity: personnelActivity.length > 0 ? personnelActivity : [
-          { name: "Personel", hours: 0 }
-        ],
-        dailyActivity,
       };
 
       res.json(chartData);

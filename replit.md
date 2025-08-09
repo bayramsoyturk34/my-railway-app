@@ -15,6 +15,8 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
 - ✅ Added personnel detail pages with dedicated routes (/personnel/:id)
 - ✅ Implemented personnel detail page with tabs: Puantaj, Hakediş, Ödeme
 - ✅ Fixed date formatting issues in personnel detail views
+- ✅ Migrated from memory storage to PostgreSQL database for data persistence
+- ✅ Removed "Personel Aktivitesi" and "Günlük Aktivite" charts from analytics dashboard
 
 # User Preferences
 

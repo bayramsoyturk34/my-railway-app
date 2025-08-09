@@ -83,7 +83,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
       form.setValue("hourlyRate", hourlyRate);
       form.setValue("dailyWage", calculatedWage);
     }
-  }, [selectedPersonnel, workType, form]);
+  }, [selectedPersonnel, workType]);
 
   // Düzenleme modunda form değerlerini güncelle
   useEffect(() => {
@@ -122,7 +122,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
         notes: "",
       });
     }
-  }, [editingTimesheet, personnel]);
+  }, [editingTimesheet, personnel, form]);
 
   const createTimesheetMutation = useMutation({
     mutationFn: async (data: InsertTimesheet) => {
