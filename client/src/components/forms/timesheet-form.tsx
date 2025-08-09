@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type Personnel, type Customer, type Timesheet } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -40,25 +40,27 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
     queryKey: ["/api/customers"],
   });
 
-  // Dialog açıldığında değerleri reset et
-  const initializeForm = () => {
-    if (editingTimesheet) {
-      setSelectedPersonnelIds([editingTimesheet.personnelId || ""]);
-      setWorkType(editingTimesheet.workType || "tam");
-      setCustomerId(editingTimesheet.customerId || "");
-      setDate(editingTimesheet.date ? new Date(editingTimesheet.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
-      setOvertimeHours(editingTimesheet.overtimeHours || "0");
-      setNotes(editingTimesheet.notes || "");
-    } else {
-      setSelectedPersonnelIds([]);
-      setWorkType("tam");
-      setCustomerId("");
-      setDate(new Date().toISOString().split('T')[0]);
-      setOvertimeHours("0");
-      setNotes("");
+  // Dialog açıldığında ve editingTimesheet değiştiğinde formu initialize et
+  useEffect(() => {
+    if (open) {
+      if (editingTimesheet) {
+        setSelectedPersonnelIds([editingTimesheet.personnelId || ""]);
+        setWorkType(editingTimesheet.workType || "tam");
+        setCustomerId(editingTimesheet.customerId || "");
+        setDate(editingTimesheet.date ? new Date(editingTimesheet.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+        setOvertimeHours(editingTimesheet.overtimeHours || "0");
+        setNotes(editingTimesheet.notes || "");
+      } else {
+        setSelectedPersonnelIds([]);
+        setWorkType("tam");
+        setCustomerId("");
+        setDate(new Date().toISOString().split('T')[0]);
+        setOvertimeHours("0");
+        setNotes("");
+      }
+      setShowPersonnelDropdown(false);
     }
-    setShowPersonnelDropdown(false);
-  };
+  }, [open, editingTimesheet]);
 
   const createTimesheetMutation = useMutation({
     mutationFn: async () => {
@@ -203,12 +205,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
   return (
     <Dialog 
       open={open} 
-      onOpenChange={(isOpen) => {
-        if (isOpen) {
-          initializeForm();
-        }
-        onOpenChange(isOpen);
-      }}
+      onOpenChange={onOpenChange}
     >
       <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -329,28 +326,26 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
             />
           </div>
 
-          {!editingTimesheet && (
-            <div className="space-y-2">
-              <label className="text-gray-300 block">Çalışma Şekli</label>
-              <div className="flex gap-2">
-                {["tam", "yarim", "mesai"].map((type) => (
-                  <Button
-                    key={type}
-                    type="button"
-                    variant={workType === type ? "default" : "outline"}
-                    size="sm"
-                    className={workType === type 
-                      ? "bg-blue-600 hover:bg-blue-700 text-white"
-                      : "bg-dark-primary border-dark-accent text-white hover:bg-dark-accent"
-                    }
-                    onClick={() => setWorkType(type)}
-                  >
-                    {type === "tam" ? "TAM" : type === "yarim" ? "YARIM" : "MESAİ"}
-                  </Button>
-                ))}
-              </div>
+          <div className="space-y-2">
+            <label className="text-gray-300 block">Çalışma Şekli</label>
+            <div className="flex gap-2">
+              {["tam", "yarim", "mesai"].map((type) => (
+                <Button
+                  key={type}
+                  type="button"
+                  variant={workType === type ? "default" : "outline"}
+                  size="sm"
+                  className={workType === type 
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-dark-primary border-dark-accent text-white hover:bg-dark-accent"
+                  }
+                  onClick={() => setWorkType(type)}
+                >
+                  {type === "tam" ? "TAM" : type === "yarim" ? "YARIM" : "MESAİ"}
+                </Button>
+              ))}
             </div>
-          )}
+          </div>
 
           {(editingTimesheet || workType === "mesai") && (
             <div className="space-y-2">
