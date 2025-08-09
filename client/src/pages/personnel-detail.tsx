@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, User, Clock, CreditCard, Banknote, Plus, Calendar, Edit } from "lucide-react";
+import { ArrowLeft, User, Clock, CreditCard, Banknote, Plus, Calendar, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PersonnelPaymentForm from "@/components/forms/personnel-payment-form";
 import TimesheetForm from "@/components/forms/timesheet-form";
-import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Personnel, Timesheet, PersonnelPayment, Transaction } from "@shared/schema";
 
 export default function PersonnelDetailPage() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/personnel/:id");
   const personnelId = params?.id || "";
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PersonnelPayment | undefined>();
@@ -34,6 +36,31 @@ export default function PersonnelDetailPage() {
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
     queryKey: ['/api/transactions'],
+  });
+
+  // Delete timesheet mutation
+  const deleteTimesheetMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/timesheets/${id}`, { 
+        method: 'DELETE' 
+      });
+      if (!response.ok) throw new Error('Silme işlemi başarısız');
+      return response.status === 204 ? null : response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/timesheets'] });
+      toast({
+        title: "Başarılı",
+        description: "Puantaj kaydı başarıyla silindi.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Puantaj kaydı silinirken bir hata oluştu.",
+        variant: "destructive",
+      });
+    },
   });
 
   const person = personnel?.find(p => p.id === personnelId);
@@ -219,14 +246,28 @@ export default function PersonnelDetailPage() {
                               <p className="text-gray-500 text-sm mt-1">{timesheet.notes}</p>
                             )}
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs border-dark-accent hover:bg-dark-accent text-gray-400 hover:text-white ml-2 flex-shrink-0"
-                            onClick={() => setEditingTimesheet(timesheet)}
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
+                          <div className="flex items-center gap-1 ml-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 px-2 text-xs border-dark-accent hover:bg-dark-accent text-gray-400 hover:text-white flex-shrink-0"
+                              onClick={() => setEditingTimesheet(timesheet)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 px-2 text-xs border-red-600 hover:bg-red-600 text-red-400 hover:text-white flex-shrink-0"
+                              onClick={() => {
+                                if (confirm('Bu puantaj kaydını silmek istediğinizden emin misiniz?')) {
+                                  deleteTimesheetMutation.mutate(timesheet.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
