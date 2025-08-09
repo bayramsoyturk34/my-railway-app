@@ -22,6 +22,16 @@ export default function ProjectDetailPage() {
     queryKey: ['/api/projects'],
   });
 
+  const { data: contractorTasks = [] } = useQuery({
+    queryKey: ['/api/contractor-tasks/contractor/' + projectId],
+    enabled: !!projectId,
+  });
+
+  const { data: contractorPayments = [] } = useQuery({
+    queryKey: ['/api/contractor-payments/contractor/' + projectId],
+    enabled: !!projectId,
+  });
+
   const project = projects?.find(p => p.id === projectId);
 
   // Helper functions
@@ -180,11 +190,40 @@ export default function ProjectDetailPage() {
                   </Button>
                 </div>
                 
-                <div className="text-center py-8">
-                  <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400 text-lg mb-2">Henüz iş tanımlanmamış</p>
-                  <p className="text-gray-500 text-sm">Bu proje için henüz yapılacak iş listesi oluşturulmamış.</p>
-                </div>
+                {contractorTasks.length === 0 ? (
+                  <div className="text-center py-8">
+                    <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-400 text-lg mb-2">Henüz iş tanımlanmamış</p>
+                    <p className="text-gray-500 text-sm">Bu proje için henüz yapılacak iş listesi oluşturulmamış.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {contractorTasks.map((task: any) => (
+                      <div key={task.id} className="bg-dark-primary p-4 rounded-lg border border-dark-accent">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="text-white font-medium">{task.title}</h4>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            task.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                            task.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
+                            'bg-yellow-500/20 text-yellow-400'
+                          }`}>
+                            {task.status === 'completed' ? 'Tamamlandı' :
+                             task.status === 'in_progress' ? 'Devam Ediyor' : 'Bekliyor'}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-gray-400 text-sm mb-2">{task.description}</p>
+                        )}
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>Tutar: {formatCurrency(task.amount)}</span>
+                          {task.dueDate && (
+                            <span>Teslim: {formatDate(task.dueDate)}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -207,11 +246,34 @@ export default function ProjectDetailPage() {
                   </Button>
                 </div>
                 
-                <div className="text-center py-8">
-                  <Banknote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400 text-lg mb-2">Henüz ödeme yapılmamış</p>
-                  <p className="text-gray-500 text-sm">Bu yükleniciye henüz ödeme yapılmamış.</p>
-                </div>
+                {contractorPayments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Banknote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-400 text-lg mb-2">Henüz ödeme yapılmamış</p>
+                    <p className="text-gray-500 text-sm">Bu yükleniciye henüz ödeme yapılmamış.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {contractorPayments.map((payment: any) => (
+                      <div key={payment.id} className="bg-dark-primary p-4 rounded-lg border border-dark-accent">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="text-white font-medium">{formatCurrency(payment.amount)}</h4>
+                          <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">
+                            {payment.paymentMethod === 'cash' ? 'Nakit' :
+                             payment.paymentMethod === 'bank_transfer' ? 'Banka Havalesi' :
+                             payment.paymentMethod === 'check' ? 'Çek' : 'Diğer'}
+                          </span>
+                        </div>
+                        {payment.description && (
+                          <p className="text-gray-400 text-sm mb-2">{payment.description}</p>
+                        )}
+                        <div className="text-sm text-gray-500">
+                          <span>Ödeme Tarihi: {formatDate(payment.paymentDate)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
