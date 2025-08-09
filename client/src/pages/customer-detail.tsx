@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X } from "lucide-react";
 import { type Customer, type CustomerTask, type CustomerQuote, type CustomerPayment, insertCustomerTaskSchema, insertCustomerQuoteSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerQuote, type InsertCustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,22 @@ export default function CustomerDetailPage() {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [editingTask, setEditingTask] = useState<CustomerTask | null>(null);
   const [editingQuote, setEditingQuote] = useState<CustomerQuote | null>(null);
+  
+  // Quote items state
+  const [quoteItems, setQuoteItems] = useState<Array<{
+    id: string;
+    title: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }>>([]);
+  const [currentItem, setCurrentItem] = useState({
+    title: "",
+    description: "",
+    quantity: 1,
+    unitPrice: 0
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -229,10 +245,26 @@ export default function CustomerDetailPage() {
   };
 
   const onSubmitQuote = (data: InsertCustomerQuote) => {
+    if (quoteItems.length === 0) {
+      toast({
+        title: "Eksik Bilgi",
+        description: "Teklif için en az bir görev eklemelisiniz",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const totalAmount = calculateTotalAmount();
+    const quoteData = {
+      ...data,
+      customerId: customer?.id || "",
+      totalAmount: totalAmount.toString()
+    };
+
     if (editingQuote) {
-      updateQuoteMutation.mutate({ id: editingQuote.id, data });
+      updateQuoteMutation.mutate({ id: editingQuote.id, data: quoteData });
     } else {
-      createQuoteMutation.mutate({ ...data, customerId: customer?.id || "" });
+      createQuoteMutation.mutate(quoteData);
     }
   };
 
@@ -249,7 +281,41 @@ export default function CustomerDetailPage() {
   const handleCloseQuoteForm = () => {
     setShowQuoteForm(false);
     setEditingQuote(null);
+    setQuoteItems([]);
+    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0 });
     quoteForm.reset();
+  };
+
+  // Quote item handlers
+  const addQuoteItem = () => {
+    if (!currentItem.title.trim() || currentItem.unitPrice <= 0) {
+      toast({
+        title: "Eksik Bilgi",
+        description: "Görev adı ve birim fiyat gerekli",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newItem = {
+      id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: currentItem.title.trim(),
+      description: currentItem.description.trim(),
+      quantity: currentItem.quantity,
+      unitPrice: currentItem.unitPrice,
+      totalPrice: currentItem.quantity * currentItem.unitPrice
+    };
+
+    setQuoteItems(prev => [...prev, newItem]);
+    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0 });
+  };
+
+  const removeQuoteItem = (itemId: string) => {
+    setQuoteItems(prev => prev.filter(item => item.id !== itemId));
+  };
+
+  const calculateTotalAmount = () => {
+    return quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
   };
 
   const handleQuoteApprove = (quoteId: string) => {
@@ -984,66 +1050,27 @@ export default function CustomerDetailPage() {
 
       {/* Quote Form Dialog */}
       <Dialog open={showQuoteForm} onOpenChange={handleCloseQuoteForm}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg">{editingQuote ? "Teklif Düzenle" : "Yeni Teklif"}</DialogTitle>
+            <DialogTitle className="text-lg">{editingQuote ? "Teklif Düzenle" : "Yeni Çoklu Görev Teklifi"}</DialogTitle>
             <DialogDescription className="text-gray-400 text-sm">
-              Müşteriye sunulacak teklif bilgileri
+              Birden fazla görev içeren teklif oluşturun
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...quoteForm}>
-            <form onSubmit={quoteForm.handleSubmit(onSubmitQuote)} className="space-y-3">
-              <FormField
-                control={quoteForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white text-sm">Teklif Başlığı</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Teklif başlığı"
-                        className="bg-dark-primary border-dark-accent text-white h-9"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={quoteForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white text-sm">Açıklama</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Teklif detayları"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        rows={2}
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-4">
+            {/* Teklif Temel Bilgileri */}
+            <Form {...quoteForm}>
+              <div className="space-y-3">
                 <FormField
                   control={quoteForm.control}
-                  name="totalAmount"
+                  name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white text-sm">Tutar (TL)</FormLabel>
+                      <FormLabel className="text-white text-sm">Teklif Başlığı</FormLabel>
                       <FormControl>
                         <Input 
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
+                          placeholder="Teklif başlığı"
                           className="bg-dark-primary border-dark-accent text-white h-9"
                           {...field} 
                         />
@@ -1053,89 +1080,192 @@ export default function CustomerDetailPage() {
                   )}
                 />
 
-                <FormField
-                  control={quoteForm.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white text-sm">Durum</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={quoteForm.control}
+                    name="quoteDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white text-sm">Teklif Tarihi</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white h-9">
-                            <SelectValue placeholder="Durum" />
-                          </SelectTrigger>
+                          <Input 
+                            type="date"
+                            className="bg-dark-primary border-dark-accent text-white h-9"
+                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                            onChange={(e) => field.onChange(new Date(e.target.value))}
+                          />
                         </FormControl>
-                        <SelectContent className="bg-dark-secondary border-dark-accent">
-                          <SelectItem value="pending">Bekliyor</SelectItem>
-                          <SelectItem value="approved">Onaylandı</SelectItem>
-                          <SelectItem value="rejected">Reddedildi</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={quoteForm.control}
+                    name="validUntil"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white text-sm">Geçerlilik</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date"
+                            className="bg-dark-primary border-dark-accent text-white h-9"
+                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                            onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={quoteForm.control}
-                  name="quoteDate"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white text-sm">Teklif Tarihi</FormLabel>
+                      <FormLabel className="text-white text-sm">Teklif Açıklaması</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="date"
-                          className="bg-dark-primary border-dark-accent text-white h-9"
-                          value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                          onChange={(e) => field.onChange(new Date(e.target.value))}
+                        <Textarea 
+                          placeholder="Genel teklif açıklaması"
+                          className="bg-dark-primary border-dark-accent text-white"
+                          rows={2}
+                          {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              </div>
+            </Form>
 
-                <FormField
-                  control={quoteForm.control}
-                  name="validUntil"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white text-sm">Geçerlilik</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="date"
-                          className="bg-dark-primary border-dark-accent text-white h-9"
-                          value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                          onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            {/* Görev Ekleme Formu */}
+            <div className="border-t border-dark-accent pt-4">
+              <h4 className="text-white font-medium mb-3">Görev Ekle</h4>
+              <div className="space-y-3">
+                <Input
+                  placeholder="Görev adı"
+                  value={currentItem.title}
+                  onChange={(e) => setCurrentItem(prev => ({ ...prev, title: e.target.value }))}
+                  className="bg-dark-primary border-dark-accent text-white h-9"
                 />
+                <Textarea
+                  placeholder="Görev açıklaması (opsiyonel)"
+                  value={currentItem.description}
+                  onChange={(e) => setCurrentItem(prev => ({ ...prev, description: e.target.value }))}
+                  className="bg-dark-primary border-dark-accent text-white"
+                  rows={2}
+                />
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-400 mb-1 block">Miktar</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={currentItem.quantity}
+                      onChange={(e) => setCurrentItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
+                      className="bg-dark-primary border-dark-accent text-white h-9"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 mb-1 block">Birim Fiyat (TL)</label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={currentItem.unitPrice}
+                      onChange={(e) => setCurrentItem(prev => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 }))}
+                      className="bg-dark-primary border-dark-accent text-white h-9"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 mb-1 block">Toplam</label>
+                    <Input
+                      value={(currentItem.quantity * currentItem.unitPrice).toFixed(2)}
+                      disabled
+                      className="bg-dark-primary border-dark-accent text-gray-300 h-9"
+                    />
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  onClick={addQuoteItem}
+                  className="w-full bg-blue-500 hover:bg-blue-600 h-9"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Görevi Ekle
+                </Button>
               </div>
+            </div>
 
-              <div className="flex gap-3 pt-3">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleCloseQuoteForm}
-                  className="flex-1 border-dark-accent text-gray-300 hover:bg-dark-accent h-9"
-                >
-                  İptal
-                </Button>
-                <Button 
-                  type="submit"
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 h-9"
-                  disabled={createQuoteMutation.isPending || updateQuoteMutation.isPending}
-                >
-                  {editingQuote ? "Güncelle" : "Oluştur"}
-                </Button>
+            {/* Eklenen Görevler Listesi */}
+            {quoteItems.length > 0 && (
+              <div className="border-t border-dark-accent pt-4">
+                <h4 className="text-white font-medium mb-3">Eklenen Görevler ({quoteItems.length})</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {quoteItems.map((item) => (
+                    <div key={item.id} className="bg-dark-primary rounded-lg p-3 border border-dark-accent">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h5 className="text-white font-medium text-sm">{item.title}</h5>
+                          {item.description && (
+                            <p className="text-gray-400 text-xs mt-1">{item.description}</p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-300">
+                            <span>{item.quantity} adet</span>
+                            <span>{formatCurrency(item.unitPrice.toString())} / adet</span>
+                            <span className="text-orange-400 font-medium">{formatCurrency(item.totalPrice.toString())}</span>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeQuoteItem(item.id)}
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-6 w-6 p-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Toplam Tutar */}
+                <div className="mt-4 pt-3 border-t border-dark-accent">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-medium">Toplam Teklif Tutarı:</span>
+                    <span className="text-2xl font-bold text-orange-400">
+                      {formatCurrency(calculateTotalAmount().toString())}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </form>
-          </Form>
+            )}
+
+            {/* Form Buttons */}
+            <div className="flex gap-3 pt-4 border-t border-dark-accent">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleCloseQuoteForm}
+                className="flex-1 border-dark-accent text-gray-300 hover:bg-dark-accent h-9"
+              >
+                İptal
+              </Button>
+              <Button 
+                type="button"
+                onClick={quoteForm.handleSubmit(onSubmitQuote)}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 h-9"
+                disabled={createQuoteMutation.isPending || updateQuoteMutation.isPending || quoteItems.length === 0}
+              >
+                {editingQuote ? "Teklifi Güncelle" : "Teklifi Oluştur"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
