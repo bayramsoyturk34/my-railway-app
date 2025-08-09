@@ -648,36 +648,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const personnel = await storage.getPersonnel();
       const timesheets = await storage.getTimesheets();
 
-      // Generate mock data for charts (in real implementation, calculate from actual data)
-      const monthlyRevenue = [
-        { month: "Ocak", income: 45000, expenses: 32000 },
-        { month: "Şubat", income: 52000, expenses: 38000 },
-        { month: "Mart", income: 48000, expenses: 35000 },
-        { month: "Nisan", income: 61000, expenses: 42000 },
-        { month: "Mayıs", income: 55000, expenses: 40000 },
-        { month: "Haziran", income: 58000, expenses: 41000 },
-      ];
+      // Calculate real monthly revenue from actual transactions
+      const currentYear = new Date().getFullYear();
+      const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+      
+      const monthlyRevenue = monthNames.map((month, index) => {
+        const monthTransactions = transactions.filter(t => {
+          const transactionDate = new Date(t.date);
+          return transactionDate.getMonth() === index && transactionDate.getFullYear() === currentYear;
+        });
+        
+        const income = monthTransactions
+          .filter(t => t.type === 'income')
+          .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+          
+        const expenses = monthTransactions
+          .filter(t => t.type === 'expense')
+          .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+          
+        return { month, income, expenses };
+      });
 
       const projectsByStatus = [
-        { status: "Aktif", count: projects.filter(p => p.status === "active").length || 5 },
-        { status: "Pasif", count: projects.filter(p => p.status === "passive").length || 2 },
-        { status: "Tamamlandı", count: projects.filter(p => p.status === "completed").length || 8 },
+        { status: "Aktif", count: projects.filter(p => p.status === "active").length },
+        { status: "Pasif", count: projects.filter(p => p.status === "passive").length },
+        { status: "Tamamlandı", count: projects.filter(p => p.status === "completed").length },
       ];
 
-      const personnelActivity = personnel.map(p => ({
-        name: p.name.split(' ')[0],
-        hours: Math.floor(Math.random() * 160) + 40 // Random hours between 40-200
-      }));
+      const personnelActivity = personnel.map(p => {
+        const personalTimesheets = timesheets.filter(t => t.personnelId === p.id);
+        const totalHours = personalTimesheets.reduce((sum, t) => sum + parseFloat(t.totalHours || "0"), 0);
+        return {
+          name: p.name.split(' ')[0],
+          hours: totalHours
+        };
+      });
 
-      const dailyActivity = [
-        { date: "01-08", timesheets: 5, transactions: 3 },
-        { date: "02-08", timesheets: 7, transactions: 2 },
-        { date: "03-08", timesheets: 4, transactions: 6 },
-        { date: "04-08", timesheets: 8, transactions: 4 },
-        { date: "05-08", timesheets: 6, transactions: 5 },
-        { date: "06-08", timesheets: 9, transactions: 3 },
-        { date: "07-08", timesheets: timesheets.length, transactions: transactions.length },
-      ];
+      // Calculate last 7 days activity
+      const dailyActivity = [];
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        
+        const dayTimesheets = timesheets.filter(t => {
+          const timesheetDate = new Date(t.date);
+          return timesheetDate.toDateString() === date.toDateString();
+        }).length;
+        
+        const dayTransactions = transactions.filter(t => {
+          const transactionDate = new Date(t.date);
+          return transactionDate.toDateString() === date.toDateString();
+        }).length;
+        
+        dailyActivity.push({ 
+          date: dateStr, 
+          timesheets: dayTimesheets, 
+          transactions: dayTransactions 
+        });
+      }
 
       const chartData = {
         monthlyRevenue,
