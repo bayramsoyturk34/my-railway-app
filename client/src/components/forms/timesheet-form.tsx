@@ -55,11 +55,9 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
     queryKey: ["/api/customers"],
   });
 
-  // Dialog açıldığında değerleri ayarla (sadece bir kez)
-  const [initialized, setInitialized] = useState(false);
-  
+  // Dialog açıldığında form değerlerini sadece bir kez ayarla  
   useEffect(() => {
-    if (open && !initialized) {
+    if (open) {
       if (editingTimesheet) {
         setSelectedPersonnelIds([editingTimesheet.personnelId || ""]);
         setWorkType(editingTimesheet.workType || "tam");
@@ -67,11 +65,9 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
         setSelectedPersonnelIds([]);
         setWorkType("tam");
       }
-      setInitialized(true);
-    } else if (!open) {
-      setInitialized(false);
     }
-  }, [open, initialized, editingTimesheet]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
 
 
