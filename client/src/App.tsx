@@ -10,6 +10,7 @@ import Personnel from "@/pages/personnel";
 import PersonnelDetail from "@/pages/personnel-detail";
 import Timesheet from "@/pages/timesheet";
 import Projects from "@/pages/projects";
+import ProjectDetail from "@/pages/project-detail.tsx";
 import Finances from "@/pages/finances";
 import Customers from "@/pages/customers";
 import CustomerDetail from "@/pages/customer-detail";
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/personnel/:id" component={PersonnelDetail} />
       <Route path="/timesheet" component={Timesheet} />
       <Route path="/projects" component={Projects} />
+      <Route path="/projects/:id" component={ProjectDetail} />
       <Route path="/finances" component={Finances} />
       <Route path="/customers" component={Customers} />
       <Route path="/customers/:customerName" component={CustomerDetail} />

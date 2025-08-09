@@ -207,7 +207,7 @@ export default function ProjectsPage() {
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <h1 className="text-2xl font-bold">Proje Yönetimi</h1>
+          <h1 className="text-2xl font-bold">Verilen Projeler</h1>
         </div>
 
         <div className="mb-6">
@@ -216,7 +216,7 @@ export default function ProjectsPage() {
             onClick={() => setShowProjectForm(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Yeni Proje
+            Verilen Proje
           </Button>
         </div>
 
@@ -224,79 +224,64 @@ export default function ProjectsPage() {
           <Card className="bg-dark-secondary border-dark-accent">
             <CardContent className="py-12 text-center">
               <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg mb-2">Henüz proje eklenmemiş</p>
-              <p className="text-gray-500 text-sm">Yeni proje eklemek için yukarıdaki butonu kullanın.</p>
+              <p className="text-gray-400 text-lg mb-2">Henüz yüklenici eklenmemiş</p>
+              <p className="text-gray-500 text-sm">Yeni yüklenici eklemek için yukarıdaki butonu kullanın.</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
-              <Card key={project.id} className="bg-dark-secondary border-dark-accent">
+              <Card 
+                key={project.id} 
+                className="bg-dark-secondary border-dark-accent hover:bg-dark-accent transition-colors cursor-pointer group"
+                onClick={() => setLocation(`/projects/${project.id}`)}
+              >
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Building className="h-5 w-5 text-blue-400" />
-                        <h4 className="text-white font-medium text-lg">{project.name}</h4>
-                        <span className={`text-sm px-2 py-1 rounded ${getStatusColor(project.status)} bg-dark-accent`}>
-                          {getStatusText(project.status)}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-3">
-                        <div>
-                          <p className="text-gray-400">Tür</p>
-                          <p className="text-white font-medium">{getTypeText(project.type)}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Tutar</p>
-                          <p className="text-white font-medium">{formatCurrency(project.amount)}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Başlangıç</p>
-                          <p className="text-white font-medium">{formatDate(project.startDate)}</p>
-                        </div>
-                      </div>
-
-                      {project.clientName && (
-                        <div className="mb-2">
-                          <p className="text-gray-400 text-sm">Müşteri</p>
-                          <button 
-                            className="text-blue-400 hover:text-blue-300 text-sm underline cursor-pointer"
-                            onClick={() => setLocation(`/customers/${encodeURIComponent(project.clientName || "")}`)}
-                          >
-                            {project.clientName}
-                          </button>
-                        </div>
-                      )}
-
-                      {project.description && (
-                        <div>
-                          <p className="text-gray-400 text-sm">Açıklama</p>
-                          <p className="text-gray-300 text-sm">{project.description}</p>
-                        </div>
-                      )}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Building className="h-6 w-6 text-white" />
                     </div>
-
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-blue-400 hover:text-blue-300 hover:bg-dark-accent"
-                        onClick={() => handleEditProject(project)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-400 hover:text-red-300 hover:bg-dark-accent"
-                        onClick={() => deleteProjectMutation.mutate(project.id)}
-                        disabled={deleteProjectMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-white font-medium text-lg truncate">{project.name}</h4>
+                      <p className="text-gray-400 text-sm truncate">{project.description || "Yüklenici Firma"}</p>
                     </div>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Başlangıç:</span>
+                      <span className="text-white">{formatDate(project.startDate)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Durum:</span>
+                      <span className={getStatusColor(project.status)}>{getStatusText(project.status)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-blue-400 hover:text-blue-300 hover:bg-dark-primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditProject(project);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-400 hover:text-red-300 hover:bg-dark-primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteProjectMutation.mutate(project.id);
+                      }}
+                      disabled={deleteProjectMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -310,10 +295,10 @@ export default function ProjectsPage() {
         <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">
-              {editingProject ? "Proje Düzenle" : "Yeni Proje"}
+              {editingProject ? "Yüklenici Düzenle" : "Verilen Proje"}
             </DialogTitle>
             <p className="text-gray-400 text-sm">
-              Yeni proje bilgilerini girin
+              Verilen proje bilgilerini girin
             </p>
           </DialogHeader>
 
@@ -324,31 +309,12 @@ export default function ProjectsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Proje Adı *</FormLabel>
+                    <FormLabel className="text-gray-300">Yüklenici Adı *</FormLabel>
                     <FormControl>
                       <Input
                         className="bg-dark-primary border-blue-500 text-white focus:border-blue-400 h-12"
-                        placeholder="Proje adını girin"
+                        placeholder="Yüklenici adını girin"
                         {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="clientName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Müşteri</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-dark-primary border-blue-500 text-white focus:border-blue-400 h-12"
-                        placeholder="Müşteri adını girin"
-                        {...field}
-                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -361,11 +327,11 @@ export default function ProjectsPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Şirket</FormLabel>
+                    <FormLabel className="text-gray-300">Yüklenici Firma</FormLabel>
                     <FormControl>
                       <Input
                         className="bg-dark-primary border-blue-500 text-white focus:border-blue-400 h-12"
-                        placeholder="Şirket adını girin"
+                        placeholder="Yüklenici firma adını girin"
                         {...field}
                         value={field.value || ""}
                       />
