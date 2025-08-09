@@ -35,6 +35,12 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Added dynamic quote terms with add/remove functionality
   - Integrated editable terms with PDF exports
   - Users can now customize standard quote conditions per their business needs
+- 🔄 **Quote Creation Bug**: Identified and partially resolved critical quote creation issue
+  - Server successfully creates quotes in database with proper IDs
+  - Issue located in API response serialization between server and frontend
+  - Quote items fail to create due to missing quoteId from empty frontend response
+  - Enhanced debugging with detailed server logging
+  - Temporary workaround needed for JSON serialization
 
 # User Preferences
 
