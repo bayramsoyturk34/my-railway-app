@@ -648,7 +648,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Validated quote data:", validatedData);
       const quote = await storage.createCustomerQuote(validatedData);
       console.log("Created quote result:", quote);
-      res.status(201).json(quote);
+      
+      // Ensure proper serialization by creating a plain object
+      const serializedQuote = {
+        ...quote,
+        id: quote.id,
+        customerId: quote.customerId,
+        title: quote.title,
+        description: quote.description,
+        totalAmount: quote.totalAmount,
+        hasVAT: quote.hasVAT,
+        vatRate: quote.vatRate,
+        vatAmount: quote.vatAmount,
+        totalWithVAT: quote.totalWithVAT,
+        status: quote.status,
+        isApproved: quote.isApproved,
+        quoteDate: quote.quoteDate,
+        validUntil: quote.validUntil,
+        createdAt: quote.createdAt,
+        updatedAt: quote.updatedAt
+      };
+      console.log("Serialized quote for response:", serializedQuote);
+      res.status(201).json(serializedQuote);
     } catch (error) {
       console.error("Customer quote creation error:", error);
       res.status(400).json({ message: "Invalid customer quote data", error: error instanceof Error ? error.message : String(error) });
