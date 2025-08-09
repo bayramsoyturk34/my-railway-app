@@ -33,7 +33,7 @@ function QuoteItemsSection({ quoteId }: { quoteId: string }) {
   const { toast } = useToast();
   
   const { data: quoteItems = [] } = useQuery<CustomerQuoteItem[]>({
-    queryKey: ["/api/customer-quote-items", quoteId],
+    queryKey: ["/api/customer-quote-items/quote", quoteId],
   });
 
   const updateQuoteItemMutation = useMutation({
@@ -287,18 +287,135 @@ export default function CustomerDetailPage() {
     },
   });
 
+  // Quote items helper functions
+  const addQuoteItem = () => {
+    if (!currentItem.title.trim()) {
+      toast({
+        title: "Uyarı",
+        description: "Görev adı gereklidir",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newItem = {
+      id: Date.now().toString(),
+      title: currentItem.title,
+      description: currentItem.description,
+      quantity: currentItem.quantity,
+      unitPrice: currentItem.unitPrice,
+      totalPrice: currentItem.quantity * currentItem.unitPrice,
+      unit: currentItem.unit
+    };
+
+    setQuoteItems(prev => [...prev, newItem]);
+    setCurrentItem({
+      title: "",
+      description: "",
+      quantity: 1,
+      unitPrice: 0,
+      unit: "adet"
+    });
+  };
+
+  const removeQuoteItem = (id: string) => {
+    setQuoteItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const editQuoteItem = (id: string) => {
+    const item = quoteItems.find(item => item.id === id);
+    if (item) {
+      setCurrentItem({
+        title: item.title,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        unit: item.unit
+      });
+      removeQuoteItem(id);
+    }
+  };
+
+  const getQuoteTotals = () => {
+    const subtotal = quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const vatAmount = hasVAT ? (subtotal * vatRate) / 100 : 0;
+    const total = subtotal + vatAmount;
+    return { subtotal, vatAmount, total };
+  };
+
+  // Export functions for quote form
+  const exportToExcel = () => {
+    if (quoteItems.length === 0) {
+      toast({
+        title: "Uyarı",
+        description: "Dışa aktarılacak görev bulunmamaktadır",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const headers = ["Görev", "Açıklama", "Miktar", "Birim", "Birim Fiyat", "Toplam"];
+    const csvContent = [
+      headers.join(","),
+      ...quoteItems.map(item => [
+        `"${item.title}"`,
+        `"${item.description || ""}"`,
+        item.quantity,
+        item.unit,
+        item.unitPrice.toFixed(2),
+        item.totalPrice.toFixed(2)
+      ].join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `teklif-${customer?.name}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({ title: "Başarılı", description: "Excel dosyası indirildi" });
+  };
+
+
+
   const createQuoteMutation = useMutation({
-    mutationFn: (data: InsertCustomerQuote) => apiRequest("/api/customer-quotes", "POST", data),
+    mutationFn: async (data: InsertCustomerQuote) => {
+      // First create the quote
+      const quote = await apiRequest("/api/customer-quotes", "POST", data) as any;
+      
+      // Then create quote items if any exist
+      if (quoteItems.length > 0) {
+        for (const item of quoteItems) {
+          const quoteItemData = {
+            quoteId: quote.id,
+            title: item.title,
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            unit: item.unit,
+            status: "pending",
+            isApproved: false
+          };
+          await apiRequest("/api/customer-quote-items", "POST", quoteItemData);
+        }
+      }
+      
+      return quote;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customer-quotes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-quote-items"] });
       queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
-      toast({ title: "Başarılı", description: "Teklif başarıyla eklendi" });
-      setShowQuoteForm(false);
-      quoteForm.reset();
-      setEditingQuote(null);
+      toast({ title: "Başarılı", description: "Teklif ve görevler başarıyla oluşturuldu" });
+      handleCloseQuoteForm();
     },
     onError: () => {
-      toast({ title: "Hata", description: "Teklif eklenirken bir hata oluştu", variant: "destructive" });
+      toast({ title: "Hata", description: "Teklif oluşturulamadı", variant: "destructive" });
     },
   });
 
@@ -383,33 +500,7 @@ export default function CustomerDetailPage() {
     }
   };
 
-  const onSubmitQuote = (data: InsertCustomerQuote) => {
-    if (quoteItems.length === 0) {
-      toast({
-        title: "Eksik Bilgi",
-        description: "Teklif için en az bir görev eklemelisiniz",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    const { subtotal, vatAmount, total } = getQuoteTotals();
-    const quoteData = {
-      ...data,
-      customerId: customer?.id || "",
-      totalAmount: subtotal.toString(),
-      hasVAT,
-      vatRate: vatRate.toString(),
-      vatAmount: vatAmount.toString(),
-      totalWithVAT: total.toString()
-    };
-
-    if (editingQuote) {
-      updateQuoteMutation.mutate({ id: editingQuote.id, data: quoteData });
-    } else {
-      createQuoteMutation.mutate(quoteData);
-    }
-  };
 
   const onSubmitPayment = (data: InsertCustomerPayment) => {
     createPaymentMutation.mutate({ ...data, customerId: customer?.id || "" });
@@ -421,58 +512,9 @@ export default function CustomerDetailPage() {
     taskForm.reset();
   };
 
-  const handleCloseQuoteForm = () => {
-    setShowQuoteForm(false);
-    setEditingQuote(null);
-    setQuoteItems([]);
-    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0, unit: "adet" });
-    setHasVAT(false);
-    setVatRate(20);
-    quoteForm.reset();
-  };
 
-  // Quote item handlers
-  const addQuoteItem = () => {
-    if (!currentItem.title.trim() || currentItem.unitPrice <= 0) {
-      toast({
-        title: "Eksik Bilgi",
-        description: "Görev adı ve birim fiyat gerekli",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    const newItem = {
-      id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      title: currentItem.title.trim(),
-      description: currentItem.description.trim(),
-      quantity: currentItem.quantity,
-      unitPrice: currentItem.unitPrice,
-      totalPrice: currentItem.quantity * currentItem.unitPrice,
-      unit: currentItem.unit
-    };
 
-    setQuoteItems(prev => [...prev, newItem]);
-    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0, unit: "adet" });
-  };
-
-  const removeQuoteItem = (itemId: string) => {
-    setQuoteItems(prev => prev.filter(item => item.id !== itemId));
-  };
-
-  const editQuoteItem = (itemId: string) => {
-    const item = quoteItems.find(q => q.id === itemId);
-    if (item) {
-      setCurrentItem({
-        title: item.title,
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        unit: item.unit
-      });
-      removeQuoteItem(itemId);
-    }
-  };
 
   const calculateTotalAmount = () => {
     return quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -486,89 +528,9 @@ export default function CustomerDetailPage() {
     return baseAmount + calculateVATAmount(baseAmount, vatRate);
   };
 
-  const getQuoteTotals = () => {
-    const subtotal = calculateTotalAmount();
-    const vatAmount = hasVAT ? calculateVATAmount(subtotal, vatRate) : 0;
-    const total = hasVAT ? calculateTotalWithVAT(subtotal, vatRate) : subtotal;
-    
-    return { subtotal, vatAmount, total };
-  };
 
-  const exportToExcel = () => {
-    if (quoteItems.length === 0) {
-      toast({
-        title: "Boş Teklif",
-        description: "Export edilecek görev bulunamadı",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    const { subtotal, vatAmount, total } = getQuoteTotals();
-    
-    const data = quoteItems.map((item, index) => ({
-      'Sıra': index + 1,
-      'Görev Adı': item.title,
-      'Açıklama': item.description || '-',
-      'Miktar': item.quantity,
-      'Birim': item.unit,
-      'Birim Fiyat (TL)': item.unitPrice.toFixed(2),
-      'Toplam (TL)': item.totalPrice.toFixed(2)
-    }));
 
-    // Add total rows
-    data.push({
-      'Sıra': 0,
-      'Görev Adı': 'ARA TOPLAM',
-      'Açıklama': '',
-      'Miktar': 0,
-      'Birim': '',
-      'Birim Fiyat (TL)': '',
-      'Toplam (TL)': subtotal.toFixed(2)
-    });
-
-    if (hasVAT) {
-      data.push({
-        'Sıra': 0,
-        'Görev Adı': `KDV (%${vatRate})`,
-        'Açıklama': '',
-        'Miktar': 0,
-        'Birim': '',
-        'Birim Fiyat (TL)': '',
-        'Toplam (TL)': vatAmount.toFixed(2)
-      });
-    }
-
-    data.push({
-      'Sıra': 0,
-      'Görev Adı': 'GENEL TOPLAM',
-      'Açıklama': '',
-      'Miktar': 0,
-      'Birim': '',
-      'Birim Fiyat (TL)': '',
-      'Toplam (TL)': total.toFixed(2)
-    });
-
-    const csv = [
-      Object.keys(data[0]).join(','),
-      ...data.map(row => Object.values(row).map(val => `"${val}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `teklif_${customer?.name}_${new Date().toLocaleDateString('tr-TR')}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast({
-      title: "Excel Export",
-      description: "Teklif Excel formatında indirildi"
-    });
-  };
 
   const exportToPDF = async () => {
     if (quoteItems.length === 0) {
@@ -665,9 +627,56 @@ export default function CustomerDetailPage() {
     });
   };
 
+  const onSubmitQuote = (data: InsertCustomerQuote) => {
+    if (quoteItems.length === 0) {
+      toast({
+        title: "Uyarı",
+        description: "En az bir görev eklemelisiniz",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const totals = getQuoteTotals();
+    const quoteData = {
+      ...data,
+      customerId: customer!.id,
+      amount: totals.total.toString(),
+      hasVAT,
+      vatRate: hasVAT ? vatRate.toString() : null,
+      status: "pending",
+      isApproved: false,
+      terms: quoteTerms.filter(term => term.trim()).join('\n')
+    };
+
+    if (editingQuote) {
+      updateQuoteMutation.mutate({ id: editingQuote.id, data: quoteData });
+    } else {
+      createQuoteMutation.mutate(quoteData);
+    }
+  };
+
+
+
   const handleClosePaymentForm = () => {
     setShowPaymentForm(false);
     paymentForm.reset();
+  };
+
+  const handleCloseQuoteForm = () => {
+    setShowQuoteForm(false);
+    setEditingQuote(null);
+    setQuoteItems([]);
+    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0, unit: "adet" });
+    setHasVAT(false);
+    setVatRate(18);
+    setQuoteTerms([
+      "Teklif geçerlilik süresi 15 gündür.",
+      "Ödeme şartları: %50 peşin, %50 işin bitiminde.",
+      "Fiyatlara KDV dahil değildir.",
+      "Malzeme fiyatlarındaki değişiklikler farkı yansıtılır."
+    ]);
+    quoteForm.reset();
   };
 
   // Update form when editing
