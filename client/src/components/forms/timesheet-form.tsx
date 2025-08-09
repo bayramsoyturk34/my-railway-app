@@ -355,14 +355,17 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
           {(editingTimesheet || workType === "mesai") && (
             <div className="space-y-2">
               <label className="text-gray-300 block">Mesai Saati</label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className="bg-dark-primary border-dark-accent text-white"
-                value={overtimeHours}
-                onChange={(e) => setOvertimeHours(e.target.value)}
-              />
+              <Select value={overtimeHours} onValueChange={setOvertimeHours}>
+                <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                  <SelectValue placeholder="Mesai saati seçin" />
+                </SelectTrigger>
+                <SelectContent className="bg-dark-primary border-dark-accent">
+                  <SelectItem value="1.00" className="text-white">1 saat</SelectItem>
+                  <SelectItem value="1.50" className="text-white">1.5 saat</SelectItem>
+                  <SelectItem value="2.00" className="text-white">2 saat</SelectItem>
+                  <SelectItem value="2.50" className="text-white">2.5 saat</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
 
