@@ -11,6 +11,8 @@ import {
   insertCustomerSchema,
   insertCustomerTaskSchema,
   insertCustomerPaymentSchema,
+  insertContractorTaskSchema,
+  insertContractorPaymentSchema,
   insertInvoiceSchema,
   insertInvoiceItemSchema,
   insertReportSchema,
@@ -607,6 +609,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete personnel payment" });
+    }
+  });
+
+  // Contractor Tasks routes
+  app.get("/api/contractor-tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getContractorTasks();
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch contractor tasks" });
+    }
+  });
+
+  app.get("/api/contractor-tasks/contractor/:contractorId", async (req, res) => {
+    try {
+      const { contractorId } = req.params;
+      const tasks = await storage.getContractorTasksByContractorId(contractorId);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch contractor tasks" });
+    }
+  });
+
+  app.post("/api/contractor-tasks", async (req, res) => {
+    try {
+      const processedBody = {
+        ...req.body,
+        ...(req.body.dueDate && { dueDate: new Date(req.body.dueDate) })
+      };
+      const validatedData = insertContractorTaskSchema.parse(processedBody);
+      const task = await storage.createContractorTask(validatedData);
+      res.status(201).json(task);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid task data" });
+    }
+  });
+
+  app.put("/api/contractor-tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const processedBody = {
+        ...req.body,
+        ...(req.body.dueDate && { dueDate: new Date(req.body.dueDate) })
+      };
+      const validatedData = insertContractorTaskSchema.partial().parse(processedBody);
+      const task = await storage.updateContractorTask(id, validatedData);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid task data" });
+    }
+  });
+
+  app.delete("/api/contractor-tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteContractorTask(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // Contractor Payments routes
+  app.get("/api/contractor-payments", async (req, res) => {
+    try {
+      const payments = await storage.getContractorPayments();
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch contractor payments" });
+    }
+  });
+
+  app.get("/api/contractor-payments/contractor/:contractorId", async (req, res) => {
+    try {
+      const { contractorId } = req.params;
+      const payments = await storage.getContractorPaymentsByContractorId(contractorId);
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch contractor payments" });
+    }
+  });
+
+  app.post("/api/contractor-payments", async (req, res) => {
+    try {
+      const processedBody = {
+        ...req.body,
+        paymentDate: new Date(req.body.paymentDate)
+      };
+      const validatedData = insertContractorPaymentSchema.parse(processedBody);
+      
+      // Create the contractor payment
+      const payment = await storage.createContractorPayment(validatedData);
+      
+      // Get contractor name for the transaction description
+      const contractor = await storage.getProject(validatedData.contractorId); // Using project table as contractor
+      const contractorName = contractor?.name || "Bilinmeyen Yüklenici";
+      
+      // Create a corresponding expense transaction
+      const expenseTransaction = {
+        type: "expense" as const,
+        amount: validatedData.amount,
+        description: `${contractorName} - Yüklenici Ödemesi: ${validatedData.description}`,
+        date: validatedData.paymentDate,
+        category: "Yüklenici Ödemesi"
+      };
+      
+      // Add the expense transaction to the system
+      const transaction = await storage.createTransaction(expenseTransaction);
+      
+      // Update payment with transaction reference
+      if (transaction && transaction.id) {
+        await storage.updateContractorPayment(payment.id, { transactionId: transaction.id });
+      }
+      
+      res.status(201).json(payment);
+    } catch (error) {
+      console.error("Contractor payment creation error:", error);
+      res.status(400).json({ message: "Invalid payment data", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  app.put("/api/contractor-payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const processedBody = {
+        ...req.body,
+        ...(req.body.paymentDate && { paymentDate: new Date(req.body.paymentDate) })
+      };
+      const validatedData = insertContractorPaymentSchema.partial().parse(processedBody);
+      const payment = await storage.updateContractorPayment(id, validatedData);
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      res.json(payment);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid payment data" });
+    }
+  });
+
+  app.delete("/api/contractor-payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteContractorPayment(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete payment" });
     }
   });
 

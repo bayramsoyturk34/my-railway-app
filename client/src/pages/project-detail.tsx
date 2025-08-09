@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Building, CheckSquare, Banknote, User, Info } from "lucide-react";
+import { ArrowLeft, Building, CheckSquare, Banknote, User, Info, Plus } from "lucide-react";
+import ContractorTaskForm from "@/components/forms/contractor-task-form";
+import ContractorPaymentForm from "@/components/forms/contractor-payment-form";
 import type { Project } from "@shared/schema";
 import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,8 @@ export default function ProjectDetailPage() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/projects/:id");
   const projectId = params?.id || "";
+  const [taskFormOpen, setTaskFormOpen] = useState(false);
+  const [paymentFormOpen, setPaymentFormOpen] = useState(false);
 
   // Queries
   const { data: projects } = useQuery<Project[]>({
@@ -162,9 +166,18 @@ export default function ProjectDetailPage() {
           <TabsContent value="yapilacaklar" className="mt-6">
             <Card className="bg-dark-secondary border-dark-accent">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckSquare className="h-5 w-5 text-blue-400" />
-                  <h3 className="text-white font-medium text-lg">Yapılacak İşler</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <CheckSquare className="h-5 w-5 text-blue-400" />
+                    <h3 className="text-white font-medium text-lg">Yapılacak İşler</h3>
+                  </div>
+                  <Button
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                    onClick={() => setTaskFormOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Görev Ekle
+                  </Button>
                 </div>
                 
                 <div className="text-center py-8">
@@ -180,15 +193,24 @@ export default function ProjectDetailPage() {
           <TabsContent value="odemeler" className="mt-6">
             <Card className="bg-dark-secondary border-dark-accent">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Banknote className="h-5 w-5 text-green-400" />
-                  <h3 className="text-white font-medium text-lg">Ödeme Geçmişi</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Banknote className="h-5 w-5 text-green-400" />
+                    <h3 className="text-white font-medium text-lg">Ödeme Geçmişi</h3>
+                  </div>
+                  <Button
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                    onClick={() => setPaymentFormOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ödeme Yap
+                  </Button>
                 </div>
                 
                 <div className="text-center py-8">
                   <Banknote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-400 text-lg mb-2">Henüz ödeme yapılmamış</p>
-                  <p className="text-gray-500 text-sm">Bu proje için henüz ödeme kaydı bulunmuyor.</p>
+                  <p className="text-gray-500 text-sm">Bu yükleniciye henüz ödeme yapılmamış.</p>
                 </div>
               </CardContent>
             </Card>
@@ -198,9 +220,18 @@ export default function ProjectDetailPage() {
           <TabsContent value="bilgiler" className="mt-6">
             <Card className="bg-dark-secondary border-dark-accent">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Info className="h-5 w-5 text-purple-400" />
-                  <h3 className="text-white font-medium text-lg">Yüklenici Bilgileri</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-5 w-5 text-purple-400" />
+                    <h3 className="text-white font-medium text-lg">Yüklenici Bilgileri</h3>
+                  </div>
+                  <Button
+                    className="bg-purple-500 hover:bg-purple-600 text-white"
+                    onClick={() => {}}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Bilgileri Düzenle
+                  </Button>
                 </div>
                 
                 <div className="space-y-4">
@@ -239,6 +270,19 @@ export default function ProjectDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Forms */}
+      <ContractorTaskForm
+        contractorId={projectId}
+        open={taskFormOpen}
+        onOpenChange={setTaskFormOpen}
+      />
+      
+      <ContractorPaymentForm
+        contractorId={projectId}
+        open={paymentFormOpen}
+        onOpenChange={setPaymentFormOpen}
+      />
     </div>
   );
 }

@@ -8,6 +8,8 @@ import {
   type Customer, type InsertCustomer,
   type CustomerTask, type InsertCustomerTask,
   type CustomerPayment, type InsertCustomerPayment,
+  type ContractorTask, type InsertContractorTask,
+  type ContractorPayment, type InsertContractorPayment,
   type PersonnelPayment, type InsertPersonnelPayment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -78,6 +80,23 @@ export interface IStorage {
   createPersonnelPayment(payment: InsertPersonnelPayment): Promise<PersonnelPayment>;
   updatePersonnelPayment(id: string, payment: Partial<InsertPersonnelPayment>): Promise<PersonnelPayment | undefined>;
   deletePersonnelPayment(id: string): Promise<boolean>;
+
+  // Contractor Tasks
+  getContractorTasks(): Promise<ContractorTask[]>;
+  getContractorTasksByContractorId(contractorId: string): Promise<ContractorTask[]>;
+  createContractorTask(task: InsertContractorTask): Promise<ContractorTask>;
+  updateContractorTask(id: string, task: Partial<InsertContractorTask>): Promise<ContractorTask | undefined>;
+  deleteContractorTask(id: string): Promise<boolean>;
+
+  // Contractor Payments
+  getContractorPayments(): Promise<ContractorPayment[]>;
+  getContractorPaymentsByContractorId(contractorId: string): Promise<ContractorPayment[]>;
+  createContractorPayment(payment: InsertContractorPayment): Promise<ContractorPayment>;
+  updateContractorPayment(id: string, payment: Partial<InsertContractorPayment>): Promise<ContractorPayment | undefined>;
+  deleteContractorPayment(id: string): Promise<boolean>;
+
+  // Project lookup for contractors (since we use projects table)
+  getProject(id: string): Promise<Project | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -90,6 +109,8 @@ export class MemStorage implements IStorage {
   private customers: Map<string, Customer> = new Map();
   private customerTasks: Map<string, CustomerTask> = new Map();
   private customerPayments: Map<string, CustomerPayment> = new Map();
+  private contractorTasks: Map<string, ContractorTask> = new Map();
+  private contractorPayments: Map<string, ContractorPayment> = new Map();
   private personnelPayments: Map<string, PersonnelPayment> = new Map();
 
   constructor() {
@@ -184,6 +205,11 @@ export class MemStorage implements IStorage {
       ...insertTimesheet,
       id,
       createdAt: new Date(),
+      customerId: insertTimesheet.customerId || null,
+      startTime: insertTimesheet.startTime || null,
+      endTime: insertTimesheet.endTime || null,
+      hourlyRate: insertTimesheet.hourlyRate || null,
+      dailyWage: insertTimesheet.dailyWage || null,
       notes: insertTimesheet.notes || null,
       overtimeHours: insertTimesheet.overtimeHours || "0.00",
     };
@@ -423,6 +449,82 @@ export class MemStorage implements IStorage {
 
   async deletePersonnelPayment(id: string): Promise<boolean> {
     return this.personnelPayments.delete(id);
+  }
+
+  // Contractor Tasks methods
+  async getContractorTasks(): Promise<ContractorTask[]> {
+    return Array.from(this.contractorTasks.values());
+  }
+
+  async getContractorTasksByContractorId(contractorId: string): Promise<ContractorTask[]> {
+    return Array.from(this.contractorTasks.values()).filter(task => task.contractorId === contractorId);
+  }
+
+  async createContractorTask(insertTask: InsertContractorTask): Promise<ContractorTask> {
+    const id = randomUUID();
+    const task: ContractorTask = {
+      ...insertTask,
+      id,
+      createdAt: new Date(),
+      status: insertTask.status || "pending",
+      description: insertTask.description || null,
+      dueDate: insertTask.dueDate || null,
+    };
+    this.contractorTasks.set(id, task);
+    return task;
+  }
+
+  async updateContractorTask(id: string, updates: Partial<InsertContractorTask>): Promise<ContractorTask | undefined> {
+    const task = this.contractorTasks.get(id);
+    if (!task) return undefined;
+
+    const updated = { ...task, ...updates };
+    this.contractorTasks.set(id, updated);
+    return updated;
+  }
+
+  async deleteContractorTask(id: string): Promise<boolean> {
+    return this.contractorTasks.delete(id);
+  }
+
+  // Contractor Payments methods
+  async getContractorPayments(): Promise<ContractorPayment[]> {
+    return Array.from(this.contractorPayments.values());
+  }
+
+  async getContractorPaymentsByContractorId(contractorId: string): Promise<ContractorPayment[]> {
+    return Array.from(this.contractorPayments.values()).filter(payment => payment.contractorId === contractorId);
+  }
+
+  async createContractorPayment(insertPayment: InsertContractorPayment): Promise<ContractorPayment> {
+    const id = randomUUID();
+    const payment: ContractorPayment = {
+      ...insertPayment,
+      id,
+      createdAt: new Date(),
+      paymentMethod: insertPayment.paymentMethod || null,
+      transactionId: insertPayment.transactionId || null,
+    };
+    this.contractorPayments.set(id, payment);
+    return payment;
+  }
+
+  async updateContractorPayment(id: string, updates: Partial<InsertContractorPayment>): Promise<ContractorPayment | undefined> {
+    const payment = this.contractorPayments.get(id);
+    if (!payment) return undefined;
+
+    const updated = { ...payment, ...updates };
+    this.contractorPayments.set(id, updated);
+    return updated;
+  }
+
+  async deleteContractorPayment(id: string): Promise<boolean> {
+    return this.contractorPayments.delete(id);
+  }
+
+  // Project lookup method for contractors
+  async getProject(id: string): Promise<Project | undefined> {
+    return this.projects.get(id);
   }
 }
 

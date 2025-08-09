@@ -106,6 +106,30 @@ export const customerPayments = pgTable("customer_payments", {
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
+// Contractor Tasks (Yüklenici Görevleri)
+export const contractorTasks = pgTable("contractor_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  contractorId: varchar("contractor_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").notNull().default("pending"), // "pending", "in_progress", "completed"
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Contractor Payments (Yüklenici Ödemeleri)
+export const contractorPayments = pgTable("contractor_payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  contractorId: varchar("contractor_id").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  paymentDate: timestamp("payment_date").notNull(),
+  paymentMethod: text("payment_method"), // "cash", "bank_transfer", "check", "other"
+  transactionId: varchar("transaction_id"), // Link to auto-created expense transaction
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerId: varchar("customer_id").notNull(),
@@ -220,6 +244,22 @@ export const insertCustomerPaymentSchema = createInsertSchema(customerPayments).
   paymentMethod: z.string().optional().nullable(),
 });
 
+export const insertContractorTaskSchema = createInsertSchema(contractorTasks).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  description: z.string().optional().nullable(),
+  dueDate: z.date().optional().nullable(),
+});
+
+export const insertContractorPaymentSchema = createInsertSchema(contractorPayments).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  paymentMethod: z.string().optional().nullable(),
+  transactionId: z.string().optional().nullable(),
+});
+
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   id: true,
   createdAt: true,
@@ -285,6 +325,12 @@ export type InsertCustomerTask = z.infer<typeof insertCustomerTaskSchema>;
 
 export type CustomerPayment = typeof customerPayments.$inferSelect;
 export type InsertCustomerPayment = z.infer<typeof insertCustomerPaymentSchema>;
+
+export type ContractorTask = typeof contractorTasks.$inferSelect;
+export type InsertContractorTask = z.infer<typeof insertContractorTaskSchema>;
+
+export type ContractorPayment = typeof contractorPayments.$inferSelect;
+export type InsertContractorPayment = z.infer<typeof insertContractorPaymentSchema>;
 
 export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
