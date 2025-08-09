@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,9 +20,10 @@ interface ContractorTaskFormProps {
   contractorId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingTask?: any;
 }
 
-export default function ContractorTaskForm({ contractorId, open, onOpenChange }: ContractorTaskFormProps) {
+export default function ContractorTaskForm({ contractorId, open, onOpenChange, editingTask }: ContractorTaskFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -30,22 +31,24 @@ export default function ContractorTaskForm({ contractorId, open, onOpenChange }:
     resolver: zodResolver(insertContractorTaskSchema),
     defaultValues: {
       contractorId,
-      title: "",
-      description: "",
-      amount: "",
-      status: "pending",
-      dueDate: undefined,
+      title: editingTask?.title || "",
+      description: editingTask?.description || "",
+      amount: editingTask?.amount || "",
+      status: editingTask?.status || "pending",
+      dueDate: editingTask?.dueDate ? new Date(editingTask.dueDate) : undefined,
     },
   });
 
   const createTaskMutation = useMutation({
     mutationFn: async (data: InsertContractorTask) => {
-      const response = await fetch("/api/contractor-tasks", {
-        method: "POST",
+      const url = editingTask ? `/api/contractor-tasks/${editingTask.id}` : "/api/contractor-tasks";
+      const method = editingTask ? "PUT" : "POST";
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error("Failed to create task");
+      if (!response.ok) throw new Error(`Failed to ${editingTask ? 'update' : 'create'} task`);
       return response.json();
     },
     onSuccess: () => {
@@ -53,19 +56,49 @@ export default function ContractorTaskForm({ contractorId, open, onOpenChange }:
       queryClient.invalidateQueries({ queryKey: ['/api/contractor-tasks/contractor/' + contractorId] });
       toast({
         title: "Başarılı",
-        description: "Görev başarıyla eklendi.",
+        description: editingTask ? "Görev başarıyla güncellendi." : "Görev başarıyla eklendi.",
       });
-      form.reset();
+      form.reset({
+        contractorId,
+        title: "",
+        description: "",
+        amount: "",
+        status: "pending",
+        dueDate: undefined,
+      });
       onOpenChange(false);
     },
     onError: (error) => {
       toast({
         title: "Hata",
-        description: "Görev eklenirken bir hata oluştu.",
+        description: editingTask ? "Görev güncellenirken bir hata oluştu." : "Görev eklenirken bir hata oluştu.",
         variant: "destructive",
       });
     },
   });
+
+  // Form değerlerini editingTask değiştiğinde güncelle
+  useEffect(() => {
+    if (editingTask) {
+      form.reset({
+        contractorId,
+        title: editingTask.title || "",
+        description: editingTask.description || "",
+        amount: editingTask.amount || "",
+        status: editingTask.status || "pending",
+        dueDate: editingTask.dueDate ? new Date(editingTask.dueDate) : undefined,
+      });
+    } else {
+      form.reset({
+        contractorId,
+        title: "",
+        description: "",
+        amount: "",
+        status: "pending",
+        dueDate: undefined,
+      });
+    }
+  }, [editingTask, contractorId, form]);
 
   const onSubmit = (data: InsertContractorTask) => {
     createTaskMutation.mutate(data);
@@ -75,7 +108,9 @@ export default function ContractorTaskForm({ contractorId, open, onOpenChange }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[450px] max-h-[85vh] overflow-y-auto bg-dark-secondary border-dark-accent">
         <DialogHeader>
-          <DialogTitle className="text-white">Yeni Görev Ekle</DialogTitle>
+          <DialogTitle className="text-white">
+            {editingTask ? "Görevi Düzenle" : "Yeni Görev Ekle"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
