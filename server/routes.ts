@@ -269,6 +269,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/transactions/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteTransaction(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Transaction deletion error:", error);
+      res.status(500).json({ message: "Failed to delete transaction" });
+    }
+  });
+
   // Notes routes
   app.get("/api/notes", async (req, res) => {
     try {
