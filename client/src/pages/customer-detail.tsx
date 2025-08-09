@@ -35,12 +35,14 @@ export default function CustomerDetailPage() {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    unit: string;
   }>>([]);
   const [currentItem, setCurrentItem] = useState({
     title: "",
     description: "",
     quantity: 1,
-    unitPrice: 0
+    unitPrice: 0,
+    unit: "adet"
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -282,7 +284,7 @@ export default function CustomerDetailPage() {
     setShowQuoteForm(false);
     setEditingQuote(null);
     setQuoteItems([]);
-    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0 });
+    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0, unit: "adet" });
     quoteForm.reset();
   };
 
@@ -303,11 +305,12 @@ export default function CustomerDetailPage() {
       description: currentItem.description.trim(),
       quantity: currentItem.quantity,
       unitPrice: currentItem.unitPrice,
-      totalPrice: currentItem.quantity * currentItem.unitPrice
+      totalPrice: currentItem.quantity * currentItem.unitPrice,
+      unit: currentItem.unit
     };
 
     setQuoteItems(prev => [...prev, newItem]);
-    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0 });
+    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0, unit: "adet" });
   };
 
   const removeQuoteItem = (itemId: string) => {
@@ -1159,7 +1162,7 @@ export default function CustomerDetailPage() {
                   className="bg-dark-primary border-dark-accent text-white"
                   rows={2}
                 />
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   <div>
                     <label className="text-xs text-gray-400 mb-1 block">Miktar</label>
                     <Input
@@ -1169,6 +1172,22 @@ export default function CustomerDetailPage() {
                       onChange={(e) => setCurrentItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
                       className="bg-dark-primary border-dark-accent text-white h-9"
                     />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 mb-1 block">Birim</label>
+                    <Select 
+                      value={currentItem.unit} 
+                      onValueChange={(value) => setCurrentItem(prev => ({ ...prev, unit: value }))}
+                    >
+                      <SelectTrigger className="bg-dark-primary border-dark-accent text-white h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-dark-secondary border-dark-accent">
+                        <SelectItem value="adet">Adet</SelectItem>
+                        <SelectItem value="m2">m²</SelectItem>
+                        <SelectItem value="m">m</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="text-xs text-gray-400 mb-1 block">Birim Fiyat (TL)</label>
@@ -1215,8 +1234,8 @@ export default function CustomerDetailPage() {
                             <p className="text-gray-400 text-xs mt-1">{item.description}</p>
                           )}
                           <div className="flex items-center gap-4 mt-2 text-xs text-gray-300">
-                            <span>{item.quantity} adet</span>
-                            <span>{formatCurrency(item.unitPrice.toString())} / adet</span>
+                            <span>{item.quantity} {item.unit}</span>
+                            <span>{formatCurrency(item.unitPrice.toString())} / {item.unit}</span>
                             <span className="text-orange-400 font-medium">{formatCurrency(item.totalPrice.toString())}</span>
                           </div>
                         </div>
