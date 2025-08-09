@@ -129,6 +129,8 @@ export const customerQuoteItems = pgTable("customer_quote_items", {
   unit: text("unit").notNull().default("adet"), // "adet", "m2", "m"
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").notNull().default("pending"), // "pending", "approved", "rejected"
+  isApproved: boolean("is_approved").default(false),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
@@ -286,6 +288,8 @@ export const insertCustomerQuoteSchema = createInsertSchema(customerQuotes).omit
 export const insertCustomerQuoteItemSchema = createInsertSchema(customerQuoteItems).omit({
   id: true,
   createdAt: true,
+}).extend({
+  description: z.string().optional().nullable(),
 });
 
 export const insertCustomerPaymentSchema = createInsertSchema(customerPayments).omit({

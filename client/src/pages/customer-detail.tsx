@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X, Download, FileSpreadsheet, Calculator } from "lucide-react";
-import { type Customer, type CustomerTask, type CustomerQuote, type CustomerPayment, insertCustomerTaskSchema, insertCustomerQuoteSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerQuote, type InsertCustomerPayment } from "@shared/schema";
+import { type Customer, type CustomerTask, type CustomerQuote, type CustomerQuoteItem, type CustomerPayment, insertCustomerTaskSchema, insertCustomerQuoteSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerQuote, type InsertCustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,111 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Helper function
+const formatCurrency = (amount: string | number): string => {
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    minimumFractionDigits: 2
+  }).format(numAmount);
+};
+
+// Quote Items Component
+function QuoteItemsSection({ quoteId }: { quoteId: string }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  const { data: quoteItems = [] } = useQuery<CustomerQuoteItem[]>({
+    queryKey: ["/api/customer-quote-items", quoteId],
+  });
+
+  const updateQuoteItemMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { isApproved: boolean; status: string } }) => 
+      apiRequest(`/api/customer-quote-items/${id}`, "PUT", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-quote-items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      toast({ title: "Başarılı", description: "Kalem durumu güncellendi" });
+    },
+    onError: () => {
+      toast({ title: "Hata", description: "Kalem durumu güncellenemedi", variant: "destructive" });
+    },
+  });
+
+  if (!quoteItems.length) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 border-t border-dark-accent pt-4">
+      <h5 className="text-white font-medium mb-3">Teklif Kalemleri</h5>
+      {quoteItems.map((item) => (
+        <div key={item.id} className="bg-dark-primary rounded-lg p-3 mb-2 border border-dark-accent">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <h6 className="text-white font-medium">{item.title}</h6>
+              {item.description && (
+                <p className="text-gray-400 text-sm mt-1">{item.description}</p>
+              )}
+              <div className="flex items-center gap-4 mt-2 text-sm">
+                <span className="text-gray-300">
+                  {item.quantity} {item.unit}
+                </span>
+                <span className="text-gray-300">
+                  {formatCurrency(item.unitPrice.toString())} / {item.unit}
+                </span>
+                <span className="text-orange-400 font-medium">
+                  Toplam: {formatCurrency(item.totalPrice.toString())}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 ml-4">
+              <span className={`px-2 py-1 rounded text-xs ${
+                item.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                item.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                'bg-yellow-500/20 text-yellow-400'
+              }`}>
+                {item.status === 'approved' ? 'Onaylandı' :
+                 item.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
+              </span>
+              
+              {item.status === 'pending' && (
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    className="h-7 px-2 text-xs bg-green-500 hover:bg-green-600"
+                    onClick={() => updateQuoteItemMutation.mutate({ 
+                      id: item.id, 
+                      data: { isApproved: true, status: 'approved' } 
+                    })}
+                    disabled={updateQuoteItemMutation.isPending}
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs border-red-500/20 hover:bg-red-500/20 text-red-400"
+                    onClick={() => updateQuoteItemMutation.mutate({ 
+                      id: item.id, 
+                      data: { isApproved: false, status: 'rejected' } 
+                    })}
+                    disabled={updateQuoteItemMutation.isPending}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function CustomerDetailPage() {
   const [, setLocation] = useLocation();
@@ -251,6 +356,8 @@ export default function CustomerDetailPage() {
       toast({ title: "Hata", description: "Görev silinemedi", variant: "destructive" });
     },
   });
+
+
 
   const createPaymentMutation = useMutation({
     mutationFn: (data: InsertCustomerPayment) => apiRequest("/api/customer-payments", "POST", data),
@@ -911,6 +1018,9 @@ export default function CustomerDetailPage() {
                             <p className="text-gray-300 text-sm">{quote.description}</p>
                           </div>
                         )}
+
+                        {/* Quote Items Section */}
+                        <QuoteItemsSection quoteId={quote.id} />
                         
                         {quote.isApproved && (
                           <div className="mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded">

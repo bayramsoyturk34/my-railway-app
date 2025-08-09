@@ -461,6 +461,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.customerPayments.values());
   }
 
+  async getCustomerPayment(id: string): Promise<CustomerPayment | undefined> {
+    return this.customerPayments.get(id);
+  }
+
   async getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]> {
     return Array.from(this.customerPayments.values()).filter(payment => payment.customerId === customerId);
   }
@@ -484,6 +488,10 @@ export class MemStorage implements IStorage {
   // Personnel Payments methods
   async getPersonnelPayments(): Promise<PersonnelPayment[]> {
     return Array.from(this.personnelPayments.values());
+  }
+
+  async getPersonnelPayment(id: string): Promise<PersonnelPayment | undefined> {
+    return this.personnelPayments.get(id);
   }
 
   async getPersonnelPaymentsByPersonnelId(personnelId: string): Promise<PersonnelPayment[]> {
@@ -557,6 +565,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.contractorPayments.values());
   }
 
+  async getContractorPayment(id: string): Promise<ContractorPayment | undefined> {
+    return this.contractorPayments.get(id);
+  }
+
   async getContractorPaymentsByContractorId(contractorId: string): Promise<ContractorPayment[]> {
     return Array.from(this.contractorPayments.values()).filter(payment => payment.contractorId === contractorId);
   }
@@ -611,6 +623,7 @@ export class MemStorage implements IStorage {
       description: insertQuote.description || null,
       isApproved: insertQuote.isApproved || false,
       validUntil: insertQuote.validUntil || null,
+      status: insertQuote.status || "pending",
     };
     this.customerQuotes.set(id, quote);
     return quote;
@@ -622,20 +635,6 @@ export class MemStorage implements IStorage {
 
     const updated = { ...quote, ...updates, updatedAt: new Date() };
     this.customerQuotes.set(id, updated);
-
-    // If quote is approved, create a task automatically
-    if (updates.isApproved && updated) {
-      const taskData: InsertCustomerTask = {
-        customerId: updated.customerId,
-        title: `${updated.title} (Onaylanan Teklif)`,
-        description: updated.description || "",
-        amount: updated.totalAmount,
-        status: "pending",
-        dueDate: null
-      };
-      await this.createCustomerTask(taskData);
-    }
-
     return updated;
   }
 
@@ -644,6 +643,10 @@ export class MemStorage implements IStorage {
   }
 
   // Customer Quote Items methods
+  async getCustomerQuoteItems(): Promise<CustomerQuoteItem[]> {
+    return Array.from(this.customerQuoteItems.values());
+  }
+
   async getCustomerQuoteItemsByQuoteId(quoteId: string): Promise<CustomerQuoteItem[]> {
     return Array.from(this.customerQuoteItems.values()).filter(item => item.quoteId === quoteId);
   }
@@ -654,7 +657,9 @@ export class MemStorage implements IStorage {
       ...insertItem,
       id,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      description: insertItem.description || null,
+      status: insertItem.status || "pending",
+      isApproved: insertItem.isApproved || false,
     };
     this.customerQuoteItems.set(id, item);
     return item;
@@ -664,9 +669,42 @@ export class MemStorage implements IStorage {
     const item = this.customerQuoteItems.get(id);
     if (!item) return undefined;
 
-    const updated = { ...item, ...updates, updatedAt: new Date() };
+    const updated = { ...item, ...updates };
     this.customerQuoteItems.set(id, updated);
+    
+    // If item is approved, create corresponding customer task
+    if (updated.isApproved && updated.status === 'approved' && !item.isApproved) {
+      await this.createTaskFromQuoteItem(updated);
+    }
+    
     return updated;
+  }
+
+  // Helper method to create task from approved quote item
+  private async createTaskFromQuoteItem(quoteItem: CustomerQuoteItem): Promise<void> {
+    // Get the quote to find customer ID
+    const quote = this.customerQuotes.get(quoteItem.quoteId);
+    if (!quote) return;
+
+    // Check if task already exists for this quote item
+    const existingTask = Array.from(this.customerTasks.values())
+      .find(task => task.title === quoteItem.title && task.customerId === quote.customerId);
+    
+    if (existingTask) return; // Task already exists
+
+    // Create new task from quote item
+    const taskData: InsertCustomerTask = {
+      customerId: quote.customerId,
+      title: quoteItem.title,
+      description: quoteItem.description || `${quote.title} - ${quoteItem.title}`,
+      amount: quoteItem.totalPrice.toString(),
+      status: "pending",
+      dueDate: quote.validUntil || null,
+      hasVAT: false,
+      vatRate: "20.00",
+    };
+
+    await this.createCustomerTask(taskData);
   }
 
   async deleteCustomerQuoteItem(id: string): Promise<boolean> {

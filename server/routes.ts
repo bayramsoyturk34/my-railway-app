@@ -11,6 +11,7 @@ import {
   insertCustomerSchema,
   insertCustomerTaskSchema,
   insertCustomerQuoteSchema,
+  insertCustomerQuoteItemSchema,
   insertCustomerPaymentSchema,
   insertContractorTaskSchema,
   insertContractorPaymentSchema,
@@ -660,31 +661,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       const validatedData = insertCustomerQuoteSchema.partial().parse(processedBody);
       
-      // Check if status is approved and handle auto-creation of customer task
-      if (validatedData.status === "approved" || validatedData.isApproved === true) {
-        const quote = await storage.updateCustomerQuote(id, { ...validatedData, isApproved: true, status: "approved" });
-        
-        if (quote) {
-          // Create customer task from approved quote
-          const taskData = {
-            customerId: quote.customerId,
-            title: quote.title,
-            description: quote.description || "",
-            amount: quote.totalAmount,
-            status: "pending" as const,
-            dueDate: null
-          };
-          await storage.createCustomerTask(taskData);
-        }
-        
-        res.json(quote);
-      } else {
-        const quote = await storage.updateCustomerQuote(id, validatedData);
-        if (!quote) {
-          return res.status(404).json({ message: "Customer quote not found" });
-        }
-        res.json(quote);
+      // Update the quote WITHOUT auto-creating tasks
+      // Tasks will be created individually from approved quote items
+      const quote = await storage.updateCustomerQuote(id, validatedData);
+      if (!quote) {
+        return res.status(404).json({ message: "Customer quote not found" });
       }
+      res.json(quote);
     } catch (error) {
       console.error("Customer quote update error:", error);
       res.status(400).json({ message: "Invalid customer quote data" });
@@ -701,6 +684,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete customer quote" });
+    }
+  });
+
+  // Customer Quote Items routes
+  app.get("/api/customer-quote-items/quote/:quoteId", async (req, res) => {
+    try {
+      const { quoteId } = req.params;
+      const items = await storage.getCustomerQuoteItemsByQuoteId(quoteId);
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch quote items" });
+    }
+  });
+
+  app.post("/api/customer-quote-items", async (req, res) => {
+    try {
+      const validatedData = insertCustomerQuoteItemSchema.parse(req.body);
+      const item = await storage.createCustomerQuoteItem(validatedData);
+      res.status(201).json(item);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid quote item data" });
+    }
+  });
+
+  app.put("/api/customer-quote-items/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertCustomerQuoteItemSchema.partial().parse(req.body);
+      
+      // If item is approved, create a customer task
+      if (validatedData.isApproved === true) {
+        const item = await storage.updateCustomerQuoteItem(id, { ...validatedData, status: "approved" });
+        
+        if (item) {
+          // Get the quote to get customer info
+          const quote = await storage.getCustomerQuotes();
+          const parentQuote = quote.find(q => q.id === item.quoteId);
+          
+          if (parentQuote) {
+            const taskData = {
+              customerId: parentQuote.customerId,
+              title: item.title,
+              description: item.description || "",
+              amount: item.totalPrice,
+              status: "pending" as const,
+              dueDate: null
+            };
+            await storage.createCustomerTask(taskData);
+          }
+        }
+        
+        res.json(item);
+      } else {
+        const item = await storage.updateCustomerQuoteItem(id, validatedData);
+        if (!item) {
+          return res.status(404).json({ message: "Quote item not found" });
+        }
+        res.json(item);
+      }
+    } catch (error) {
+      res.status(400).json({ message: "Invalid quote item data" });
+    }
+  });
+
+  app.delete("/api/customer-quote-items/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCustomerQuoteItem(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Quote item not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete quote item" });
     }
   });
 
