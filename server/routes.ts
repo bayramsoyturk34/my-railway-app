@@ -179,12 +179,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log("Timesheet update request body:", req.body);
+      
       // Convert string date to Date object
       const processedBody = {
         ...req.body,
         date: new Date(req.body.date)
       };
-      const validatedData = insertTimesheetSchema.parse(processedBody);
+      
+      // Get personnel info for wage calculation
+      const personnel = await storage.getPersonnel();
+      const person = personnel.find(p => p.id === processedBody.personnelId);
+      
+      if (!person) {
+        return res.status(400).json({ message: "Personnel not found" });
+      }
+      
+      // Calculate wages based on work type
+      const dailySalary = person.salary ? parseFloat(person.salary) : 0;
+      const dailyWage = dailySalary / 30;
+      
+      let calculatedDailyWage = 0;
+      const hourlyRate = dailyWage / 8; // 8 hour work day
+      
+      if (processedBody.workType === "tam") {
+        calculatedDailyWage = dailyWage;
+      } else if (processedBody.workType === "yarim") {
+        calculatedDailyWage = dailyWage / 2;
+      } else if (processedBody.workType === "mesai") {
+        const overtimeHours = parseFloat(processedBody.overtimeHours || "0");
+        calculatedDailyWage = hourlyRate * overtimeHours;
+      }
+      
+      // Add calculated wages to processed body
+      const enhancedBody = {
+        ...processedBody,
+        hourlyRate: hourlyRate.toFixed(2),
+        dailyWage: calculatedDailyWage.toFixed(2)
+      };
+      
+      const validatedData = insertTimesheetSchema.parse(enhancedBody);
       const timesheet = await storage.updateTimesheet(id, validatedData);
       if (!timesheet) {
         return res.status(404).json({ message: "Timesheet not found" });
