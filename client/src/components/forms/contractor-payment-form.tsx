@@ -80,13 +80,13 @@ export default function ContractorPaymentForm({ contractorId, open, onOpenChange
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-dark-secondary border-dark-accent">
+      <DialogContent className="sm:max-w-[450px] max-h-[85vh] overflow-y-auto bg-dark-secondary border-dark-accent">
         <DialogHeader>
           <DialogTitle className="text-white">Yüklenici Ödemesi</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <FormField
               control={form.control}
               name="amount"
@@ -117,7 +117,7 @@ export default function ContractorPaymentForm({ contractorId, open, onOpenChange
                     <Textarea 
                       placeholder="Ödeme açıklaması"
                       className="bg-dark-primary border-dark-accent text-white placeholder:text-gray-400"
-                      rows={3}
+                      rows={2}
                       {...field}
                       value={field.value || ""} 
                     />
