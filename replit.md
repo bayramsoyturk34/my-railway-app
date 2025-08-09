@@ -27,6 +27,14 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Added professional quote form design with detailed sections
   - Implemented Excel (CSV) and PDF export functionality
   - Enhanced form with visual feedback and better UX
+- ✅ **Turkish Character Support**: Fixed Turkish character encoding issues throughout the application
+  - Added character conversion for PDF exports (ş→s, ğ→g, ı→i, ç→c, ü→u, ö→o)
+  - Ensured proper display of Turkish characters in all export formats
+  - Fixed filename encoding for downloaded files
+- ✅ **Editable Quote Terms**: Made quote terms section fully customizable
+  - Added dynamic quote terms with add/remove functionality
+  - Integrated editable terms with PDF exports
+  - Users can now customize standard quote conditions per their business needs
 
 # User Preferences
 

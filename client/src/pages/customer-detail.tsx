@@ -52,6 +52,15 @@ export default function CustomerDetailPage() {
   // KDV State for tasks
   const [taskHasVAT, setTaskHasVAT] = useState(false);
   const [taskVatRate, setTaskVatRate] = useState(20);
+  
+  // Quote terms state
+  const [quoteTerms, setQuoteTerms] = useState([
+    'Bu teklif 30 gün süreyle geçerlidir.',
+    'Fiyatlar KDV dahildir/hariçtir.',
+    'Ödeme şartları: %50 peşin, %50 teslimatta.',
+    'İş süresi: Anlaşma imzalandıktan sonra 15 iş günü.',
+    'Force majeure durumlarında süre uzayabilir.'
+  ]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -452,6 +461,15 @@ export default function CustomerDetailPage() {
       return;
     }
 
+    // Türkçe karakter dönüştürücü
+    const convertTurkishChars = (text: string) => {
+      const turkishMap: { [key: string]: string } = {
+        'ş': 's', 'Ş': 'S', 'ğ': 'g', 'Ğ': 'G', 'ı': 'i', 'İ': 'I',
+        'ç': 'c', 'Ç': 'C', 'ü': 'u', 'Ü': 'U', 'ö': 'o', 'Ö': 'O'
+      };
+      return text.replace(/[şŞğĞıİçÇüÜöÖ]/g, (char) => turkishMap[char] || char);
+    };
+
     // Dynamic import to reduce bundle size
     const jsPDF = (await import('jspdf')).default;
     const autoTable = (await import('jspdf-autotable')).default;
@@ -460,7 +478,7 @@ export default function CustomerDetailPage() {
     
     // Header
     doc.setFontSize(20);
-    doc.text('TEKLİF FORMU', 20, 30);
+    doc.text(convertTurkishChars('TEKLIF FORMU'), 20, 30);
     
     doc.setFontSize(12);
     const { subtotal, vatAmount, total } = getQuoteTotals();
@@ -469,17 +487,17 @@ export default function CustomerDetailPage() {
     const validityDate = new Date(today);
     validityDate.setDate(today.getDate() + 30); // 30 gün geçerlilik
     
-    doc.text(`Sayın: ${customer?.name || ''}`, 20, 50);
-    doc.text(`Teklif Tarihi: ${today.toLocaleDateString('tr-TR')}`, 20, 60);
-    doc.text(`Geçerlilik Tarihi: ${validityDate.toLocaleDateString('tr-TR')}`, 20, 70);
+    doc.text(convertTurkishChars(`Sayin: ${customer?.name || ''}`), 20, 50);
+    doc.text(convertTurkishChars(`Teklif Tarihi: ${today.toLocaleDateString('tr-TR')}`), 20, 60);
+    doc.text(convertTurkishChars(`Gecerlilik Tarihi: ${validityDate.toLocaleDateString('tr-TR')}`), 20, 70);
 
     // Table
     const tableData = quoteItems.map((item, index) => [
       index + 1,
-      item.title,
-      item.description || '-',
+      convertTurkishChars(item.title),
+      convertTurkishChars(item.description || '-'),
       item.quantity,
-      item.unit,
+      convertTurkishChars(item.unit),
       `${item.unitPrice.toFixed(2)} TL`,
       `${item.totalPrice.toFixed(2)} TL`
     ]);
@@ -495,7 +513,7 @@ export default function CustomerDetailPage() {
 
     autoTable(doc, {
       startY,
-      head: [['Sıra', 'Görev Adı', 'Açıklama', 'Miktar', 'Birim', 'Birim Fiyat', 'Toplam']],
+      head: [[convertTurkishChars('Sira'), convertTurkishChars('Gorev Adi'), convertTurkishChars('Aciklama'), 'Miktar', 'Birim', 'Birim Fiyat', 'Toplam']],
       body: tableData,
       foot: footerData,
       theme: 'striped'
@@ -504,21 +522,16 @@ export default function CustomerDetailPage() {
     // Teklif Şartları
     const finalY = (doc as any).lastAutoTable.finalY || startY + 100;
     doc.setFontSize(14);
-    doc.text('TEKLİF ŞARTLARI', 20, finalY + 20);
+    doc.text(convertTurkishChars('TEKLIF SARTLARI'), 20, finalY + 20);
     doc.setFontSize(10);
-    const terms = [
-      '• Bu teklif 30 gün süreyle geçerlidir.',
-      '• Fiyatlar KDV dahildir/hariçtir.',
-      '• Ödeme şartları: %50 peşin, %50 teslimatta.',
-      '• İş süresi: Anlaşma imzalandıktan sonra 15 iş günü.',
-      '• Force majeure durumlarında süre uzayabilir.'
-    ];
+    // Use state terms for PDF
+    const terms = quoteTerms.map(term => convertTurkishChars(`• ${term}`));
     
     terms.forEach((term, index) => {
       doc.text(term, 20, finalY + 35 + (index * 8));
     });
 
-    doc.save(`teklif_${customer?.name}_${new Date().toLocaleDateString('tr-TR')}.pdf`);
+    doc.save(convertTurkishChars(`teklif_${customer?.name}_${new Date().toLocaleDateString('tr-TR')}.pdf`));
 
     toast({
       title: "PDF Export",
@@ -1707,33 +1720,49 @@ export default function CustomerDetailPage() {
               </div>
             )}
 
-            {/* Teklif Şartları */}
+            {/* Teklif Şartları - Düzenlenebilir */}
             <div className="bg-dark-primary/50 rounded-lg p-4 border border-dark-accent">
               <h3 className="text-white font-medium mb-3 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-blue-400" />
                 Teklif Şartları
               </h3>
-              <div className="space-y-2 text-sm text-gray-300">
-                <div className="flex items-start gap-2">
-                  <span className="text-orange-400 mt-1">•</span>
-                  <span>Bu teklif 30 gün süreyle geçerlidir.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-orange-400 mt-1">•</span>
-                  <span>Fiyatlar {hasVAT ? 'KDV dahildir' : 'KDV hariçtir'}.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-orange-400 mt-1">•</span>
-                  <span>Ödeme şartları: %50 peşin, %50 teslimatta.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-orange-400 mt-1">•</span>
-                  <span>İş süresi: Anlaşma imzalandıktan sonra 15 iş günü.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-orange-400 mt-1">•</span>
-                  <span>Force majeure durumlarında süre uzayabilir.</span>
-                </div>
+              <div className="space-y-3">
+                {quoteTerms.map((term, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <span className="text-orange-400 mt-1">•</span>
+                    <Input
+                      value={term}
+                      onChange={(e) => {
+                        const newTerms = [...quoteTerms];
+                        newTerms[index] = e.target.value;
+                        setQuoteTerms(newTerms);
+                      }}
+                      className="bg-dark-primary border-dark-accent text-white text-sm"
+                      placeholder="Şart yazın..."
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const newTerms = quoteTerms.filter((_, i) => i !== index);
+                        setQuoteTerms(newTerms);
+                      }}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-6 w-6 p-0 mt-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setQuoteTerms([...quoteTerms, ''])}
+                  className="bg-blue-500 hover:bg-blue-600 h-8"
+                >
+                  <Plus className="h-3 w-3 mr-2" />
+                  Yeni Şart Ekle
+                </Button>
               </div>
             </div>
 
