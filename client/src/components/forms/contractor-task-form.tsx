@@ -50,7 +50,7 @@ export default function ContractorTaskForm({ contractorId, open, onOpenChange }:
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/contractor-tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/contractor-tasks", "contractor", contractorId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/contractor-tasks/contractor/' + contractorId] });
       toast({
         title: "Başarılı",
         description: "Görev başarıyla eklendi.",

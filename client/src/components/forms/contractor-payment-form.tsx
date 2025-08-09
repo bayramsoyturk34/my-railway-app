@@ -49,7 +49,7 @@ export default function ContractorPaymentForm({ contractorId, open, onOpenChange
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/contractor-payments"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/contractor-payments", "contractor", contractorId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/contractor-payments/contractor/' + contractorId] });
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
       toast({
