@@ -96,6 +96,20 @@ export const customerTasks = pgTable("customer_tasks", {
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
+// Customer Quotes (Müşteri Teklifleri)
+export const customerQuotes = pgTable("customer_quotes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: varchar("customer_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").notNull().default("pending"), // "pending", "approved", "rejected"
+  isApproved: boolean("is_approved").default(false),
+  quoteDate: timestamp("quote_date").notNull(),
+  validUntil: timestamp("valid_until"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
 // Customer Payments (Müşteri Ödemeleri)
 export const customerPayments = pgTable("customer_payments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -238,6 +252,14 @@ export const insertCustomerTaskSchema = createInsertSchema(customerTasks).omit({
   dueDate: z.date().optional().nullable(),
 });
 
+export const insertCustomerQuoteSchema = createInsertSchema(customerQuotes).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  description: z.string().optional().nullable(),
+  validUntil: z.date().optional().nullable(),
+});
+
 export const insertCustomerPaymentSchema = createInsertSchema(customerPayments).omit({
   id: true,
   createdAt: true,
@@ -323,6 +345,9 @@ export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 
 export type CustomerTask = typeof customerTasks.$inferSelect;
 export type InsertCustomerTask = z.infer<typeof insertCustomerTaskSchema>;
+
+export type CustomerQuote = typeof customerQuotes.$inferSelect;
+export type InsertCustomerQuote = z.infer<typeof insertCustomerQuoteSchema>;
 
 export type CustomerPayment = typeof customerPayments.$inferSelect;
 export type InsertCustomerPayment = z.infer<typeof insertCustomerPaymentSchema>;

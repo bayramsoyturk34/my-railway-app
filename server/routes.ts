@@ -10,6 +10,7 @@ import {
   insertContractorSchema,
   insertCustomerSchema,
   insertCustomerTaskSchema,
+  insertCustomerQuoteSchema,
   insertCustomerPaymentSchema,
   insertContractorTaskSchema,
   insertContractorPaymentSchema,
@@ -343,6 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactions = await storage.getTransactions();
       const customerTasks = await storage.getCustomerTasks();
       const customerPayments = await storage.getCustomerPayments();
+      const customerQuotes = await storage.getCustomerQuotes();
       
       console.log("All transactions:", transactions.map(t => ({ type: t.type, amount: t.amount, description: t.description })));
 
@@ -358,6 +360,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const customerTasksTotal = customerTasks.reduce((sum, task) => sum + parseFloat(task.amount), 0);
       const pendingTasks = customerTasks.filter(task => task.status === "pending" || task.status === "active" || task.status === "in_progress").length;
       const completedTasks = customerTasks.filter(task => task.status === "completed").length;
+
+      // Calculate customer quotes totals
+      const totalQuoteValue = customerQuotes.reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
+      const approvedQuoteValue = customerQuotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
+      const pendingQuoteValue = customerQuotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
+      const approvedQuotes = customerQuotes.filter(q => q.isApproved).length;
+      const pendingQuotes = customerQuotes.filter(q => !q.isApproved).length;
 
       // Calculate customer payments totals
       const customerPaymentsTotal = customerPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
@@ -376,6 +385,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           total: customerTasksTotal,
           pending: pendingTasks,
           completed: completedTasks,
+        },
+        customerQuotes: {
+          total: totalQuoteValue,
+          approved: approvedQuoteValue,
+          pending: pendingQuoteValue,
+          approvedCount: approvedQuotes,
+          pendingCount: pendingQuotes
         },
         customerPayments: {
           total: customerPaymentsTotal,
@@ -595,6 +611,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Customer payment deletion error:", error);
       res.status(500).json({ message: "Failed to delete payment" });
+    }
+  });
+
+  // Customer Quotes routes
+  app.get("/api/customer-quotes", async (req, res) => {
+    try {
+      const quotes = await storage.getCustomerQuotes();
+      res.json(quotes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer quotes" });
+    }
+  });
+
+  app.get("/api/customer-quotes/customer/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      const quotes = await storage.getCustomerQuotesByCustomerId(customerId);
+      res.json(quotes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer quotes" });
+    }
+  });
+
+  app.post("/api/customer-quotes", async (req, res) => {
+    try {
+      const processedBody = {
+        ...req.body,
+        quoteDate: new Date(req.body.quoteDate),
+        validUntil: req.body.validUntil ? new Date(req.body.validUntil) : null
+      };
+      const validatedData = insertCustomerQuoteSchema.parse(processedBody);
+      const quote = await storage.createCustomerQuote(validatedData);
+      res.status(201).json(quote);
+    } catch (error) {
+      console.error("Customer quote creation error:", error);
+      res.status(400).json({ message: "Invalid customer quote data" });
+    }
+  });
+
+  app.put("/api/customer-quotes/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const processedBody = {
+        ...req.body,
+        ...(req.body.quoteDate && { quoteDate: new Date(req.body.quoteDate) }),
+        ...(req.body.validUntil && { validUntil: new Date(req.body.validUntil) })
+      };
+      const validatedData = insertCustomerQuoteSchema.partial().parse(processedBody);
+      
+      // Check if status is approved and handle auto-creation of customer task
+      if (validatedData.status === "approved" || validatedData.isApproved === true) {
+        const quote = await storage.updateCustomerQuote(id, { ...validatedData, isApproved: true, status: "approved" });
+        
+        if (quote) {
+          // Create customer task from approved quote
+          const taskData = {
+            customerId: quote.customerId,
+            title: quote.title,
+            description: quote.description || "",
+            amount: quote.amount,
+            status: "pending" as const,
+            dueDate: null
+          };
+          await storage.createCustomerTask(taskData);
+        }
+        
+        res.json(quote);
+      } else {
+        const quote = await storage.updateCustomerQuote(id, validatedData);
+        if (!quote) {
+          return res.status(404).json({ message: "Customer quote not found" });
+        }
+        res.json(quote);
+      }
+    } catch (error) {
+      console.error("Customer quote update error:", error);
+      res.status(400).json({ message: "Invalid customer quote data" });
+    }
+  });
+
+  app.delete("/api/customer-quotes/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCustomerQuote(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Customer quote not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete customer quote" });
     }
   });
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2 } from "lucide-react";
-import { type Customer, type CustomerTask, type CustomerPayment, insertCustomerTaskSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerPayment } from "@shared/schema";
+import { type Customer, type CustomerTask, type CustomerQuote, type CustomerPayment, insertCustomerTaskSchema, insertCustomerQuoteSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerQuote, type InsertCustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -22,8 +22,10 @@ export default function CustomerDetailPage() {
   const [, params] = useRoute("/customers/:customerName");
   const customerName = params?.customerName ? decodeURIComponent(params.customerName) : "";
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [editingTask, setEditingTask] = useState<CustomerTask | null>(null);
+  const [editingQuote, setEditingQuote] = useState<CustomerQuote | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -35,12 +37,17 @@ export default function CustomerDetailPage() {
     queryKey: ["/api/customer-tasks"],
   });
 
+  const { data: customerQuotes = [] } = useQuery<CustomerQuote[]>({
+    queryKey: ["/api/customer-quotes"],
+  });
+
   const { data: customerPayments = [] } = useQuery<CustomerPayment[]>({
     queryKey: ["/api/customer-payments"],
   });
 
   const customer = customers.find(c => c.name === customerName);
   const tasks = customerTasks.filter(task => task.customerId === customer?.id);
+  const quotes = customerQuotes.filter(quote => quote.customerId === customer?.id);
   const payments = customerPayments.filter(payment => payment.customerId === customer?.id);
 
   const formatDate = (date: Date | string) => {
@@ -75,10 +82,15 @@ export default function CustomerDetailPage() {
   };
 
   const totalTaskValue = tasks.reduce((sum, task) => sum + parseFloat(task.amount), 0);
+  const totalQuoteValue = quotes.reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
+  const approvedQuoteValue = quotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
+  const pendingQuoteValue = quotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.amount), 0);
   const totalPaidAmount = payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
   const remainingAmount = totalTaskValue - totalPaidAmount;
   const completedTasks = tasks.filter(t => t.status === "completed").length;
   const pendingTasks = tasks.filter(t => t.status === "pending").length;
+  const approvedQuotes = quotes.filter(q => q.isApproved).length;
+  const pendingQuotes = quotes.filter(q => !q.isApproved).length;
 
   // Form configurations
   const taskForm = useForm<InsertCustomerTask>({
@@ -90,6 +102,20 @@ export default function CustomerDetailPage() {
       amount: "0",
       status: "pending",
       dueDate: undefined,
+    },
+  });
+
+  const quoteForm = useForm<InsertCustomerQuote>({
+    resolver: zodResolver(insertCustomerQuoteSchema),
+    defaultValues: {
+      customerId: customer?.id || "",
+      title: "",
+      description: "",
+      amount: "0",
+      status: "pending",
+      isApproved: false,
+      quoteDate: new Date(),
+      validUntil: undefined,
     },
   });
 
@@ -117,6 +143,48 @@ export default function CustomerDetailPage() {
     },
     onError: () => {
       toast({ title: "Hata", description: "Görev eklenirken bir hata oluştu", variant: "destructive" });
+    },
+  });
+
+  const createQuoteMutation = useMutation({
+    mutationFn: (data: InsertCustomerQuote) => apiRequest("/api/customer-quotes", "POST", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-quotes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      toast({ title: "Başarılı", description: "Teklif başarıyla eklendi" });
+      setShowQuoteForm(false);
+      quoteForm.reset();
+      setEditingQuote(null);
+    },
+    onError: () => {
+      toast({ title: "Hata", description: "Teklif eklenirken bir hata oluştu", variant: "destructive" });
+    },
+  });
+
+  const updateQuoteMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<InsertCustomerQuote> }) => 
+      apiRequest(`/api/customer-quotes/${id}`, "PUT", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-quotes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-tasks"] }); // In case approved quote creates task
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      toast({ title: "Başarılı", description: "Teklif başarıyla güncellendi" });
+      setEditingQuote(null);
+    },
+    onError: () => {
+      toast({ title: "Hata", description: "Teklif güncellenirken bir hata oluştu", variant: "destructive" });
+    },
+  });
+
+  const deleteQuoteMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/customer-quotes/${id}`, "DELETE"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customer-quotes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      toast({ title: "Başarılı", description: "Teklif silindi" });
+    },
+    onError: () => {
+      toast({ title: "Hata", description: "Teklif silinemedi", variant: "destructive" });
     },
   });
 
@@ -160,6 +228,14 @@ export default function CustomerDetailPage() {
     }
   };
 
+  const onSubmitQuote = (data: InsertCustomerQuote) => {
+    if (editingQuote) {
+      updateQuoteMutation.mutate({ id: editingQuote.id, data });
+    } else {
+      createQuoteMutation.mutate({ ...data, customerId: customer?.id || "" });
+    }
+  };
+
   const onSubmitPayment = (data: InsertCustomerPayment) => {
     createPaymentMutation.mutate({ ...data, customerId: customer?.id || "" });
   };
@@ -168,6 +244,19 @@ export default function CustomerDetailPage() {
     setShowTaskForm(false);
     setEditingTask(null);
     taskForm.reset();
+  };
+
+  const handleCloseQuoteForm = () => {
+    setShowQuoteForm(false);
+    setEditingQuote(null);
+    quoteForm.reset();
+  };
+
+  const handleQuoteApprove = (quoteId: string) => {
+    updateQuoteMutation.mutate({ 
+      id: quoteId, 
+      data: { status: "approved", isApproved: true } 
+    });
   };
 
   const handleClosePaymentForm = () => {
@@ -182,6 +271,16 @@ export default function CustomerDetailPage() {
     taskForm.setValue("amount", editingTask.amount);
     taskForm.setValue("status", editingTask.status);
     taskForm.setValue("dueDate", editingTask.dueDate ? new Date(editingTask.dueDate) : undefined);
+  }
+
+  if (editingQuote && showQuoteForm) {
+    quoteForm.setValue("title", editingQuote.title);
+    quoteForm.setValue("description", editingQuote.description || "");
+    quoteForm.setValue("amount", editingQuote.amount);
+    quoteForm.setValue("status", editingQuote.status);
+    quoteForm.setValue("isApproved", editingQuote.isApproved || false);
+    quoteForm.setValue("quoteDate", new Date(editingQuote.quoteDate));
+    quoteForm.setValue("validUntil", editingQuote.validUntil ? new Date(editingQuote.validUntil) : undefined);
   }
 
   if (!customer) {
@@ -233,7 +332,7 @@ export default function CustomerDetailPage() {
         </div>
 
         {/* Müşteri Mali Özet Kartları */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card className="bg-dark-secondary border-dark-accent">
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -253,6 +352,18 @@ export default function CustomerDetailPage() {
                 <div>
                   <p className="text-gray-400 text-sm">Toplam Tutar</p>
                   <p className="text-white font-semibold text-lg">{formatCurrency(totalTaskValue.toString())}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-dark-secondary border-dark-accent">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-orange-400" />
+                <div>
+                  <p className="text-gray-400 text-sm">Teklifler</p>
+                  <p className="text-white font-semibold text-lg">{formatCurrency(totalQuoteValue.toString())}</p>
                 </div>
               </div>
             </CardContent>
@@ -287,6 +398,9 @@ export default function CustomerDetailPage() {
           <TabsList className="bg-dark-secondary border-dark-accent">
             <TabsTrigger value="tasks" className="text-white data-[state=active]:bg-dark-accent">
               Yapılacak İşler
+            </TabsTrigger>
+            <TabsTrigger value="quotes" className="text-white data-[state=active]:bg-dark-accent">
+              Teklifler
             </TabsTrigger>
             <TabsTrigger value="payments" className="text-white data-[state=active]:bg-dark-accent">
               Ödemeler
@@ -365,6 +479,117 @@ export default function CustomerDetailPage() {
                           <div className="mt-2">
                             <p className="text-gray-400 text-sm">Açıklama</p>
                             <p className="text-gray-300 text-sm">{task.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="quotes" className="mt-4">
+            <Card className="bg-dark-secondary border-dark-accent">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-white">Teklifler</CardTitle>
+                <Button 
+                  className="bg-orange-500 hover:bg-orange-600"
+                  onClick={() => setShowQuoteForm(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Yeni Teklif
+                </Button>
+              </CardHeader>
+              <CardContent className="p-4">
+                {quotes.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-400">Bu müşteri için henüz teklif hazırlanmamış</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {quotes.map((quote) => (
+                      <div key={quote.id} className="border border-dark-accent rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h4 className="text-white font-semibold text-lg mb-1">{quote.title}</h4>
+                            <div className="flex items-center gap-4 mb-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                quote.isApproved 
+                                  ? 'bg-green-500/20 text-green-400' 
+                                  : 'bg-yellow-500/20 text-yellow-400'
+                              }`}>
+                                {quote.isApproved ? 'Onaylandı' : 'Bekliyor'}
+                              </span>
+                              <span className="text-2xl font-bold text-orange-400">
+                                {formatCurrency(quote.amount)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 px-3 text-xs border-dark-accent hover:bg-dark-accent text-gray-400 hover:text-white"
+                              onClick={() => {
+                                setEditingQuote(quote);
+                                setShowQuoteForm(true);
+                              }}
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Düzenle
+                            </Button>
+                            {!quote.isApproved && (
+                              <Button
+                                size="sm"
+                                className="h-8 px-3 text-xs bg-green-500 hover:bg-green-600"
+                                onClick={() => handleQuoteApprove(quote.id)}
+                                disabled={updateQuoteMutation.isPending}
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Onayla
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 px-3 text-xs border-red-500/20 hover:bg-red-500/20 text-red-400 hover:text-red-300"
+                              onClick={() => deleteQuoteMutation.mutate(quote.id)}
+                              disabled={deleteQuoteMutation.isPending}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-400">Teklif Tarihi</p>
+                            <p className="text-white">{formatDate(quote.quoteDate)}</p>
+                          </div>
+                          {quote.validUntil && (
+                            <div>
+                              <p className="text-gray-400">Geçerlilik Tarihi</p>
+                              <p className="text-white">{formatDate(quote.validUntil)}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-gray-400">Durum</p>
+                            <p className="text-white">{quote.status}</p>
+                          </div>
+                        </div>
+                        
+                        {quote.description && (
+                          <div className="mt-3">
+                            <p className="text-gray-400 text-sm">Açıklama</p>
+                            <p className="text-gray-300 text-sm">{quote.description}</p>
+                          </div>
+                        )}
+                        
+                        {quote.isApproved && (
+                          <div className="mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded">
+                            <p className="text-green-400 text-sm">✓ Bu teklif onaylandı ve Yapılacak İşler sekmesine eklendi</p>
                           </div>
                         )}
                       </div>
@@ -750,6 +975,163 @@ export default function CustomerDetailPage() {
                   className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                 >
                   Ödeme Kaydet
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quote Form Dialog */}
+      <Dialog open={showQuoteForm} onOpenChange={handleCloseQuoteForm}>
+        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingQuote ? "Teklif Düzenle" : "Yeni Teklif"}</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Müşteriye sunulacak teklif bilgilerini girin
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...quoteForm}>
+            <form onSubmit={quoteForm.handleSubmit(onSubmitQuote)} className="space-y-4">
+              <FormField
+                control={quoteForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Teklif Başlığı</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Teklif başlığını girin"
+                        className="bg-dark-primary border-dark-accent text-white"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={quoteForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Açıklama</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Teklif detaylarını açıklayın"
+                        className="bg-dark-primary border-dark-accent text-white"
+                        rows={3}
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={quoteForm.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Tutar (TL)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="bg-dark-primary border-dark-accent text-white"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={quoteForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Durum</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                            <SelectValue placeholder="Durum seçin" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-dark-secondary border-dark-accent">
+                          <SelectItem value="pending">Bekliyor</SelectItem>
+                          <SelectItem value="approved">Onaylandı</SelectItem>
+                          <SelectItem value="rejected">Reddedildi</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={quoteForm.control}
+                  name="quoteDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Teklif Tarihi</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date"
+                          className="bg-dark-primary border-dark-accent text-white"
+                          value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                          onChange={(e) => field.onChange(new Date(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={quoteForm.control}
+                  name="validUntil"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Geçerlilik Tarihi (Opsiyonel)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date"
+                          className="bg-dark-primary border-dark-accent text-white"
+                          value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                          onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleCloseQuoteForm}
+                  className="border-dark-accent text-white hover:bg-dark-accent"
+                >
+                  İptal
+                </Button>
+                <Button 
+                  type="submit"
+                  className="bg-orange-500 hover:bg-orange-600"
+                  disabled={createQuoteMutation.isPending || updateQuoteMutation.isPending}
+                >
+                  {editingQuote ? "Güncelle" : "Teklif Oluştur"}
                 </Button>
               </div>
             </form>

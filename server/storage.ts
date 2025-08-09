@@ -7,12 +7,13 @@ import {
   type Contractor, type InsertContractor,
   type Customer, type InsertCustomer,
   type CustomerTask, type InsertCustomerTask,
+  type CustomerQuote, type InsertCustomerQuote,
   type CustomerPayment, type InsertCustomerPayment,
   type ContractorTask, type InsertContractorTask,
   type ContractorPayment, type InsertContractorPayment,
   type PersonnelPayment, type InsertPersonnelPayment,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
-  customerTasks, customerPayments, contractorTasks, contractorPayments, personnelPayments
+  customerTasks, customerQuotes, customerPayments, contractorTasks, contractorPayments, personnelPayments
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -71,6 +72,13 @@ export interface IStorage {
   createCustomerTask(task: InsertCustomerTask): Promise<CustomerTask>;
   updateCustomerTask(id: string, task: Partial<InsertCustomerTask>): Promise<CustomerTask | undefined>;
   deleteCustomerTask(id: string): Promise<boolean>;
+
+  // Customer Quotes
+  getCustomerQuotes(): Promise<CustomerQuote[]>;
+  getCustomerQuotesByCustomerId(customerId: string): Promise<CustomerQuote[]>;
+  createCustomerQuote(quote: InsertCustomerQuote): Promise<CustomerQuote>;
+  updateCustomerQuote(id: string, quote: Partial<InsertCustomerQuote>): Promise<CustomerQuote | undefined>;
+  deleteCustomerQuote(id: string): Promise<boolean>;
 
   // Customer Payments
   getCustomerPayments(): Promise<CustomerPayment[]>;
@@ -721,6 +729,45 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomerTask(id: string): Promise<boolean> {
     const result = await db.delete(customerTasks).where(eq(customerTasks.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Customer Quotes methods
+  async getCustomerQuotes(): Promise<CustomerQuote[]> {
+    return await db.select().from(customerQuotes);
+  }
+
+  async getCustomerQuotesByCustomerId(customerId: string): Promise<CustomerQuote[]> {
+    return await db.select().from(customerQuotes).where(eq(customerQuotes.customerId, customerId));
+  }
+
+  async createCustomerQuote(insertQuote: InsertCustomerQuote): Promise<CustomerQuote> {
+    const [result] = await db.insert(customerQuotes).values(insertQuote).returning();
+    return result;
+  }
+
+  async updateCustomerQuote(id: string, updates: Partial<InsertCustomerQuote>): Promise<CustomerQuote | undefined> {
+    const [result] = await db.update(customerQuotes).set(updates).where(eq(customerQuotes.id, id)).returning();
+    
+    // If quote is approved, create a task automatically
+    if (updates.isApproved && result) {
+      await db.insert(customerTasks).values({
+        id: randomUUID(),
+        customerId: result.customerId,
+        title: `${result.title} (Onaylanan Teklif)`,
+        description: result.description || undefined,
+        amount: result.amount,
+        status: "pending",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+    
+    return result;
+  }
+
+  async deleteCustomerQuote(id: string): Promise<boolean> {
+    const result = await db.delete(customerQuotes).where(eq(customerQuotes.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 
