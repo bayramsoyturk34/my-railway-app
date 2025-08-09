@@ -984,26 +984,26 @@ export default function CustomerDetailPage() {
 
       {/* Quote Form Dialog */}
       <Dialog open={showQuoteForm} onOpenChange={handleCloseQuoteForm}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-2xl">
+        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingQuote ? "Teklif Düzenle" : "Yeni Teklif"}</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Müşteriye sunulacak teklif bilgilerini girin
+            <DialogTitle className="text-lg">{editingQuote ? "Teklif Düzenle" : "Yeni Teklif"}</DialogTitle>
+            <DialogDescription className="text-gray-400 text-sm">
+              Müşteriye sunulacak teklif bilgileri
             </DialogDescription>
           </DialogHeader>
           
           <Form {...quoteForm}>
-            <form onSubmit={quoteForm.handleSubmit(onSubmitQuote)} className="space-y-4">
+            <form onSubmit={quoteForm.handleSubmit(onSubmitQuote)} className="space-y-3">
               <FormField
                 control={quoteForm.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Teklif Başlığı</FormLabel>
+                    <FormLabel className="text-white text-sm">Teklif Başlığı</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Teklif başlığını girin"
-                        className="bg-dark-primary border-dark-accent text-white"
+                        placeholder="Teklif başlığı"
+                        className="bg-dark-primary border-dark-accent text-white h-9"
                         {...field} 
                       />
                     </FormControl>
@@ -1017,12 +1017,12 @@ export default function CustomerDetailPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Açıklama</FormLabel>
+                    <FormLabel className="text-white text-sm">Açıklama</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Teklif detaylarını açıklayın"
+                        placeholder="Teklif detayları"
                         className="bg-dark-primary border-dark-accent text-white"
-                        rows={3}
+                        rows={2}
                         {...field}
                         value={field.value || ""}
                       />
@@ -1032,19 +1032,19 @@ export default function CustomerDetailPage() {
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <FormField
                   control={quoteForm.control}
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Tutar (TL)</FormLabel>
+                      <FormLabel className="text-white text-sm">Tutar (TL)</FormLabel>
                       <FormControl>
                         <Input 
                           type="number"
                           step="0.01"
                           placeholder="0.00"
-                          className="bg-dark-primary border-dark-accent text-white"
+                          className="bg-dark-primary border-dark-accent text-white h-9"
                           {...field} 
                         />
                       </FormControl>
@@ -1058,11 +1058,11 @@ export default function CustomerDetailPage() {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Durum</FormLabel>
+                      <FormLabel className="text-white text-sm">Durum</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                            <SelectValue placeholder="Durum seçin" />
+                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white h-9">
+                            <SelectValue placeholder="Durum" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-dark-secondary border-dark-accent">
@@ -1077,17 +1077,17 @@ export default function CustomerDetailPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <FormField
                   control={quoteForm.control}
                   name="quoteDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Teklif Tarihi</FormLabel>
+                      <FormLabel className="text-white text-sm">Teklif Tarihi</FormLabel>
                       <FormControl>
                         <Input 
                           type="date"
-                          className="bg-dark-primary border-dark-accent text-white"
+                          className="bg-dark-primary border-dark-accent text-white h-9"
                           value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
                           onChange={(e) => field.onChange(new Date(e.target.value))}
                         />
@@ -1102,11 +1102,11 @@ export default function CustomerDetailPage() {
                   name="validUntil"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Geçerlilik Tarihi (Opsiyonel)</FormLabel>
+                      <FormLabel className="text-white text-sm">Geçerlilik</FormLabel>
                       <FormControl>
                         <Input 
                           type="date"
-                          className="bg-dark-primary border-dark-accent text-white"
+                          className="bg-dark-primary border-dark-accent text-white h-9"
                           value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
                           onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
                         />
@@ -1117,21 +1117,21 @@ export default function CustomerDetailPage() {
                 />
               </div>
 
-              <div className="flex justify-end space-x-4 pt-4">
+              <div className="flex gap-3 pt-3">
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={handleCloseQuoteForm}
-                  className="border-dark-accent text-white hover:bg-dark-accent"
+                  className="flex-1 border-dark-accent text-gray-300 hover:bg-dark-accent h-9"
                 >
                   İptal
                 </Button>
                 <Button 
                   type="submit"
-                  className="bg-orange-500 hover:bg-orange-600"
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 h-9"
                   disabled={createQuoteMutation.isPending || updateQuoteMutation.isPending}
                 >
-                  {editingQuote ? "Güncelle" : "Teklif Oluştur"}
+                  {editingQuote ? "Güncelle" : "Oluştur"}
                 </Button>
               </div>
             </form>
