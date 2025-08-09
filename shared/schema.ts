@@ -11,6 +11,7 @@ export const personnel = pgTable("personnel", {
   phone: text("phone"),
   email: text("email"),
   salary: decimal("salary", { precision: 10, scale: 2 }),
+  salaryType: text("salary_type").default("monthly"), // "monthly" or "daily"
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").default(sql`now()`),
 });

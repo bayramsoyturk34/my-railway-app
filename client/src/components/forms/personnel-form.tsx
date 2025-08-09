@@ -29,6 +29,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
       phone: null,
       email: null,
       salary: null,
+      salaryType: "monthly",
       isActive: true,
     },
   });
@@ -43,6 +44,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
         phone: personnel.phone,
         email: personnel.email,
         salary: personnel.salary,
+        salaryType: personnel.salaryType || "monthly",
         isActive: personnel.isActive,
       });
     } else {
@@ -53,6 +55,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
         phone: null,
         email: null,
         salary: null,
+        salaryType: "monthly",
         isActive: true,
       });
     }
@@ -238,27 +241,71 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
 
             <FormField
               control={form.control}
-              name="salary"
+              name="salaryType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Maaş (TL)</FormLabel>
+                  <FormLabel className="text-gray-300">Maaş Türü</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="bg-dark-primary border-dark-accent text-white"
-                      placeholder="Aylık maaş tutarı"
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                    />
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant={field.value === "monthly" ? "default" : "outline"}
+                        className={`flex-1 ${
+                          field.value === "monthly" 
+                            ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500" 
+                            : "bg-dark-primary border-dark-accent text-gray-300 hover:bg-dark-accent"
+                        }`}
+                        onClick={() => field.onChange("monthly")}
+                      >
+                        Maaş
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={field.value === "daily" ? "default" : "outline"}
+                        className={`flex-1 ${
+                          field.value === "daily" 
+                            ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
+                            : "bg-dark-primary border-dark-accent text-gray-300 hover:bg-dark-accent"
+                        }`}
+                        onClick={() => field.onChange("daily")}
+                      >
+                        Günlük
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="salary"
+              render={({ field }) => {
+                const salaryType = form.watch("salaryType");
+                return (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">
+                      {salaryType === "monthly" ? "Maaş (TL)" : "Günlük Ücret (TL)"}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="bg-dark-primary border-dark-accent text-white"
+                        placeholder={salaryType === "monthly" ? "Aylık maaş tutarı" : "Günlük ücret tutarı"}
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <div className="flex gap-3">
