@@ -130,16 +130,20 @@ export default function ProjectDetailPage() {
                     <p className={`font-medium ${getStatusColor(project.status)}`}>{getStatusText(project.status)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 text-sm">Proje Türü</p>
-                    <p className="text-blue-400 font-medium">Verilen Proje</p>
-                  </div>
-                  <div>
                     <p className="text-gray-500 text-sm">Toplam Tutar</p>
                     <p className="text-green-400 font-medium">{formatCurrency(project.amount)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 text-sm">Başlangıç Tarihi</p>
-                    <p className="text-gray-400 font-medium">{formatDate(typeof project.startDate === 'string' ? project.startDate : project.startDate.toISOString())}</p>
+                    <p className="text-gray-500 text-sm">Yapılan Ödeme</p>
+                    <p className="text-blue-400 font-medium">
+                      {formatCurrency(contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0).toString())}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Kalan Bakiye</p>
+                    <p className="text-red-400 font-medium">
+                      {formatCurrency((parseFloat(project.amount) - contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0)).toString())}
+                    </p>
                   </div>
                 </div>
               </div>
