@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X, Download, FileSpreadsheet, Calculator } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X, Download, FileSpreadsheet, Calculator, ChevronDown } from "lucide-react";
 import { type Customer, type CustomerTask, type CustomerQuote, type CustomerQuoteItem, type CustomerPayment, insertCustomerTaskSchema, insertCustomerQuoteSchema, insertCustomerPaymentSchema, type InsertCustomerTask, type InsertCustomerQuote, type InsertCustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // Helper function
 const formatCurrency = (amount: string | number): string => {
@@ -1038,17 +1039,43 @@ export default function CustomerDetailPage() {
                               <Edit className="h-3 w-3 mr-1" />
                               Düzenle
                             </Button>
-                            {!quote.isApproved && (
-                              <Button
-                                size="sm"
-                                className="h-8 px-3 text-xs bg-green-500 hover:bg-green-600"
-                                onClick={() => handleQuoteApprove(quote.id)}
-                                disabled={updateQuoteMutation.isPending}
-                              >
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Onayla
-                              </Button>
-                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 px-3 text-xs border-dark-accent hover:bg-dark-accent text-gray-400 hover:text-white"
+                                >
+                                  {quote.status === "pending" ? "Gönderildi" : 
+                                   quote.status === "approved" ? "Onaylandı" : 
+                                   quote.status === "rejected" ? "Reddedildi" : "Gönderildi"}
+                                  <ChevronDown className="h-3 w-3 ml-1" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="bg-dark-secondary border-dark-accent">
+                                <DropdownMenuItem 
+                                  onClick={() => updateQuoteMutation.mutate({ id: quote.id, status: "pending" })}
+                                  className="text-blue-400 hover:bg-dark-accent focus:bg-dark-accent"
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-2" />
+                                  Gönderildi
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => updateQuoteMutation.mutate({ id: quote.id, status: "approved", isApproved: true })}
+                                  className="text-green-400 hover:bg-dark-accent focus:bg-dark-accent"
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-2" />
+                                  Onaylandı
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => updateQuoteMutation.mutate({ id: quote.id, status: "rejected", isApproved: false })}
+                                  className="text-red-400 hover:bg-dark-accent focus:bg-dark-accent"
+                                >
+                                  <X className="h-3 w-3 mr-2" />
+                                  Reddedildi
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                             <Button
                               size="sm"
                               variant="outline"

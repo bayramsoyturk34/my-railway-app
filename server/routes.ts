@@ -21,6 +21,30 @@ import {
   insertPersonnelPaymentSchema
 } from "@shared/schema";
 
+// Helper function to update quote total
+async function updateQuoteTotal(quoteId: string) {
+  try {
+    const items = await storage.getCustomerQuoteItemsByQuoteId(quoteId);
+    const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.totalPrice), 0);
+    
+    const quotes = await storage.getCustomerQuotes();
+    const quote = quotes.find(q => q.id === quoteId);
+    
+    if (quote) {
+      const vatAmount = quote.hasVAT ? (totalAmount * parseFloat(quote.vatRate || "0") / 100) : 0;
+      const totalWithVAT = totalAmount + vatAmount;
+      
+      await storage.updateCustomerQuote(quoteId, {
+        totalAmount: totalAmount.toString(),
+        vatAmount: vatAmount.toString(),
+        totalWithVAT: totalWithVAT.toString()
+      });
+    }
+  } catch (error) {
+    console.error("Error updating quote total:", error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Personnel routes
   app.get("/api/personnel", async (req, res) => {
@@ -738,6 +762,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Processed quote item body:", processedBody);
       const validatedData = insertCustomerQuoteItemSchema.parse(processedBody);
       const item = await storage.createCustomerQuoteItem(validatedData);
+      
+      // Update quote total after creating item
+      await updateQuoteTotal(validatedData.quoteId);
+      
       res.status(201).json(item);
     } catch (error) {
       console.error("Quote item validation error:", error);
@@ -754,6 +782,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const validatedData = insertCustomerQuoteItemSchema.partial().parse(req.body);
       
+      // Get the item first to know the quote ID
+      const items = await storage.getCustomerQuoteItems();
+      const currentItem = items.find(item => item.id === id);
+      
       // If item is approved, create a customer task
       if (validatedData.isApproved === true) {
         const item = await storage.updateCustomerQuoteItem(id, { ...validatedData, status: "approved" });
@@ -768,6 +800,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               customerId: parentQuote.customerId,
               title: item.title,
               description: item.description || "",
+              quantity: parseFloat(item.quantity) || 1,
+              unit: item.unit,
+              unitPrice: parseFloat(item.unitPrice) || 0,
               amount: item.totalPrice,
               status: "pending" as const,
               dueDate: null
@@ -776,12 +811,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
+        // Update quote total after updating item
+        if (currentItem) {
+          await updateQuoteTotal(currentItem.quoteId);
+        }
+        
         res.json(item);
       } else {
         const item = await storage.updateCustomerQuoteItem(id, validatedData);
         if (!item) {
           return res.status(404).json({ message: "Quote item not found" });
         }
+        
+        // Update quote total after updating item
+        if (currentItem) {
+          await updateQuoteTotal(currentItem.quoteId);
+        }
+        
         res.json(item);
       }
     } catch (error) {
