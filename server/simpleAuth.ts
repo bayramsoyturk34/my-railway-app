@@ -16,11 +16,13 @@ export function getSession() {
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Important for session creation
+    name: 'puantaj.sid', // Custom session name
     cookie: {
       httpOnly: true,
       secure: false, // Set to false for development
-      sameSite: 'lax', // Important for cross-origin requests
+      sameSite: 'lax',
+      path: '/', // Ensure path is set
       maxAge: sessionTtl,
     },
   });
@@ -28,7 +30,10 @@ export function getSession() {
 
 export async function setupSimpleAuth(app: Express) {
   app.set("trust proxy", 1);
-  app.use(getSession());
+  
+  // Add session middleware
+  const sessionMiddleware = getSession();
+  app.use(sessionMiddleware);
 
   // Simple login endpoint - for demo purposes
   app.post("/api/auth/login", async (req, res) => {
@@ -45,7 +50,15 @@ export async function setupSimpleAuth(app: Express) {
       // Store user in database
       const user = await storage.upsertUser(demoUser);
       
-      // Set session
+      // Regenerate session ID for security
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      
+      // Set session user
       (req.session as any).user = user;
       
       // Force session save
@@ -57,7 +70,7 @@ export async function setupSimpleAuth(app: Express) {
       });
       
       console.log("Session saved for user:", user.id);
-      console.log("Session ID:", req.sessionID);
+      console.log("New Session ID:", req.sessionID);
       
       res.json({ success: true, user });
     } catch (error) {
