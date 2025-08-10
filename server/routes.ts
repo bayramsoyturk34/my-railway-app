@@ -719,12 +719,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If the entire quote is being approved, create a customer task for the total quote
       if (validatedData.isApproved === true && validatedData.status === 'approved') {
-        // Check if there's already a task for this quote to prevent duplicates
+        // Check if there's already a task for this specific quote to prevent duplicates
         const existingTasks = await storage.getCustomerTasks();
         const quoteTaskExists = existingTasks.some(task => 
           task.customerId === quote.customerId && 
           (task.title === quote.title || task.title === `${quote.title} (Onaylanan Teklif)`)
         );
+        
+        console.log("Checking for existing task:", {
+          quoteTitle: quote.title,
+          customerId: quote.customerId,
+          existingTasks: existingTasks.filter(t => t.customerId === quote.customerId).map(t => t.title),
+          taskExists: quoteTaskExists
+        });
         
         if (!quoteTaskExists) {
           console.log("Creating task for approved quote:", quote.title);
