@@ -56,6 +56,13 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Updated task creation form to properly calculate and store VAT amounts
   - Enhanced task editing form to correctly populate quantity, unitPrice, and unit fields from approved quotes
   - Improved VAT calculation logic for both new task creation and existing task editing
+- ✅ **Company Directory System**: Complete company directory with messaging infrastructure (August 10, 2025)
+  - Implemented database schema for companyDirectory, messages, and conversations tables
+  - Created comprehensive backend API endpoints for CRUD operations
+  - Built responsive frontend with company listing, search, and form functionality
+  - Added company directory navigation card to dashboard
+  - Fixed ES modules import issues in backend routes
+  - Optimized form dialog size for better user experience
 
 # User Preferences
 

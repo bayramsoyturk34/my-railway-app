@@ -1378,7 +1378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/company-directory", async (req, res) => {
     try {
-      const insertCompanyDirectorySchema = require("@shared/schema").insertCompanyDirectorySchema;
+      const { insertCompanyDirectorySchema } = await import("@shared/schema");
       const validatedData = insertCompanyDirectorySchema.parse(req.body);
       const company = await storage.createCompany(validatedData);
       res.status(201).json(company);
@@ -1390,7 +1390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/company-directory/:id", async (req, res) => {
     try {
-      const insertCompanyDirectorySchema = require("@shared/schema").insertCompanyDirectorySchema;
+      const { insertCompanyDirectorySchema } = await import("@shared/schema");
       const validatedData = insertCompanyDirectorySchema.parse(req.body);
       const company = await storage.updateCompany(req.params.id, validatedData);
       if (!company) {
@@ -1439,7 +1439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/messages", async (req, res) => {
     try {
-      const insertMessageSchema = require("@shared/schema").insertMessageSchema;
+      const { insertMessageSchema } = await import("@shared/schema");
       const validatedData = insertMessageSchema.parse(req.body);
       const message = await storage.createMessage(validatedData);
       res.status(201).json(message);
@@ -1488,7 +1488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/conversations", async (req, res) => {
     try {
-      const insertConversationSchema = require("@shared/schema").insertConversationSchema;
+      const { insertConversationSchema } = await import("@shared/schema");
       const validatedData = insertConversationSchema.parse(req.body);
       const conversation = await storage.createConversation(validatedData);
       res.status(201).json(conversation);
@@ -1500,7 +1500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/conversations/:id", async (req, res) => {
     try {
-      const insertConversationSchema = require("@shared/schema").insertConversationSchema;
+      const { insertConversationSchema } = await import("@shared/schema");
       const validatedData = insertConversationSchema.parse(req.body);
       const conversation = await storage.updateConversation(req.params.id, validatedData);
       if (!conversation) {
