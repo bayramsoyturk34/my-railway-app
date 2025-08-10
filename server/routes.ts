@@ -737,13 +737,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("Creating task for approved quote:", quote.title);
           // Use totalWithVAT if available (for VAT-inclusive quotes), otherwise use totalAmount
           const finalAmount = quote.hasVAT ? (quote.totalWithVAT || quote.totalAmount) : quote.totalAmount;
+          
+          // Get quote items to calculate proper unitPrice and quantity
+          const quoteItems = await storage.getCustomerQuoteItemsByQuoteId(id);
+          let totalQuantity = 1;
+          let calculatedUnitPrice = parseFloat(finalAmount);
+          let primaryUnit = "adet";
+          
+          if (quoteItems.length > 0) {
+            // Sum all quantities and take the first unit as primary
+            totalQuantity = quoteItems.reduce((sum, item) => sum + parseFloat(item.quantity), 0);
+            primaryUnit = quoteItems[0].unit;
+            // Calculate unit price based on total amount / total quantity
+            calculatedUnitPrice = parseFloat(finalAmount) / totalQuantity;
+          }
+          
           const taskData = {
             customerId: quote.customerId,
-            title: quote.title || "Onaylanmış Teklif",
-            description: quote.description || "",
-            quantity: 1,
-            unit: "adet",
-            unitPrice: parseFloat(finalAmount || '0'),
+            title: `${quote.title} (Onaylanan Teklif)`,
+            description: quote.description || `Teklif onaylandı: ${quote.title}`,
+            quantity: totalQuantity,
+            unit: primaryUnit,
+            unitPrice: calculatedUnitPrice,
             amount: finalAmount || '0',
             status: "pending" as const,
             dueDate: null

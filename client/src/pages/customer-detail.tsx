@@ -758,21 +758,7 @@ export default function CustomerDetailPage() {
     quoteForm.reset();
   };
 
-  // Update form when editing task
-  useEffect(() => {
-    if (editingTask && showTaskForm) {
-      taskForm.setValue("title", editingTask.title);
-      taskForm.setValue("description", editingTask.description || "");
-      taskForm.setValue("quantity", parseFloat(editingTask.quantity));
-      taskForm.setValue("unit", editingTask.unit);
-      taskForm.setValue("unitPrice", parseFloat(editingTask.unitPrice));
-      taskForm.setValue("amount", editingTask.amount);
-      taskForm.setValue("hasVAT", editingTask.hasVAT || false);
-      taskForm.setValue("vatRate", editingTask.vatRate || "1");
-      taskForm.setValue("status", editingTask.status);
-      taskForm.setValue("dueDate", editingTask.dueDate ? new Date(editingTask.dueDate) : undefined);
-    }
-  }, [editingTask, showTaskForm]);
+  // This useEffect is redundant - task form is already populated in the first useEffect (line 558)
 
   // Update form when editing quote
   useEffect(() => {
