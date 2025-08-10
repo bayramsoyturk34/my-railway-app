@@ -728,14 +728,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (!quoteTaskExists) {
           console.log("Creating task for approved quote:", quote.title);
+          // Use totalWithVAT if available (for VAT-inclusive quotes), otherwise use totalAmount
+          const finalAmount = quote.hasVAT ? (quote.totalWithVAT || quote.totalAmount) : quote.totalAmount;
           const taskData = {
             customerId: quote.customerId,
             title: quote.title || "Onaylanmış Teklif",
             description: quote.description || "",
             quantity: 1,
             unit: "adet",
-            unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
-            amount: quote.totalWithVAT || quote.totalAmount || '0',
+            unitPrice: parseFloat(finalAmount || '0'),
+            amount: finalAmount || '0',
             status: "pending" as const,
             dueDate: null
           };
