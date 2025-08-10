@@ -43,6 +43,14 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - System now supports decimal quantities (e.g., 1.3, 2.5) for quote items
   - Updated database schema to use decimal precision for quantities
   - Improved quantity display formatting in UI, PDF exports, and CSV exports
+- ✅ **Quote Approval Task Creation System**: Comprehensive fix for duplicate task creation and VAT handling
+  - Eliminated duplicate task creation when quotes are approved (August 10, 2025)
+  - Implemented duplicate prevention mechanism checking existing tasks by customer and title
+  - Fixed VAT-inclusive amount calculation for approved quote tasks
+  - Tasks now correctly use totalWithVAT for VAT-enabled quotes, totalAmount for VAT-disabled quotes
+  - Individual quote item approval no longer creates automatic tasks - only full quote approval creates tasks
+  - Enhanced logging system for debugging task creation process
+  - Database cleanup performed to remove duplicate entries and correct VAT amounts
 
 # User Preferences
 
