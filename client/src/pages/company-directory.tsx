@@ -32,7 +32,11 @@ export default function CompanyDirectory() {
   // Get messages for selected conversation
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages", selectedCompany?.id, "current-user"],
+    queryFn: () => selectedCompany ? 
+      fetch(`/api/messages/${selectedCompany.id}/current-user`).then(res => res.json()) : 
+      Promise.resolve([]),
     enabled: !!selectedCompany && showChat,
+    refetchInterval: 3000, // Poll every 3 seconds for new messages
   });
 
   const createCompanyMutation = useMutation({

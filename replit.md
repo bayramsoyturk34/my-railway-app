@@ -63,6 +63,12 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Added company directory navigation card to dashboard
   - Fixed ES modules import issues in backend routes
   - Optimized form dialog size for better user experience
+  - **Active Messaging System**: Real-time messaging functionality fully operational
+    * Professional chat interface with bubble design and timestamps
+    * Auto-scroll to new messages and Enter key message sending
+    * Real-time message polling every 3 seconds for live updates
+    * Bidirectional messaging between current user and companies
+    * Message persistence in PostgreSQL database
 
 # User Preferences
 

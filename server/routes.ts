@@ -1429,7 +1429,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/messages/:company1Id/:company2Id", async (req, res) => {
     try {
+      console.log(`Fetching messages between ${req.params.company1Id} and ${req.params.company2Id}`);
       const messages = await storage.getMessagesByConversation(req.params.company1Id, req.params.company2Id);
+      console.log(`Found ${messages.length} messages`);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching conversation messages:", error);
