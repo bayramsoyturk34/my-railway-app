@@ -719,18 +719,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If the entire quote is being approved, create a customer task for the total quote
       if (validatedData.isApproved === true && validatedData.status === 'approved') {
-        const taskData = {
-          customerId: quote.customerId,
-          title: quote.title || "Onaylanmış Teklif",
-          description: quote.description || "",
-          quantity: 1,
-          unit: "adet",
-          unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
-          amount: quote.totalWithVAT || quote.totalAmount || '0',
-          status: "pending" as const,
-          dueDate: null
-        };
-        await storage.createCustomerTask(taskData);
+        // Check if there's already a task for this quote to prevent duplicates
+        const existingTasks = await storage.getCustomerTasks();
+        const quoteTaskExists = existingTasks.some(task => 
+          task.customerId === quote.customerId && 
+          (task.title === quote.title || task.title === `${quote.title} (Onaylanan Teklif)`)
+        );
+        
+        if (!quoteTaskExists) {
+          console.log("Creating task for approved quote:", quote.title);
+          const taskData = {
+            customerId: quote.customerId,
+            title: quote.title || "Onaylanmış Teklif",
+            description: quote.description || "",
+            quantity: 1,
+            unit: "adet",
+            unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
+            amount: quote.totalWithVAT || quote.totalAmount || '0',
+            status: "pending" as const,
+            dueDate: null
+          };
+          await storage.createCustomerTask(taskData);
+          console.log("Task created successfully for quote:", quote.title);
+        } else {
+          console.log("Task already exists for quote:", quote.title, "- skipping creation");
+        }
       }
       
       res.json(quote);
