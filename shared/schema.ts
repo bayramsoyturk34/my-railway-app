@@ -95,7 +95,7 @@ export const customerTasks = pgTable("customer_tasks", {
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull().default("0"),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   hasVAT: boolean("has_vat").default(false),
-  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default("20.00"), // %20 KDV
+  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default("1.00"), // %1 KDV
   vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }).default("0.00"),
   totalWithVAT: decimal("total_with_vat", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("pending"), // "pending", "in_progress", "completed"
@@ -111,7 +111,7 @@ export const customerQuotes = pgTable("customer_quotes", {
   description: text("description"),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull().default("0"),
   hasVAT: boolean("has_vat").default(false),
-  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default("20.00"), // %20 KDV
+  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default("1.00"), // %1 KDV
   vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }).default("0.00"),
   totalWithVAT: decimal("total_with_vat", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("pending"), // "pending", "approved", "rejected"

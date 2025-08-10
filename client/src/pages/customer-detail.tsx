@@ -1460,46 +1460,18 @@ export default function CustomerDetailPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-gray-300">KDV Oranı (%)</FormLabel>
-                          <div className="grid grid-cols-3 gap-3">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => field.onChange("18")}
-                              className={`${
-                                field.value === "18" 
-                                  ? 'bg-blue-500 border-blue-500 text-white' 
-                                  : 'border-dark-accent text-gray-300 hover:border-blue-500'
-                              }`}
-                            >
-                              %18
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => field.onChange("20")}
-                              className={`${
-                                field.value === "20" 
-                                  ? 'bg-blue-500 border-blue-500 text-white' 
-                                  : 'border-dark-accent text-gray-300 hover:border-blue-500'
-                              }`}
-                            >
-                              %20
-                            </Button>
+                          <Select onValueChange={field.onChange} defaultValue={field.value?.toString() || "20"}>
                             <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.01"
-                                placeholder="Özel"
-                                className="bg-dark-primary border-dark-accent text-white text-sm"
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(e.target.value)}
-                              />
+                              <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                                <SelectValue placeholder="KDV oranı seçin" />
+                              </SelectTrigger>
                             </FormControl>
-                          </div>
+                            <SelectContent className="bg-dark-secondary border-dark-accent">
+                              <SelectItem value="1">%1</SelectItem>
+                              <SelectItem value="10">%10</SelectItem>
+                              <SelectItem value="20">%20</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1792,43 +1764,16 @@ export default function CustomerDetailPage() {
                       </div>
                       
                       {hasVAT && (
-                        <div className="grid grid-cols-3 gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setVatRate(18)}
-                            className={`p-2 rounded text-sm font-medium border ${
-                              vatRate === 18 
-                                ? 'bg-blue-500 border-blue-500 text-white' 
-                                : 'bg-dark-primary border-dark-accent text-gray-300 hover:border-blue-500'
-                            }`}
-                          >
-                            %18 KDV
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setVatRate(20)}
-                            className={`p-2 rounded text-sm font-medium border ${
-                              vatRate === 20 
-                                ? 'bg-blue-500 border-blue-500 text-white' 
-                                : 'bg-dark-primary border-dark-accent text-gray-300 hover:border-blue-500'
-                            }`}
-                          >
-                            %20 KDV
-                          </button>
-                          <div className="flex items-center">
-                            <span className="text-gray-300 text-xs mr-2">Özel:</span>
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              step="0.01"
-                              value={vatRate}
-                              onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
-                              className="w-full bg-dark-primary border-dark-accent text-white rounded px-2 py-1 text-sm"
-                              placeholder="%"
-                            />
-                          </div>
-                        </div>
+                        <Select onValueChange={(value) => setVatRate(parseInt(value))} defaultValue={vatRate.toString()}>
+                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                            <SelectValue placeholder="KDV oranı seçin" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-dark-secondary border-dark-accent">
+                            <SelectItem value="1">%1</SelectItem>
+                            <SelectItem value="10">%10</SelectItem>
+                            <SelectItem value="20">%20</SelectItem>
+                          </SelectContent>
+                        </Select>
                       )}
                     </div>
                   </div>
