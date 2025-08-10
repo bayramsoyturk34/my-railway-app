@@ -460,8 +460,10 @@ export default function CustomerDetailPage() {
   });
 
   const updateQuoteMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<InsertCustomerQuote> }) => 
-      apiRequest(`/api/customer-quotes/${id}`, "PUT", data),
+    mutationFn: (params: { id: string; data?: Partial<InsertCustomerQuote>; status?: string; isApproved?: boolean }) => {
+      const data = params.data || { status: params.status, isApproved: params.isApproved };
+      return apiRequest(`/api/customer-quotes/${params.id}`, "PUT", data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customer-quotes"] });
       queryClient.invalidateQueries({ queryKey: ["/api/customer-tasks"] }); // In case approved quote creates task
@@ -1113,7 +1115,7 @@ export default function CustomerDetailPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent className="bg-dark-secondary border-dark-accent">
                                 <DropdownMenuItem 
-                                  onClick={() => updateQuoteMutation.mutate({ id: quote.id, status: "pending" })}
+                                  onClick={() => updateQuoteMutation.mutate({ id: quote.id, status: "pending", isApproved: false })}
                                   className="text-blue-400 hover:bg-dark-accent focus:bg-dark-accent"
                                 >
                                   <CheckCircle className="h-3 w-3 mr-2" />

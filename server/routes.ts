@@ -703,11 +703,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/customer-quotes/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      console.log("Quote update request body:", req.body);
       const processedBody = {
         ...req.body,
         ...(req.body.quoteDate && { quoteDate: new Date(req.body.quoteDate) }),
         ...(req.body.validUntil && { validUntil: new Date(req.body.validUntil) })
       };
+      console.log("Processed quote update body:", processedBody);
       const validatedData = insertCustomerQuoteSchema.partial().parse(processedBody);
       
       const quote = await storage.updateCustomerQuote(id, validatedData);
