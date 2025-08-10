@@ -48,6 +48,17 @@ export async function setupSimpleAuth(app: Express) {
       // Set session
       (req.session as any).user = user;
       
+      // Force session save
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      
+      console.log("Session saved for user:", user.id);
+      console.log("Session ID:", req.sessionID);
+      
       res.json({ success: true, user });
     } catch (error) {
       console.error("Login error:", error);
@@ -68,12 +79,18 @@ export async function setupSimpleAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  console.log("Auth check - Session ID:", req.sessionID);
+  console.log("Auth check - Session data:", req.session);
+  
   const sessionUser = (req.session as any)?.user;
   
   if (!sessionUser) {
+    console.log("No session user found");
     return res.status(401).json({ message: "Unauthorized" });
   }
 
+  console.log("Session user found:", sessionUser.id);
+  
   // Add user to request
   (req as any).user = sessionUser;
   next();

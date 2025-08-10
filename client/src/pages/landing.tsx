@@ -15,17 +15,23 @@ export default function Landing() {
     onSuccess: async (data) => {
       console.log("Login success:", data);
       
-      // Force refetch auth status
-      await queryClient.refetchQueries({ 
-        queryKey: ["/api/auth/user"],
-        type: 'active'
-      });
-      
-      // Wait a bit for the auth state to update
-      setTimeout(() => {
-        console.log("Checking auth state after login...");
+      // Force immediate refetch
+      setTimeout(async () => {
+        console.log("Force refetching auth status...");
+        await queryClient.refetchQueries({ 
+          queryKey: ["/api/auth/user"],
+          type: 'active'
+        });
+        
+        // Additional invalidate for safety
         queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      }, 100);
+        
+        // Manual redirect if state doesn't update
+        setTimeout(() => {
+          console.log("Manual redirect attempt");
+          window.location.reload();
+        }, 2000);
+      }, 500);
       
       toast({
         title: "Başarıyla giriş yapıldı!",
