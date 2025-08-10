@@ -37,6 +37,12 @@ function QuoteItemsSection({ quoteId }: { quoteId: string }) {
     queryKey: ["/api/customer-quote-items/quote", quoteId],
   });
 
+  const { data: quotes = [] } = useQuery<CustomerQuote[]>({
+    queryKey: ["/api/customer-quotes"],
+  });
+
+  const currentQuote = quotes.find(q => q.id === quoteId);
+
   const updateQuoteItemMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { isApproved: boolean; status: string } }) => 
       apiRequest(`/api/customer-quote-items/${id}`, "PUT", data),
@@ -119,6 +125,30 @@ function QuoteItemsSection({ quoteId }: { quoteId: string }) {
           </div>
         </div>
       ))}
+      
+      {/* Toplam Teklif Tutarı */}
+      {currentQuote && (
+        <div className="mt-4 pt-4 border-t border-dark-accent">
+          <div className="flex justify-between items-center">
+            <span className="text-white font-medium">Toplam Teklif Tutarı:</span>
+            <span className="text-2xl font-bold text-orange-400">
+              {formatCurrency(currentQuote.totalWithVAT || currentQuote.totalAmount)}
+            </span>
+          </div>
+          {currentQuote.hasVAT && (
+            <div className="text-sm text-gray-400 mt-1">
+              <div className="flex justify-between">
+                <span>Ara Toplam:</span>
+                <span>{formatCurrency(currentQuote.totalAmount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>KDV (%{currentQuote.vatRate}):</span>
+                <span>{formatCurrency(currentQuote.vatAmount || "0")}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1061,7 +1091,7 @@ export default function CustomerDetailPage() {
                                 {quote.isApproved ? 'Onaylandı' : 'Bekliyor'}
                               </span>
                               <span className="text-2xl font-bold text-orange-400">
-                                {formatCurrency(quote.totalAmount)}
+                                {formatCurrency(quote.totalWithVAT || quote.totalAmount)}
                               </span>
                             </div>
                           </div>
