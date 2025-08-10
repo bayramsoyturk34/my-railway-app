@@ -869,7 +869,6 @@ export default function CustomerDetailPage() {
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-blue-400" />
                 <div>
-                  <p className="text-gray-400 text-sm">Toplam Görev</p>
                   <p className="text-white font-semibold text-lg">{tasks.length}</p>
                 </div>
               </div>

@@ -55,8 +55,8 @@ export default function ProjectCard({
         <IconComponent className="h-8 w-8 text-white/30" />
       </div>
       
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <div className="text-3xl font-bold mb-4">{total}</div>
+      <h3 className="text-base font-semibold mb-2">{title}</h3>
+      <div className="text-2xl font-bold mb-4">{total}</div>
       
       <div className="flex justify-between text-sm opacity-90">
         <div>
