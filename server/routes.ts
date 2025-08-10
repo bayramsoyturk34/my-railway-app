@@ -386,10 +386,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pendingTasks = customerTasks.filter(task => task.status === "pending" || task.status === "active" || task.status === "in_progress").length;
       const completedTasks = customerTasks.filter(task => task.status === "completed").length;
 
-      // Calculate customer quotes totals
-      const totalQuoteValue = customerQuotes.reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
-      const approvedQuoteValue = customerQuotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
-      const pendingQuoteValue = customerQuotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
+      // Calculate customer quotes totals (using totalWithVAT for KDV dahil amounts)
+      const totalQuoteValue = customerQuotes.reduce((sum, quote) => sum + parseFloat(quote.totalWithVAT || quote.totalAmount || '0'), 0);
+      const approvedQuoteValue = customerQuotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalWithVAT || quote.totalAmount || '0'), 0);
+      const pendingQuoteValue = customerQuotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalWithVAT || quote.totalAmount || '0'), 0);
       const approvedQuotes = customerQuotes.filter(q => q.isApproved).length;
       const pendingQuotes = customerQuotes.filter(q => !q.isApproved).length;
 
