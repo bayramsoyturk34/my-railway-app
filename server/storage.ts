@@ -16,15 +16,20 @@ import {
   type CompanyDirectory, type InsertCompanyDirectory,
   type Message, type InsertMessage,
   type Conversation, type InsertConversation,
+  type User, type UpsertUser,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
-  companyDirectory, messages, conversations
+  companyDirectory, messages, conversations, users
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
+  // User operations for authentication
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+
   // Personnel
   getPersonnel(): Promise<Personnel[]>;
   getPersonnelById(id: string): Promise<Personnel | undefined>;
