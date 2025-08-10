@@ -12,11 +12,22 @@ export async function apiRequest(
   method: string,
   data?: unknown | undefined,
 ): Promise<any> {
+  const sessionId = localStorage.getItem('sessionId');
+  const headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  if (sessionId) {
+    headers["Authorization"] = `Bearer ${sessionId}`;
+  }
+  
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include", // This is crucial for session cookies
+    credentials: "include",
   });
 
   await throwIfResNotOk(res);
@@ -36,9 +47,17 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const sessionId = localStorage.getItem('sessionId');
+    const headers: Record<string, string> = {};
+    
+    if (sessionId) {
+      headers["Authorization"] = `Bearer ${sessionId}`;
+    }
+    
     const res = await fetch(queryKey.join("") as string, {
       method: "GET",
-      credentials: "include", // Essential for session cookies
+      headers,
+      credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

@@ -29,17 +29,8 @@ export async function setupAuth(app: Express) {
       console.log("User logged in:", user.id, "Session:", sessionId);
       console.log("Active sessions:", authenticatedUsers.size);
       
-      // Set cookie with explicit domain
-      res.cookie('session', sessionId, {
-        httpOnly: false, // Allow JS access for debugging
-        secure: false,
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/',
-        domain: undefined // Let browser determine domain
-      });
-      
-      console.log("Cookie set with session ID:", sessionId);
+      // Don't use cookies - return session ID for frontend storage
+      console.log("Session created:", sessionId);
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
@@ -50,14 +41,15 @@ export async function setupAuth(app: Express) {
 
   // Check auth endpoint
   app.get("/api/auth/user", (req, res) => {
-    console.log("All cookies:", req.cookies);
-    const sessionId = req.cookies.session;
+    // Try to get session ID from Authorization header
+    const authHeader = req.headers.authorization;
+    const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
     
-    console.log("Auth check - Session ID from cookie:", sessionId);
+    console.log("Auth check - Session ID:", sessionId);
     console.log("Auth check - Available sessions:", Array.from(authenticatedUsers.keys()));
     
     if (!sessionId) {
-      console.log("No session cookie");
+      console.log("No session ID found");
       return res.status(401).json({ message: "Unauthorized" });
     }
 
@@ -87,7 +79,8 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = (req, res, next) => {
-  const sessionId = req.cookies.session;
+  const authHeader = req.headers.authorization;
+  const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
   
   if (!sessionId) {
     return res.status(401).json({ message: "Unauthorized" });

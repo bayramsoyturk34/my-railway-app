@@ -15,30 +15,18 @@ export default function Landing() {
     onSuccess: async (data) => {
       console.log("Login success:", data);
       
-      // Clear all cached auth data first
+      // Store session ID in localStorage
+      if (data.sessionId) {
+        localStorage.setItem('sessionId', data.sessionId);
+        console.log("Session ID stored:", data.sessionId);
+      }
+      
+      // Clear and refetch auth data
       queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
       
-      // Wait a bit then refetch
       setTimeout(async () => {
-        console.log("Refetching auth status...");
-        try {
-          await queryClient.fetchQuery({
-            queryKey: ["/api/auth/user"],
-            queryFn: getQueryFn({ on401: "returnNull" }),
-          });
-          console.log("Auth refetch completed");
-        } catch (error) {
-          console.log("Auth refetch error:", error);
-        }
-        
-        // Force page reload if auth still not working
-        setTimeout(() => {
-          const authState = queryClient.getQueryData(["/api/auth/user"]);
-          if (!authState) {
-            console.log("Force page reload - auth state not updated");
-            window.location.reload();
-          }
-        }, 1000);
+        console.log("Refetching auth with stored session...");
+        await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       }, 100);
       
       toast({
