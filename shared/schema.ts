@@ -355,6 +355,71 @@ export const insertPersonnelPaymentSchema = createInsertSchema(personnelPayments
   notes: z.string().optional().nullable(),
 });
 
+// Company Directory table
+export const companyDirectory = pgTable("company_directory", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyName: text("company_name").notNull(),
+  contactPerson: text("contact_person").notNull(),
+  phone: text("phone"),
+  email: text("email"),
+  address: text("address"),
+  industry: text("industry"), // Sektör
+  website: text("website"),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  profileImage: text("profile_image"), // Avatar URL
+  lastSeen: timestamp("last_seen"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Messages table for company messaging
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fromCompanyId: varchar("from_company_id").notNull(), // Gönderen firma ID
+  toCompanyId: varchar("to_company_id").notNull(),     // Alan firma ID
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  messageType: text("message_type").default("text"), // "text", "image", "file"
+  attachmentUrl: text("attachment_url"), // Dosya ekler için
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Conversations table for organizing messages
+export const conversations = pgTable("conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  company1Id: varchar("company1_id").notNull(),
+  company2Id: varchar("company2_id").notNull(),
+  lastMessageId: varchar("last_message_id"),
+  lastMessageAt: timestamp("last_message_at"),
+  unreadCount1: integer("unread_count1").default(0), // company1 için okunmamış mesaj sayısı
+  unreadCount2: integer("unread_count2").default(0), // company2 için okunmamış mesaj sayısı
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertCompanyDirectorySchema = createInsertSchema(companyDirectory).omit({
+  id: true,
+  createdAt: true,
+  lastSeen: true,
+  profileImage: true,
+}).extend({
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  address: z.string().optional(),
+  industry: z.string().optional(),
+  website: z.string().optional(),
+  description: z.string().optional(),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type Personnel = typeof personnel.$inferSelect;
 export type InsertPersonnel = z.infer<typeof insertPersonnelSchema>;
@@ -406,3 +471,12 @@ export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
 
 export type Report = typeof reports.$inferSelect;
 export type InsertReport = z.infer<typeof insertReportSchema>;
+
+export type CompanyDirectory = typeof companyDirectory.$inferSelect;
+export type InsertCompanyDirectory = z.infer<typeof insertCompanyDirectorySchema>;
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;

@@ -14,6 +14,7 @@ import ProjectDetail from "@/pages/project-detail.tsx";
 import Finances from "@/pages/finances";
 import Customers from "@/pages/customers";
 import CustomerDetail from "@/pages/customer-detail";
+import CompanyDirectory from "@/pages/company-directory";
 import Reports from "@/pages/reports";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/finances" component={Finances} />
       <Route path="/customers" component={Customers} />
       <Route path="/customers/:customerName" component={CustomerDetail} />
+      <Route path="/company-directory" component={CompanyDirectory} />
       <Route path="/reports" component={Reports} />
       <Route component={NotFound} />
     </Switch>

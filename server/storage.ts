@@ -13,11 +13,15 @@ import {
   type ContractorTask, type InsertContractorTask,
   type ContractorPayment, type InsertContractorPayment,
   type PersonnelPayment, type InsertPersonnelPayment,
+  type CompanyDirectory, type InsertCompanyDirectory,
+  type Message, type InsertMessage,
+  type Conversation, type InsertConversation,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
-  customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments
+  customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
+  companyDirectory, messages, conversations
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -1070,6 +1074,83 @@ export class DatabaseStorage implements IStorage {
   async deleteContractorPayment(id: string): Promise<boolean> {
     const result = await db.delete(contractorPayments).where(eq(contractorPayments.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Company Directory methods
+  async getCompanyDirectory(): Promise<CompanyDirectory[]> {
+    return await db.select().from(companyDirectory).where(eq(companyDirectory.isActive, true));
+  }
+
+  async getCompany(id: string): Promise<CompanyDirectory | undefined> {
+    const [result] = await db.select().from(companyDirectory).where(eq(companyDirectory.id, id));
+    return result;
+  }
+
+  async createCompany(insertCompany: InsertCompanyDirectory): Promise<CompanyDirectory> {
+    const [result] = await db.insert(companyDirectory).values(insertCompany).returning();
+    return result;
+  }
+
+  async updateCompany(id: string, updates: Partial<InsertCompanyDirectory>): Promise<CompanyDirectory | undefined> {
+    const [result] = await db.update(companyDirectory).set(updates).where(eq(companyDirectory.id, id)).returning();
+    return result;
+  }
+
+  async deleteCompany(id: string): Promise<boolean> {
+    const result = await db.update(companyDirectory).set({ isActive: false }).where(eq(companyDirectory.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Messages methods
+  async getMessages(): Promise<Message[]> {
+    return await db.select().from(messages).orderBy(messages.createdAt);
+  }
+
+  async getMessagesByConversation(company1Id: string, company2Id: string): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(
+        or(
+          and(eq(messages.fromCompanyId, company1Id), eq(messages.toCompanyId, company2Id)),
+          and(eq(messages.fromCompanyId, company2Id), eq(messages.toCompanyId, company1Id))
+        )
+      )
+      .orderBy(messages.createdAt);
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const [result] = await db.insert(messages).values(insertMessage).returning();
+    return result;
+  }
+
+  async markMessageAsRead(id: string): Promise<boolean> {
+    const result = await db.update(messages).set({ isRead: true }).where(eq(messages.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Conversations methods
+  async getConversations(): Promise<Conversation[]> {
+    return await db.select().from(conversations).orderBy(conversations.lastMessageAt);
+  }
+
+  async getConversation(company1Id: string, company2Id: string): Promise<Conversation | undefined> {
+    const [result] = await db.select().from(conversations)
+      .where(
+        or(
+          and(eq(conversations.company1Id, company1Id), eq(conversations.company2Id, company2Id)),
+          and(eq(conversations.company1Id, company2Id), eq(conversations.company2Id, company1Id))
+        )
+      );
+    return result;
+  }
+
+  async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
+    const [result] = await db.insert(conversations).values(insertConversation).returning();
+    return result;
+  }
+
+  async updateConversation(id: string, updates: Partial<InsertConversation>): Promise<Conversation | undefined> {
+    const [result] = await db.update(conversations).set(updates).where(eq(conversations.id, id)).returning();
+    return result;
   }
 }
 

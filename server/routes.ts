@@ -1352,6 +1352,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Company Directory routes
+  app.get("/api/company-directory", async (req, res) => {
+    try {
+      const companies = await storage.getCompanyDirectory();
+      res.json(companies);
+    } catch (error) {
+      console.error("Error fetching company directory:", error);
+      res.status(500).json({ error: "Failed to fetch company directory" });
+    }
+  });
+
+  app.get("/api/company-directory/:id", async (req, res) => {
+    try {
+      const company = await storage.getCompany(req.params.id);
+      if (!company) {
+        return res.status(404).json({ error: "Company not found" });
+      }
+      res.json(company);
+    } catch (error) {
+      console.error("Error fetching company:", error);
+      res.status(500).json({ error: "Failed to fetch company" });
+    }
+  });
+
+  app.post("/api/company-directory", async (req, res) => {
+    try {
+      const insertCompanyDirectorySchema = require("@shared/schema").insertCompanyDirectorySchema;
+      const validatedData = insertCompanyDirectorySchema.parse(req.body);
+      const company = await storage.createCompany(validatedData);
+      res.status(201).json(company);
+    } catch (error) {
+      console.error("Error creating company:", error);
+      res.status(500).json({ error: "Failed to create company" });
+    }
+  });
+
+  app.put("/api/company-directory/:id", async (req, res) => {
+    try {
+      const insertCompanyDirectorySchema = require("@shared/schema").insertCompanyDirectorySchema;
+      const validatedData = insertCompanyDirectorySchema.parse(req.body);
+      const company = await storage.updateCompany(req.params.id, validatedData);
+      if (!company) {
+        return res.status(404).json({ error: "Company not found" });
+      }
+      res.json(company);
+    } catch (error) {
+      console.error("Error updating company:", error);
+      res.status(500).json({ error: "Failed to update company" });
+    }
+  });
+
+  app.delete("/api/company-directory/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteCompany(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Company not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      res.status(500).json({ error: "Failed to delete company" });
+    }
+  });
+
+  // Messages routes
+  app.get("/api/messages", async (req, res) => {
+    try {
+      const messages = await storage.getMessages();
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.get("/api/messages/:company1Id/:company2Id", async (req, res) => {
+    try {
+      const messages = await storage.getMessagesByConversation(req.params.company1Id, req.params.company2Id);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching conversation messages:", error);
+      res.status(500).json({ error: "Failed to fetch conversation messages" });
+    }
+  });
+
+  app.post("/api/messages", async (req, res) => {
+    try {
+      const insertMessageSchema = require("@shared/schema").insertMessageSchema;
+      const validatedData = insertMessageSchema.parse(req.body);
+      const message = await storage.createMessage(validatedData);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error creating message:", error);
+      res.status(500).json({ error: "Failed to create message" });
+    }
+  });
+
+  app.put("/api/messages/:id/read", async (req, res) => {
+    try {
+      const success = await storage.markMessageAsRead(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ error: "Failed to mark message as read" });
+    }
+  });
+
+  // Conversations routes
+  app.get("/api/conversations", async (req, res) => {
+    try {
+      const conversations = await storage.getConversations();
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+
+  app.get("/api/conversations/:company1Id/:company2Id", async (req, res) => {
+    try {
+      const conversation = await storage.getConversation(req.params.company1Id, req.params.company2Id);
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ error: "Failed to fetch conversation" });
+    }
+  });
+
+  app.post("/api/conversations", async (req, res) => {
+    try {
+      const insertConversationSchema = require("@shared/schema").insertConversationSchema;
+      const validatedData = insertConversationSchema.parse(req.body);
+      const conversation = await storage.createConversation(validatedData);
+      res.status(201).json(conversation);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ error: "Failed to create conversation" });
+    }
+  });
+
+  app.put("/api/conversations/:id", async (req, res) => {
+    try {
+      const insertConversationSchema = require("@shared/schema").insertConversationSchema;
+      const validatedData = insertConversationSchema.parse(req.body);
+      const conversation = await storage.updateConversation(req.params.id, validatedData);
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error updating conversation:", error);
+      res.status(500).json({ error: "Failed to update conversation" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

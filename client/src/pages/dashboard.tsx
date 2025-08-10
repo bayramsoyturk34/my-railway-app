@@ -7,6 +7,7 @@ import {
   Edit, 
   Users, 
   Building, 
+  Building2,
   Home, 
   Wallet, 
   CalendarDays, 
@@ -59,6 +60,7 @@ export default function Dashboard() {
     { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
     { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
     { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
+    { id: "company-directory", icon: Building2, label: "Firma Rehberi", onClick: () => setLocation("/company-directory"), iconColor: "text-green-400" },
     { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
   ]);
 
