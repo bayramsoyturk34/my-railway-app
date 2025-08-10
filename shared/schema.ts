@@ -125,7 +125,7 @@ export const customerQuoteItems = pgTable("customer_quote_items", {
   quoteId: varchar("quote_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  quantity: integer("quantity").notNull().default(1),
+  quantity: decimal("quantity", { precision: 8, scale: 2 }).notNull().default("1.00"),
   unit: text("unit").notNull().default("adet"), // "adet", "m2", "m"
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),

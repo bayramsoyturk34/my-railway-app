@@ -67,7 +67,7 @@ function QuoteItemsSection({ quoteId }: { quoteId: string }) {
               )}
               <div className="flex items-center gap-4 mt-2 text-sm">
                 <span className="text-gray-300">
-                  {item.quantity} {item.unit}
+                  {parseFloat(item.quantity).toFixed(1)} {item.unit}
                 </span>
                 <span className="text-gray-300">
                   {formatCurrency(item.unitPrice.toString())} / {item.unit}
@@ -145,7 +145,7 @@ export default function CustomerDetailPage() {
   const [currentItem, setCurrentItem] = useState({
     title: "",
     description: "",
-    quantity: 1,
+    quantity: 1.0,
     unitPrice: 0,
     unit: "adet"
   });
@@ -360,7 +360,7 @@ export default function CustomerDetailPage() {
       ...quoteItems.map(item => [
         `"${item.title}"`,
         `"${item.description || ""}"`,
-        item.quantity,
+        parseFloat(item.quantity).toFixed(1),
         item.unit,
         item.unitPrice.toFixed(2),
         item.totalPrice.toFixed(2)
@@ -579,7 +579,7 @@ export default function CustomerDetailPage() {
       index + 1,
       convertTurkishChars(item.title),
       convertTurkishChars(item.description || '-'),
-      item.quantity,
+      parseFloat(item.quantity).toFixed(1),
       convertTurkishChars(item.unit),
       `${item.unitPrice.toFixed(2)} TL`,
       `${item.totalPrice.toFixed(2)} TL`
@@ -669,7 +669,7 @@ export default function CustomerDetailPage() {
     setShowQuoteForm(false);
     setEditingQuote(null);
     setQuoteItems([]);
-    setCurrentItem({ title: "", description: "", quantity: 1, unitPrice: 0, unit: "adet" });
+    setCurrentItem({ title: "", description: "", quantity: 1.0, unitPrice: 0, unit: "adet" });
     setHasVAT(false);
     setVatRate(18);
     setQuoteTerms([
@@ -1731,9 +1731,10 @@ export default function CustomerDetailPage() {
                     <label className="text-sm text-gray-300 mb-2 block font-medium">Miktar</label>
                     <Input
                       type="number"
-                      min="1"
+                      step="0.1"
+                      min="0.1"
                       value={currentItem.quantity}
-                      onChange={(e) => setCurrentItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
+                      onChange={(e) => setCurrentItem(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 1 }))}
                       className="bg-dark-primary border-dark-accent text-white h-10"
                     />
                   </div>
