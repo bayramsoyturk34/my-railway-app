@@ -726,24 +726,63 @@ export default function CustomerDetailPage() {
     quoteForm.reset();
   };
 
-  // Update form when editing
-  if (editingTask && showTaskForm) {
-    taskForm.setValue("title", editingTask.title);
-    taskForm.setValue("description", editingTask.description || "");
-    taskForm.setValue("amount", editingTask.amount);
-    taskForm.setValue("status", editingTask.status);
-    taskForm.setValue("dueDate", editingTask.dueDate ? new Date(editingTask.dueDate) : undefined);
-  }
+  // Update form when editing task
+  useEffect(() => {
+    if (editingTask && showTaskForm) {
+      taskForm.setValue("title", editingTask.title);
+      taskForm.setValue("description", editingTask.description || "");
+      taskForm.setValue("quantity", parseFloat(editingTask.quantity));
+      taskForm.setValue("unit", editingTask.unit);
+      taskForm.setValue("unitPrice", parseFloat(editingTask.unitPrice));
+      taskForm.setValue("amount", editingTask.amount);
+      taskForm.setValue("hasVAT", editingTask.hasVAT || false);
+      taskForm.setValue("vatRate", editingTask.vatRate || "1");
+      taskForm.setValue("status", editingTask.status);
+      taskForm.setValue("dueDate", editingTask.dueDate ? new Date(editingTask.dueDate) : undefined);
+    }
+  }, [editingTask, showTaskForm]);
 
-  if (editingQuote && showQuoteForm) {
-    quoteForm.setValue("title", editingQuote.title);
-    quoteForm.setValue("description", editingQuote.description || "");
-    quoteForm.setValue("totalAmount", editingQuote.totalAmount);
-    quoteForm.setValue("status", editingQuote.status);
-    quoteForm.setValue("isApproved", editingQuote.isApproved || false);
-    quoteForm.setValue("quoteDate", new Date(editingQuote.quoteDate));
-    quoteForm.setValue("validUntil", editingQuote.validUntil ? new Date(editingQuote.validUntil) : undefined);
-  }
+  // Update form when editing quote
+  useEffect(() => {
+    if (editingQuote && showQuoteForm) {
+      quoteForm.setValue("title", editingQuote.title);
+      quoteForm.setValue("description", editingQuote.description || "");
+      quoteForm.setValue("totalAmount", editingQuote.totalAmount);
+      quoteForm.setValue("status", editingQuote.status);
+      quoteForm.setValue("isApproved", editingQuote.isApproved || false);
+      quoteForm.setValue("quoteDate", new Date(editingQuote.quoteDate));
+      quoteForm.setValue("validUntil", editingQuote.validUntil ? new Date(editingQuote.validUntil) : undefined);
+      
+      // Set KDV settings
+      setHasVAT(editingQuote.hasVAT || false);
+      setVatRate(parseFloat(editingQuote.vatRate || "1"));
+      
+      // Set quote terms if they exist
+      if (editingQuote.terms) {
+        setQuoteTerms(editingQuote.terms.split('\n').filter(term => term.trim()));
+      }
+      
+      // Load quote items if editing
+      if (editingQuote.id) {
+        // Fetch quote items for the editing quote
+        apiRequest(`/api/customer-quote-items/quote/${editingQuote.id}`, "GET")
+          .then((items: CustomerQuoteItem[]) => {
+            setQuoteItems(items.map(item => ({
+              id: item.id,
+              title: item.title,
+              description: item.description || "",
+              quantity: parseFloat(item.quantity),
+              unitPrice: parseFloat(item.unitPrice),
+              unit: item.unit,
+              totalPrice: parseFloat(item.totalPrice)
+            })));
+          })
+          .catch(error => {
+            console.error("Error loading quote items:", error);
+          });
+      }
+    }
+  }, [editingQuote, showQuoteForm]);
 
   if (!customer) {
     return (
