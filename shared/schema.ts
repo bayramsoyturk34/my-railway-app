@@ -90,6 +90,9 @@ export const customerTasks = pgTable("customer_tasks", {
   customerId: varchar("customer_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
+  quantity: decimal("quantity", { precision: 8, scale: 2 }).notNull().default("1.00"),
+  unit: text("unit").notNull().default("adet"), // "adet", "m2", "m"
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull().default("0"),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   hasVAT: boolean("has_vat").default(false),
   vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default("20.00"), // %20 KDV
@@ -274,6 +277,8 @@ export const insertCustomerTaskSchema = createInsertSchema(customerTasks).omit({
 }).extend({
   description: z.string().optional().nullable(),
   dueDate: z.date().optional().nullable(),
+  quantity: z.number().min(0.1),
+  unitPrice: z.number().min(0),
 });
 
 export const insertCustomerQuoteSchema = createInsertSchema(customerQuotes).omit({

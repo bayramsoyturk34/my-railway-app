@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, Building2, Phone, Mail, MapPin, CreditCard, Calendar, DollarSign, FileText, Plus, CheckCircle, Clock, Circle, Edit, Trash2, X, Download, FileSpreadsheet, Calculator } from "lucide-react";
@@ -240,8 +240,15 @@ export default function CustomerDetailPage() {
       customerId: customer?.id || "",
       title: "",
       description: "",
+      quantity: 1.0,
+      unit: "adet",
+      unitPrice: 0,
       amount: "0",
       status: "pending",
+      hasVAT: false,
+      vatRate: "20.00",
+      vatAmount: "0.00",
+      totalWithVAT: "0",
       dueDate: undefined,
     },
   });
@@ -513,6 +520,43 @@ export default function CustomerDetailPage() {
     setEditingTask(null);
     taskForm.reset();
   };
+
+  // Update form when editing task
+  useEffect(() => {
+    if (editingTask) {
+      taskForm.reset({
+        customerId: editingTask.customerId,
+        title: editingTask.title,
+        description: editingTask.description || "",
+        quantity: parseFloat(editingTask.quantity || "1"),
+        unit: editingTask.unit || "adet",
+        unitPrice: parseFloat(editingTask.unitPrice || "0"),
+        amount: editingTask.amount,
+        status: editingTask.status,
+        hasVAT: editingTask.hasVAT,
+        vatRate: editingTask.vatRate,
+        vatAmount: editingTask.vatAmount,
+        totalWithVAT: editingTask.totalWithVAT,
+        dueDate: editingTask.dueDate ? new Date(editingTask.dueDate) : undefined,
+      });
+    } else {
+      taskForm.reset({
+        customerId: customer?.id || "",
+        title: "",
+        description: "",
+        quantity: 1.0,
+        unit: "adet",
+        unitPrice: 0,
+        amount: "0",
+        status: "pending",
+        hasVAT: false,
+        vatRate: "20.00",
+        vatAmount: "0.00",
+        totalWithVAT: "0",
+        dueDate: undefined,
+      });
+    }
+  }, [editingTask, customer?.id, taskForm]);
 
 
 
@@ -891,7 +935,17 @@ export default function CustomerDetailPage() {
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
+                          <div>
+                            <p className="text-gray-400">Miktar</p>
+                            <p className="text-white font-medium">
+                              {parseFloat(task.quantity || "1").toFixed(1)} {task.unit || 'adet'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Birim Fiyat</p>
+                            <p className="text-white font-medium">{formatCurrency(task.unitPrice || task.amount)}</p>
+                          </div>
                           <div>
                             <p className="text-gray-400">Ana Tutar</p>
                             <p className="text-white font-semibold">{formatCurrency(task.amount)}</p>
@@ -910,13 +964,14 @@ export default function CustomerDetailPage() {
                               <p className="text-xs text-blue-400">KDV Dahil</p>
                             )}
                           </div>
-                          {task.dueDate && (
-                            <div>
-                              <p className="text-gray-400">Teslim Tarihi</p>
-                              <p className="text-white">{formatDate(task.dueDate)}</p>
-                            </div>
-                          )}
                         </div>
+                        
+                        {task.dueDate && (
+                          <div className="mb-2">
+                            <span className="text-gray-400 text-sm">Teslim Tarihi: </span>
+                            <span className="text-white text-sm">{formatDate(task.dueDate)}</span>
+                          </div>
+                        )}
                         
                         {task.description && (
                           <div className="mt-2">
@@ -1229,20 +1284,100 @@ export default function CustomerDetailPage() {
                 )}
               />
 
+              {/* Miktar, Birim ve Fiyat Alanları */}
+              <div className="grid grid-cols-3 gap-3">
+                <FormField
+                  control={taskForm.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Miktar *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0.1"
+                          className="bg-dark-primary border-dark-accent text-white"
+                          placeholder="1.0"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const quantity = parseFloat(e.target.value) || 1;
+                            field.onChange(quantity);
+                            // Auto calculate amount
+                            const unitPrice = taskForm.getValues("unitPrice") || 0;
+                            taskForm.setValue("amount", (quantity * unitPrice).toString());
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={taskForm.control}
+                  name="unit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Birim *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
+                            <SelectValue placeholder="Birim seçin" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-dark-secondary border-dark-accent">
+                          <SelectItem value="adet">Adet</SelectItem>
+                          <SelectItem value="m2">m²</SelectItem>
+                          <SelectItem value="m">m (Metre)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={taskForm.control}
+                  name="unitPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Birim Fiyat (₺) *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          className="bg-dark-primary border-dark-accent text-white"
+                          placeholder="0.00"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const unitPrice = parseFloat(e.target.value) || 0;
+                            field.onChange(unitPrice);
+                            // Auto calculate amount
+                            const quantity = taskForm.getValues("quantity") || 1;
+                            taskForm.setValue("amount", (quantity * unitPrice).toString());
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={taskForm.control}
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Tutar (₺) *</FormLabel>
+                    <FormLabel className="text-gray-300">Toplam Tutar (₺)</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="0.00"
-                        {...field}
-                      />
+                      <div className="bg-orange-500/20 border border-orange-500/30 rounded-md h-10 flex items-center px-3 text-orange-400 font-medium">
+                        ₺{parseFloat(field.value || "0").toFixed(2)}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
