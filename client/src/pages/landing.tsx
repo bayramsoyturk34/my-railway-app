@@ -15,23 +15,31 @@ export default function Landing() {
     onSuccess: async (data) => {
       console.log("Login success:", data);
       
-      // Force immediate refetch
+      // Clear all cached auth data first
+      queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Wait a bit then refetch
       setTimeout(async () => {
-        console.log("Force refetching auth status...");
-        await queryClient.refetchQueries({ 
-          queryKey: ["/api/auth/user"],
-          type: 'active'
-        });
+        console.log("Refetching auth status...");
+        try {
+          await queryClient.fetchQuery({
+            queryKey: ["/api/auth/user"],
+            queryFn: getQueryFn({ on401: "returnNull" }),
+          });
+          console.log("Auth refetch completed");
+        } catch (error) {
+          console.log("Auth refetch error:", error);
+        }
         
-        // Additional invalidate for safety
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        
-        // Manual redirect if state doesn't update
+        // Force page reload if auth still not working
         setTimeout(() => {
-          console.log("Manual redirect attempt");
-          window.location.reload();
-        }, 2000);
-      }, 500);
+          const authState = queryClient.getQueryData(["/api/auth/user"]);
+          if (!authState) {
+            console.log("Force page reload - auth state not updated");
+            window.location.reload();
+          }
+        }, 1000);
+      }, 100);
       
       toast({
         title: "Başarıyla giriş yapıldı!",

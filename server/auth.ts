@@ -29,14 +29,17 @@ export async function setupAuth(app: Express) {
       console.log("User logged in:", user.id, "Session:", sessionId);
       console.log("Active sessions:", authenticatedUsers.size);
       
-      // Set cookie
+      // Set cookie with explicit domain
       res.cookie('session', sessionId, {
         httpOnly: false, // Allow JS access for debugging
         secure: false,
         sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/'
+        path: '/',
+        domain: undefined // Let browser determine domain
       });
+      
+      console.log("Cookie set with session ID:", sessionId);
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
@@ -47,6 +50,7 @@ export async function setupAuth(app: Express) {
 
   // Check auth endpoint
   app.get("/api/auth/user", (req, res) => {
+    console.log("All cookies:", req.cookies);
     const sessionId = req.cookies.session;
     
     console.log("Auth check - Session ID from cookie:", sessionId);
