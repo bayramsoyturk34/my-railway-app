@@ -200,12 +200,12 @@ export default function CompanyDirectory() {
 
       {/* Add Company Form Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md">
+        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-white">Yeni Firma Ekle</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               <FormField
                 control={form.control}
                 name="companyName"
@@ -242,7 +242,7 @@ export default function CompanyDirectory() {
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <FormField
                   control={form.control}
                   name="phone"
@@ -327,7 +327,7 @@ export default function CompanyDirectory() {
                       <Textarea 
                         className="bg-dark-primary border-dark-accent text-white"
                         placeholder="Firma adresi"
-                        rows={2}
+                        rows={1}
                         {...field} 
                       />
                     </FormControl>
@@ -346,7 +346,7 @@ export default function CompanyDirectory() {
                       <Textarea 
                         className="bg-dark-primary border-dark-accent text-white"
                         placeholder="Firma hakkında kısa açıklama"
-                        rows={3}
+                        rows={2}
                         {...field} 
                       />
                     </FormControl>
@@ -355,7 +355,7 @@ export default function CompanyDirectory() {
                 )}
               />
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-2">
                 <Button
                   type="button"
                   variant="outline"
