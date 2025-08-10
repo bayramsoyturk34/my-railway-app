@@ -710,16 +710,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       const validatedData = insertCustomerQuoteSchema.partial().parse(processedBody);
       
-      // Update the quote WITHOUT auto-creating tasks
-      // Tasks will be created individually from approved quote items
       const quote = await storage.updateCustomerQuote(id, validatedData);
       if (!quote) {
         return res.status(404).json({ message: "Customer quote not found" });
       }
+      
+      // If the entire quote is being approved, create a customer task for the total quote
+      if (validatedData.isApproved === true && validatedData.status === 'approved') {
+        const taskData = {
+          customerId: quote.customerId,
+          title: quote.title || "Onaylanmış Teklif",
+          description: quote.description || "",
+          quantity: 1,
+          unit: "adet",
+          unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
+          amount: quote.totalWithVAT || quote.totalAmount || '0',
+          status: "pending" as const,
+          dueDate: null
+        };
+        await storage.createCustomerTask(taskData);
+      }
+      
       res.json(quote);
     } catch (error) {
       console.error("Customer quote update error:", error);
-      res.status(400).json({ message: "Invalid customer quote data" });
+      res.status(400).json({ 
+        message: "Invalid customer quote data", 
+        error: error instanceof Error ? error.message : String(error),
+        requestBody: req.body
+      });
     }
   });
 
