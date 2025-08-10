@@ -732,7 +732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         unitPrice: req.body.unitPrice?.toString() || "0",
         totalPrice: req.body.totalPrice?.toString() || "0",
-        quantity: parseInt(req.body.quantity) || 1
+        quantity: req.body.quantity?.toString() || "1.00"
       };
       
       console.log("Processed quote item body:", processedBody);
