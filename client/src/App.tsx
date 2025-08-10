@@ -31,7 +31,10 @@ function Router() {
           <div className="text-white">Yükleniyor...</div>
         </div>
       ) : !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route component={Landing} />
+        </>
       ) : (
         <>
           <Route path="/" component={Dashboard} />

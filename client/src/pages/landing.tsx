@@ -19,15 +19,16 @@ export default function Landing() {
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Session ID stored:", data.sessionId);
+        
+        // Clear auth cache and force immediate reload
+        queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
+        
+        // Force page reload to restart with valid session
+        setTimeout(() => {
+          console.log("Reloading page with new session...");
+          window.location.reload();
+        }, 500);
       }
-      
-      // Clear and refetch auth data
-      queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
-      
-      setTimeout(async () => {
-        console.log("Refetching auth with stored session...");
-        await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
-      }, 100);
       
       toast({
         title: "Başarıyla giriş yapıldı!",
