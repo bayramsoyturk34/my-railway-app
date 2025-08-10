@@ -412,7 +412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           completed: completedTasks,
         },
         customerQuotes: {
-          total: totalQuoteValue,
+          total: pendingQuoteValue, // Show only pending quotes total in dashboard
           approved: approvedQuoteValue,
           pending: pendingQuoteValue,
           approvedCount: approvedQuotes,

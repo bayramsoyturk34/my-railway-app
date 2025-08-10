@@ -886,7 +886,7 @@ export default function CustomerDetailPage() {
                 <FileText className="h-5 w-5 text-orange-400" />
                 <div>
                   <p className="text-gray-400 text-sm">Teklifler</p>
-                  <p className="text-white font-semibold text-lg">{formatCurrency(totalQuoteValue.toString())}</p>
+                  <p className="text-white font-semibold text-lg">{formatCurrency(pendingQuoteValue.toString())}</p>
                 </div>
               </div>
             </CardContent>
