@@ -1,40 +1,10 @@
 import type { Express, RequestHandler } from "express";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import jwt from "jsonwebtoken";
 
-export function getSession() {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
-  return session({
-    secret: process.env.SESSION_SECRET!,
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: true, // Important for session creation
-    name: 'puantaj.sid', // Custom session name
-    cookie: {
-      httpOnly: false, // Allow frontend access for debugging
-      secure: false, // Set to false for development
-      sameSite: 'none', // Allow cross-site cookies
-      path: '/', // Ensure path is set
-      maxAge: sessionTtl,
-    },
-  });
-}
+const JWT_SECRET = process.env.SESSION_SECRET || "puantaj-secret-key";
 
 export async function setupSimpleAuth(app: Express) {
-  app.set("trust proxy", 1);
-  
-  // Add session middleware
-  const sessionMiddleware = getSession();
-  app.use(sessionMiddleware);
-
   // Simple login endpoint - for demo purposes
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -50,27 +20,23 @@ export async function setupSimpleAuth(app: Express) {
       // Store user in database
       const user = await storage.upsertUser(demoUser);
       
-      // Regenerate session ID for security
-      await new Promise<void>((resolve, reject) => {
-        req.session.regenerate((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
+      // Create JWT token
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      
+      console.log("JWT token created for user:", user.id);
+      
+      // Set HTTP-only cookie with token
+      res.cookie('auth-token', token, {
+        httpOnly: true,
+        secure: false, // false for development
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        path: '/'
       });
-      
-      // Set session user
-      (req.session as any).user = user;
-      
-      // Force session save
-      await new Promise<void>((resolve, reject) => {
-        req.session.save((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-      
-      console.log("Session saved for user:", user.id);
-      console.log("New Session ID:", req.sessionID);
       
       res.json({ success: true, user });
     } catch (error) {
@@ -81,30 +47,38 @@ export async function setupSimpleAuth(app: Express) {
 
   // Logout endpoint
   app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Logout error:", err);
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.json({ success: true });
-    });
+    res.clearCookie('auth-token');
+    res.json({ success: true });
   });
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  console.log("Auth check - Session ID:", req.sessionID);
-  console.log("Auth check - Session data:", req.session);
-  
-  const sessionUser = (req.session as any)?.user;
-  
-  if (!sessionUser) {
-    console.log("No session user found");
+  try {
+    const token = req.cookies['auth-token'];
+    
+    if (!token) {
+      console.log("No auth token found");
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Verify JWT token
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    
+    // Get user from database
+    const user = await storage.getUser(decoded.userId);
+    
+    if (!user) {
+      console.log("User not found for token");
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    console.log("JWT auth successful for user:", user.id);
+    
+    // Add user to request
+    (req as any).user = user;
+    next();
+  } catch (error) {
+    console.log("JWT verification failed:", error);
     return res.status(401).json({ message: "Unauthorized" });
   }
-
-  console.log("Session user found:", sessionUser.id);
-  
-  // Add user to request
-  (req as any).user = sessionUser;
-  next();
 };
