@@ -16,8 +16,10 @@ import {
   Info,
   BarChart3,
   Briefcase,
-  Calculator
+  Calculator,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/header";
 import ProjectCard from "@/components/cards/project-card";
 import NavigationCard from "@/components/cards/navigation-card";
@@ -52,6 +54,7 @@ interface CardItem {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
+  const { user } = useAuth();
 
   // Navigation cards state for drag and drop
   const [navCards, setNavCards] = useState([

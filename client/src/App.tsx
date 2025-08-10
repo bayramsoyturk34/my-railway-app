@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import Landing from "@/pages/landing";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Personnel from "@/pages/personnel";
@@ -18,19 +20,27 @@ import CompanyDirectory from "@/pages/company-directory";
 import Reports from "@/pages/reports";
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/personnel" component={Personnel} />
-      <Route path="/personnel/:id" component={PersonnelDetail} />
-      <Route path="/timesheet" component={Timesheet} />
-      <Route path="/projects" component={Projects} />
-      <Route path="/projects/:id" component={ProjectDetail} />
-      <Route path="/finances" component={Finances} />
-      <Route path="/customers" component={Customers} />
-      <Route path="/customers/:customerName" component={CustomerDetail} />
-      <Route path="/company-directory" component={CompanyDirectory} />
-      <Route path="/reports" component={Reports} />
+      {isLoading || !isAuthenticated ? (
+        <Route path="/" component={Landing} />
+      ) : (
+        <>
+          <Route path="/" component={Dashboard} />
+          <Route path="/personnel" component={Personnel} />
+          <Route path="/personnel/:id" component={PersonnelDetail} />
+          <Route path="/timesheet" component={Timesheet} />
+          <Route path="/projects" component={Projects} />
+          <Route path="/projects/:id" component={ProjectDetail} />
+          <Route path="/finances" component={Finances} />
+          <Route path="/customers" component={Customers} />
+          <Route path="/customers/:customerName" component={CustomerDetail} />
+          <Route path="/company-directory" component={CompanyDirectory} />
+          <Route path="/reports" component={Reports} />
+        </>
+      )}
       <Route component={NotFound} />
     </Switch>
   );
