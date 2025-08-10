@@ -718,27 +718,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // If the entire quote is being approved, create a customer task for the total quote
-      // BUT ONLY if there are no individual quote items already approved
       if (validatedData.isApproved === true && validatedData.status === 'approved') {
-        // Check if any quote items are already individually approved
-        const quoteItems = await storage.getCustomerQuoteItemsByQuoteId(id);
-        const hasApprovedItems = quoteItems.some(item => item.isApproved === true);
-        
-        // Only create a task for the total quote if no individual items are approved
-        if (!hasApprovedItems) {
-          const taskData = {
-            customerId: quote.customerId,
-            title: quote.title || "Onaylanmış Teklif",
-            description: quote.description || "",
-            quantity: 1,
-            unit: "adet",
-            unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
-            amount: quote.totalWithVAT || quote.totalAmount || '0',
-            status: "pending" as const,
-            dueDate: null
-          };
-          await storage.createCustomerTask(taskData);
-        }
+        const taskData = {
+          customerId: quote.customerId,
+          title: quote.title || "Onaylanmış Teklif",
+          description: quote.description || "",
+          quantity: 1,
+          unit: "adet",
+          unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
+          amount: quote.totalWithVAT || quote.totalAmount || '0',
+          status: "pending" as const,
+          dueDate: null
+        };
+        await storage.createCustomerTask(taskData);
       }
       
       res.json(quote);
@@ -815,50 +807,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const items = await storage.getCustomerQuoteItems();
       const currentItem = items.find(item => item.id === id);
       
-      // If item is approved, create a customer task
-      if (validatedData.isApproved === true) {
-        const item = await storage.updateCustomerQuoteItem(id, { ...validatedData, status: "approved" });
-        
-        if (item) {
-          // Get the quote to get customer info
-          const quote = await storage.getCustomerQuotes();
-          const parentQuote = quote.find(q => q.id === item.quoteId);
-          
-          if (parentQuote) {
-            const taskData = {
-              customerId: parentQuote.customerId,
-              title: item.title,
-              description: item.description || "",
-              quantity: parseFloat(item.quantity) || 1,
-              unit: item.unit,
-              unitPrice: parseFloat(item.unitPrice) || 0,
-              amount: item.totalPrice,
-              status: "pending" as const,
-              dueDate: null
-            };
-            await storage.createCustomerTask(taskData);
-          }
-        }
-        
-        // Update quote total after updating item
-        if (currentItem) {
-          await updateQuoteTotal(currentItem.quoteId);
-        }
-        
-        res.json(item);
-      } else {
-        const item = await storage.updateCustomerQuoteItem(id, validatedData);
-        if (!item) {
-          return res.status(404).json({ message: "Quote item not found" });
-        }
-        
-        // Update quote total after updating item
-        if (currentItem) {
-          await updateQuoteTotal(currentItem.quoteId);
-        }
-        
-        res.json(item);
+      // Just update the quote item status - NO automatic task creation for individual items
+      const item = await storage.updateCustomerQuoteItem(id, validatedData);
+      if (!item) {
+        return res.status(404).json({ message: "Quote item not found" });
       }
+      
+      // Update quote total after updating item
+      if (currentItem) {
+        await updateQuoteTotal(currentItem.quoteId);
+      }
+      
+      res.json(item);
     } catch (error) {
       res.status(400).json({ message: "Invalid quote item data" });
     }
