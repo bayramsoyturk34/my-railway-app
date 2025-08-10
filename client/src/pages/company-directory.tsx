@@ -434,7 +434,7 @@ export default function CompanyDirectory() {
 
       {/* Chat Dialog */}
       <Dialog open={showChat} onOpenChange={setShowChat}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-2xl max-h-[80vh] p-0">
+        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-lg max-h-[85vh] p-0">
           <DialogHeader className="p-6 pb-3 border-b border-dark-accent">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -458,7 +458,7 @@ export default function CompanyDirectory() {
           </DialogHeader>
           
           {/* Messages Area */}
-          <div className="flex flex-col h-[60vh]">
+          <div className="flex flex-col h-[70vh]">
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
                 {messages.length === 0 ? (
@@ -508,13 +508,13 @@ export default function CompanyDirectory() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Mesajınızı yazın..."
-                  className="flex-1 bg-dark-primary border-dark-accent text-white resize-none"
-                  rows={1}
+                  className="flex-1 bg-dark-primary border-dark-accent text-white resize-none min-h-[2.5rem]"
+                  rows={2}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 self-end"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
