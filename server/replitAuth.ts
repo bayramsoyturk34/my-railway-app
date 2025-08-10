@@ -8,6 +8,10 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+console.log("Auth Debug - REPLIT_DOMAINS:", process.env.REPLIT_DOMAINS);
+console.log("Auth Debug - REPL_ID:", process.env.REPL_ID);
+console.log("Auth Debug - SESSION_SECRET:", process.env.SESSION_SECRET ? "exists" : "missing");
+
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
@@ -102,14 +106,28 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    console.log("Login attempt - hostname:", req.hostname);
+    console.log("Available domains:", process.env.REPLIT_DOMAINS);
+    
+    // Use the first domain from REPLIT_DOMAINS for localhost development
+    const domain = req.hostname === 'localhost' 
+      ? process.env.REPLIT_DOMAINS!.split(",")[0] 
+      : req.hostname;
+    
+    console.log("Using domain for auth:", domain);
+    passport.authenticate(`replitauth:${domain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Use the first domain from REPLIT_DOMAINS for localhost development
+    const domain = req.hostname === 'localhost' 
+      ? process.env.REPLIT_DOMAINS!.split(",")[0] 
+      : req.hostname;
+    
+    passport.authenticate(`replitauth:${domain}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
     })(req, res, next);
