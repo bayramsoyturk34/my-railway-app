@@ -51,6 +51,11 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Individual quote item approval no longer creates automatic tasks - only full quote approval creates tasks
   - Enhanced logging system for debugging task creation process
   - Database cleanup performed to remove duplicate entries and correct VAT amounts
+- ✅ **Task Form VAT Display Fix**: Corrected VAT-exclusive vs VAT-inclusive amount display (August 10, 2025)
+  - Fixed "Ana Tutar" to show VAT-exclusive amounts, "Toplam Tutar" to show VAT-inclusive amounts
+  - Updated task creation form to properly calculate and store VAT amounts
+  - Enhanced task editing form to correctly populate quantity, unitPrice, and unit fields from approved quotes
+  - Improved VAT calculation logic for both new task creation and existing task editing
 
 # User Preferences
 
