@@ -535,10 +535,34 @@ export default function CustomerDetailPage() {
 
   // Form handlers
   const onSubmitTask = (data: InsertCustomerTask) => {
-    if (editingTask) {
-      updateTaskMutation.mutate({ id: editingTask.id, data });
+    // Calculate VAT amounts before submission
+    const baseAmount = parseFloat(data.amount);
+    let finalData = { ...data };
+    
+    if (data.hasVAT) {
+      // If VAT is included, the amount should be VAT-inclusive
+      const vatMultiplier = 1 + parseFloat(data.vatRate || '20') / 100;
+      const vatInclusiveAmount = baseAmount * vatMultiplier;
+      const vatAmount = vatInclusiveAmount - baseAmount;
+      
+      finalData = {
+        ...data,
+        amount: vatInclusiveAmount.toFixed(2),
+        vatAmount: vatAmount.toFixed(2),
+        totalWithVAT: vatInclusiveAmount.toFixed(2)
+      };
     } else {
-      createTaskMutation.mutate({ ...data, customerId: customer?.id || "" });
+      finalData = {
+        ...data,
+        vatAmount: '0.00',
+        totalWithVAT: '0.00'
+      };
+    }
+    
+    if (editingTask) {
+      updateTaskMutation.mutate({ id: editingTask.id, data: finalData });
+    } else {
+      createTaskMutation.mutate({ ...finalData, customerId: customer?.id || "" });
     }
   };
 
@@ -557,6 +581,14 @@ export default function CustomerDetailPage() {
   // Update form when editing task
   useEffect(() => {
     if (editingTask) {
+      // When editing, if task has VAT, show the VAT-exclusive amount in the form
+      let displayAmount = editingTask.amount;
+      if (editingTask.hasVAT) {
+        const vatRate = parseFloat(editingTask.vatRate || '20');
+        const vatInclusiveAmount = parseFloat(editingTask.amount);
+        displayAmount = (vatInclusiveAmount / (1 + vatRate / 100)).toFixed(2);
+      }
+      
       taskForm.reset({
         customerId: editingTask.customerId,
         title: editingTask.title,
@@ -564,7 +596,7 @@ export default function CustomerDetailPage() {
         quantity: parseFloat(editingTask.quantity || "1"),
         unit: editingTask.unit || "adet",
         unitPrice: parseFloat(editingTask.unitPrice || "0"),
-        amount: editingTask.amount,
+        amount: displayAmount,
         status: editingTask.status,
         hasVAT: editingTask.hasVAT,
         vatRate: editingTask.vatRate,
@@ -996,17 +1028,22 @@ export default function CustomerDetailPage() {
                           </div>
                           <div>
                             <p className="text-gray-400">Ana Tutar</p>
-                            <p className="text-white font-semibold">{formatCurrency(task.amount)}</p>
+                            <p className="text-white font-semibold">
+                              {task.hasVAT 
+                                ? formatCurrency((parseFloat(task.amount) / (1 + parseFloat(task.vatRate || '20') / 100)).toFixed(2))
+                                : formatCurrency(task.amount)
+                              }
+                            </p>
                             {task.hasVAT && (
                               <p className="text-xs text-gray-400">
-                                KDV (%{task.vatRate}): {formatCurrency(task.vatAmount || "0")}
+                                KDV (%{task.vatRate}): {formatCurrency((parseFloat(task.amount) - (parseFloat(task.amount) / (1 + parseFloat(task.vatRate || '20') / 100))).toFixed(2))}
                               </p>
                             )}
                           </div>
                           <div>
                             <p className="text-gray-400">Toplam Tutar</p>
                             <p className="text-green-400 font-bold">
-                              {formatCurrency(task.hasVAT && task.totalWithVAT ? task.totalWithVAT : task.amount)}
+                              {formatCurrency(task.amount)}
                             </p>
                             {task.hasVAT && (
                               <p className="text-xs text-blue-400">KDV Dahil</p>
