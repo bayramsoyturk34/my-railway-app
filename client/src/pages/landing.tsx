@@ -1,8 +1,37 @@
 import { Button } from "@/components/ui/button";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Clock, DollarSign, BarChart3, MessageSquare } from "lucide-react";
 
 export default function Landing() {
+  const { toast } = useToast();
+
+  const loginMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/auth/login", "POST", {});
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Başarıyla giriş yapıldı!",
+        description: "PuantajPro'ya hoş geldiniz.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Giriş hatası",
+        description: error.message || "Giriş yapılırken bir hata oluştu.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogin = () => {
+    loginMutation.mutate();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-900 to-black text-white">
       <div className="container mx-auto px-4 py-16">
@@ -124,9 +153,10 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg"
-                onClick={() => window.location.href = '/api/login'}
+                onClick={handleLogin}
+                disabled={loginMutation.isPending}
               >
-                Ücretsiz Deneyin
+                {loginMutation.isPending ? "Giriş yapılıyor..." : "Demo Giriş Yap"}
               </Button>
             </CardContent>
           </Card>
