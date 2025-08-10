@@ -19,9 +19,9 @@ export function getSession() {
     saveUninitialized: true, // Important for session creation
     name: 'puantaj.sid', // Custom session name
     cookie: {
-      httpOnly: true,
+      httpOnly: false, // Allow frontend access for debugging
       secure: false, // Set to false for development
-      sameSite: 'lax',
+      sameSite: 'none', // Allow cross-site cookies
       path: '/', // Ensure path is set
       maxAge: sessionTtl,
     },
