@@ -22,9 +22,15 @@ import Reports from "@/pages/reports";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  console.log("Router Debug:", { isAuthenticated, isLoading });
+
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
+      {isLoading ? (
+        <div className="min-h-screen bg-dark-primary flex items-center justify-center">
+          <div className="text-white">Yükleniyor...</div>
+        </div>
+      ) : !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
         <>

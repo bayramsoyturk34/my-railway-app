@@ -13,7 +13,9 @@ export default function Landing() {
       return await apiRequest("/api/auth/login", "POST", {});
     },
     onSuccess: (data) => {
+      console.log("Login success:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Başarıyla giriş yapıldı!",
         description: "PuantajPro'ya hoş geldiniz.",
