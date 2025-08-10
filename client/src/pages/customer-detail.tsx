@@ -863,17 +863,8 @@ export default function CustomerDetailPage() {
         </div>
 
         {/* Müşteri Mali Özet Kartları */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <Card className="bg-dark-secondary border-dark-accent">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-400" />
-                <div>
-                  <p className="text-white font-semibold text-lg">{tasks.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+
 
           <Card className="bg-dark-secondary border-dark-accent">
             <CardContent className="p-4">

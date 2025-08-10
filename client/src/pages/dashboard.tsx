@@ -93,7 +93,7 @@ export default function Dashboard() {
 
       <main className="p-4">
         {/* Customer Financial Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <ProjectCard
             title="Alınan İşler"
             total={formatCurrency(summary?.customerTasks.total || 0)}
@@ -114,6 +114,17 @@ export default function Dashboard() {
             passiveValue=""
             type="green"
             icon="wallet"
+          />
+
+          <ProjectCard
+            title="Teklifler"
+            total={formatCurrency(summary?.customerQuotes.total || 0)}
+            activeLabel=""
+            activeValue=""
+            passiveLabel=""
+            passiveValue=""
+            type="orange"
+            icon="calculator"
           />
 
           <ProjectCard
