@@ -922,11 +922,14 @@ export class DatabaseStorage implements IStorage {
     
     // If quote is approved, create a task automatically
     if (updates.isApproved && result) {
+      // Use totalWithVAT if available (for VAT-inclusive quotes), otherwise use totalAmount
+      const finalAmount = result.hasVAT ? (result.totalWithVAT || result.totalAmount) : result.totalAmount;
+      
       await db.insert(customerTasks).values({
         customerId: result.customerId,
         title: `${result.title} (Onaylanan Teklif)`,
         description: result.description || undefined,
-        amount: result.totalAmount,
+        amount: finalAmount,
         status: "pending",
       });
     }
