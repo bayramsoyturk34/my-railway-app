@@ -254,7 +254,7 @@ export default function CustomerDetailPage() {
   };
 
   const totalTaskValue = tasks.reduce((sum, task) => sum + parseFloat(task.amount), 0);
-  const totalQuoteValue = quotes.reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
+  const totalQuoteValue = quotes.reduce((sum, quote) => sum + parseFloat(quote.totalWithVAT || quote.totalAmount || '0'), 0);
   const approvedQuoteValue = quotes.filter(q => q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
   const pendingQuoteValue = quotes.filter(q => !q.isApproved).reduce((sum, quote) => sum + parseFloat(quote.totalAmount || '0'), 0);
   const totalPaidAmount = payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
