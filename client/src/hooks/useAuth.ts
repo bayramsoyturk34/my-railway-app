@@ -7,8 +7,11 @@ export function useAuth() {
     queryFn: getQueryFn({ on401: "returnNull" }),
     retry: false,
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Disable stale time to always check auth status
+    gcTime: 0, // Don't cache auth data
   });
+
+  console.log("useAuth debug:", { user, isLoading, isAuthenticated: !!user });
 
   return {
     user,

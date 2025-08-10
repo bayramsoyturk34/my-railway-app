@@ -16,7 +16,7 @@ export async function apiRequest(
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    credentials: "include", // This is crucial for session cookies
   });
 
   await throwIfResNotOk(res);
@@ -38,7 +38,7 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const res = await fetch(queryKey.join("") as string, {
       method: "GET",
-      credentials: "include",
+      credentials: "include", // Essential for session cookies
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

@@ -12,10 +12,21 @@ export default function Landing() {
     mutationFn: async () => {
       return await apiRequest("/api/auth/login", "POST", {});
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Login success:", data);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Force refetch auth status
+      await queryClient.refetchQueries({ 
+        queryKey: ["/api/auth/user"],
+        type: 'active'
+      });
+      
+      // Wait a bit for the auth state to update
+      setTimeout(() => {
+        console.log("Checking auth state after login...");
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      }, 100);
+      
       toast({
         title: "Başarıyla giriş yapıldı!",
         description: "PuantajPro'ya hoş geldiniz.",
