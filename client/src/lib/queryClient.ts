@@ -50,8 +50,11 @@ export const getQueryFn: <T>(options: {
     const sessionId = localStorage.getItem('sessionId');
     const headers: Record<string, string> = {};
     
+    console.log("Query fetch - Session ID from localStorage:", sessionId);
+    
     if (sessionId) {
       headers["Authorization"] = `Bearer ${sessionId}`;
+      console.log("Query fetch - Added Authorization header");
     }
     
     const res = await fetch(queryKey.join("") as string, {
