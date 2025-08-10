@@ -718,19 +718,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // If the entire quote is being approved, create a customer task for the total quote
+      // BUT ONLY if there are no individual quote items already approved
       if (validatedData.isApproved === true && validatedData.status === 'approved') {
-        const taskData = {
-          customerId: quote.customerId,
-          title: quote.title || "Onaylanmış Teklif",
-          description: quote.description || "",
-          quantity: 1,
-          unit: "adet",
-          unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
-          amount: quote.totalWithVAT || quote.totalAmount || '0',
-          status: "pending" as const,
-          dueDate: null
-        };
-        await storage.createCustomerTask(taskData);
+        // Check if any quote items are already individually approved
+        const quoteItems = await storage.getCustomerQuoteItemsByQuoteId(id);
+        const hasApprovedItems = quoteItems.some(item => item.isApproved === true);
+        
+        // Only create a task for the total quote if no individual items are approved
+        if (!hasApprovedItems) {
+          const taskData = {
+            customerId: quote.customerId,
+            title: quote.title || "Onaylanmış Teklif",
+            description: quote.description || "",
+            quantity: 1,
+            unit: "adet",
+            unitPrice: parseFloat(quote.totalWithVAT || quote.totalAmount || '0'),
+            amount: quote.totalWithVAT || quote.totalAmount || '0',
+            status: "pending" as const,
+            dueDate: null
+          };
+          await storage.createCustomerTask(taskData);
+        }
       }
       
       res.json(quote);
