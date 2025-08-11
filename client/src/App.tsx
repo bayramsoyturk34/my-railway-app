@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -21,6 +21,17 @@ import CustomerDetail from "@/pages/customer-detail";
 import CompanyDirectory from "@/pages/company-directory";
 import Reports from "@/pages/reports";
 import AdminDashboard from "@/pages/admin-dashboard";
+
+function DashboardWrapper() {
+  const [location] = useLocation();
+  
+  // Only render Dashboard on exact root path
+  if (location !== "/") {
+    return null;
+  }
+  
+  return <Dashboard />;
+}
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -53,8 +64,8 @@ function Router() {
           <Route path="/company-directory" component={CompanyDirectory} />
           <Route path="/reports" component={Reports} />
           <Route path="/admin" component={AdminDashboard} />
-          <Route path="/" component={Dashboard} />
-          <Route component={Dashboard} />
+          <Route path="/" component={DashboardWrapper} />
+          <Route component={DashboardWrapper} />
         </>
       )}
     </Switch>

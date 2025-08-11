@@ -53,16 +53,9 @@ interface CardItem {
 }
 
 export default function Dashboard() {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
   const { user } = useAuth();
-
-  console.log("Dashboard location:", location);
-  
-  // Don't render dashboard if we're not on the root path
-  if (location !== "/") {
-    return null;
-  }
 
   // Navigation cards state for drag and drop  
   const [navCards, setNavCards] = useState(() => {
