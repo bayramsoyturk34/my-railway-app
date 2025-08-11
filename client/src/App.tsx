@@ -42,7 +42,6 @@ function Router() {
         </>
       ) : (
         <>
-          <Route path="/" component={Dashboard} />
           <Route path="/personnel" component={Personnel} />
           <Route path="/personnel/:id" component={PersonnelDetail} />
           <Route path="/timesheet" component={Timesheet} />
@@ -54,6 +53,7 @@ function Router() {
           <Route path="/company-directory" component={CompanyDirectory} />
           <Route path="/reports" component={Reports} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/" component={Dashboard} />
           <Route component={Dashboard} />
         </>
       )}
