@@ -401,6 +401,7 @@ export const insertPersonnelPaymentSchema = createInsertSchema(personnelPayments
 // Company Directory table
 export const companyDirectory = pgTable("company_directory", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Owner of this company entry
   companyName: text("company_name").notNull(),
   contactPerson: text("contact_person").notNull(),
   phone: text("phone"),
@@ -418,6 +419,8 @@ export const companyDirectory = pgTable("company_directory", {
 // Messages table for company messaging
 export const messages = pgTable("messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fromUserId: varchar("from_user_id").notNull(),      // Gönderen kullanıcı ID
+  toUserId: varchar("to_user_id").notNull(),          // Alan kullanıcı ID
   fromCompanyId: varchar("from_company_id").notNull(), // Gönderen firma ID
   toCompanyId: varchar("to_company_id").notNull(),     // Alan firma ID
   message: text("message").notNull(),
@@ -441,6 +444,7 @@ export const conversations = pgTable("conversations", {
 
 export const insertCompanyDirectorySchema = createInsertSchema(companyDirectory).omit({
   id: true,
+  userId: true, // Server will add this
   createdAt: true,
   lastSeen: true,
   profileImage: true,

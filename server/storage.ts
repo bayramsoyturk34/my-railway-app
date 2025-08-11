@@ -146,6 +146,25 @@ export interface IStorage {
 
   // Project lookup for contractors (since we use projects table)
   getProject(id: string): Promise<Project | undefined>;
+
+  // Company Directory
+  getCompanyDirectory(): Promise<CompanyDirectory[]>;
+  getCompanyDirectoryByUserId(userId: string): Promise<CompanyDirectory[]>;
+  getCompany(id: string): Promise<CompanyDirectory | undefined>;
+  createCompany(company: InsertCompanyDirectory, userId: string): Promise<CompanyDirectory>;
+  updateCompany(id: string, company: Partial<InsertCompanyDirectory>): Promise<CompanyDirectory | undefined>;
+  deleteCompany(id: string): Promise<boolean>;
+
+  // Messages
+  getMessages(): Promise<Message[]>;
+  getMessagesByConversation(company1Id: string, company2Id: string): Promise<Message[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  markMessageAsRead(id: string): Promise<boolean>;
+
+  // Conversations
+  getConversations(): Promise<Conversation[]>;
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  updateConversation(id: string, conversation: Partial<InsertConversation>): Promise<Conversation | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -1195,13 +1214,23 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(companyDirectory).where(eq(companyDirectory.isActive, true));
   }
 
+  async getCompanyDirectoryByUserId(userId: string): Promise<CompanyDirectory[]> {
+    return await db.select().from(companyDirectory).where(
+      and(eq(companyDirectory.userId, userId), eq(companyDirectory.isActive, true))
+    );
+  }
+
   async getCompany(id: string): Promise<CompanyDirectory | undefined> {
     const [result] = await db.select().from(companyDirectory).where(eq(companyDirectory.id, id));
     return result;
   }
 
-  async createCompany(insertCompany: InsertCompanyDirectory): Promise<CompanyDirectory> {
-    const [result] = await db.insert(companyDirectory).values(insertCompany).returning();
+  async createCompany(insertCompany: InsertCompanyDirectory, userId: string): Promise<CompanyDirectory> {
+    const companyData = {
+      ...insertCompany,
+      userId
+    };
+    const [result] = await db.insert(companyDirectory).values(companyData).returning();
     return result;
   }
 
