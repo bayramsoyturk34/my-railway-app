@@ -1,19 +1,57 @@
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
+import { db } from "./db";
+import { sessions } from "@shared/schema";
+import { eq, and, lt } from "drizzle-orm";
 
-// Improved session management with cleanup and session validation
-const authenticatedUsers = new Map<string, { user: any; expires: Date }>();
+// Database-based session management
+const createSession = async (userId: string): Promise<string> => {
+  const sessionId = Math.random().toString(36).substring(2, 15);
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  
+  await db.insert(sessions).values({
+    sid: sessionId,
+    sess: { userId, expires: expires.toISOString() },
+    expire: expires
+  });
+  
+  return sessionId;
+};
 
-// Session cleanup every 30 minutes
-setInterval(() => {
-  const now = new Date();
-  for (const [sessionId, sessionData] of authenticatedUsers.entries()) {
-    if (sessionData.expires < now) {
-      authenticatedUsers.delete(sessionId);
-      console.log("Expired session removed:", sessionId);
-    }
+const getSession = async (sessionId: string): Promise<any | null> => {
+  try {
+    const [session] = await db
+      .select()
+      .from(sessions)
+      .where(and(eq(sessions.sid, sessionId), lt(new Date(), sessions.expire)));
+    
+    if (!session) return null;
+    
+    const sessionData = session.sess as any;
+    return sessionData.userId ? await storage.getUser(sessionData.userId) : null;
+  } catch (error) {
+    console.error("Get session error:", error);
+    return null;
   }
-}, 30 * 60 * 1000);
+};
+
+const deleteSession = async (sessionId: string): Promise<void> => {
+  try {
+    await db.delete(sessions).where(eq(sessions.sid, sessionId));
+  } catch (error) {
+    console.error("Delete session error:", error);
+  }
+};
+
+// Clean up expired sessions every hour
+setInterval(async () => {
+  try {
+    const deletedCount = await db.delete(sessions).where(lt(sessions.expire, new Date()));
+    console.log("Cleaned up expired sessions:", deletedCount);
+  } catch (error) {
+    console.error("Session cleanup error:", error);
+  }
+}, 60 * 60 * 1000);
 
 export async function setupAuth(app: Express) {
   // Register endpoint
@@ -43,10 +81,8 @@ export async function setupAuth(app: Express) {
 
       const user = await storage.upsertUser(newUser);
       
-      // Generate session with expiration (7 days)
-      const sessionId = Math.random().toString(36).substring(2, 15);
-      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-      authenticatedUsers.set(sessionId, { user, expires });
+      // Generate database session
+      const sessionId = await createSession(user.id);
       
       console.log("User registered:", user.email, "Session:", sessionId);
       
@@ -86,13 +122,10 @@ export async function setupAuth(app: Express) {
         }
       }
       
-      // Generate session with expiration (7 days)
-      const sessionId = Math.random().toString(36).substring(2, 15);
-      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-      authenticatedUsers.set(sessionId, { user, expires });
+      // Generate database session
+      const sessionId = await createSession(user.id);
       
       console.log("User logged in:", user.email, "Session:", sessionId);
-      console.log("Active sessions:", authenticatedUsers.size);
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
@@ -102,72 +135,72 @@ export async function setupAuth(app: Express) {
   });
 
   // Check auth endpoint
-  app.get("/api/auth/user", (req, res) => {
-    // Try to get session ID from Authorization header
-    const authHeader = req.headers.authorization;
-    const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
-    
-    console.log("Auth check - Session ID:", sessionId);
-    console.log("Auth check - Available sessions:", Array.from(authenticatedUsers.keys()));
-    
-    if (!sessionId) {
-      console.log("No session ID found");
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+  app.get("/api/auth/user", async (req, res) => {
+    try {
+      // Try to get session ID from Authorization header
+      const authHeader = req.headers.authorization;
+      const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
+      
+      console.log("Auth check - Session ID:", sessionId);
+      
+      if (!sessionId) {
+        console.log("No session ID found");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
-    const sessionData = authenticatedUsers.get(sessionId);
-    
-    if (!sessionData) {
-      console.log("Session not found in memory");
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+      const user = await getSession(sessionId);
+      
+      if (!user) {
+        console.log("Session not found or expired");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
-    // Check if session has expired
-    if (sessionData.expires < new Date()) {
-      console.log("Session expired");
-      authenticatedUsers.delete(sessionId);
-      return res.status(401).json({ message: "Session expired" });
+      console.log("Auth successful for user:", user.id);
+      res.json(user);
+    } catch (error) {
+      console.error("Auth check error:", error);
+      res.status(401).json({ message: "Unauthorized" });
     }
-
-    console.log("Auth successful for user:", sessionData.user.id);
-    res.json(sessionData.user);
   });
 
   // Logout endpoint
-  app.post("/api/auth/logout", (req, res) => {
-    const sessionId = req.headers.authorization?.replace('Bearer ', '') || req.cookies.session;
-    
-    if (sessionId) {
-      authenticatedUsers.delete(sessionId);
-      console.log("Session removed:", sessionId);
-      console.log("Remaining sessions:", authenticatedUsers.size);
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const sessionId = req.headers.authorization?.replace('Bearer ', '') || req.cookies.session;
+      
+      if (sessionId) {
+        await deleteSession(sessionId);
+        console.log("Session removed from database:", sessionId);
+      }
+      
+      res.clearCookie('session');
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.json({ success: true }); // Still return success even if cleanup fails
     }
-    
-    res.clearCookie('session');
-    res.json({ success: true });
   });
 }
 
-export const isAuthenticated: RequestHandler = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
-  
-  if (!sessionId) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
+    
+    if (!sessionId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  const sessionData = authenticatedUsers.get(sessionId);
-  
-  if (!sessionData) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+    const user = await getSession(sessionId);
+    
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  // Check if session has expired
-  if (sessionData.expires < new Date()) {
-    authenticatedUsers.delete(sessionId);
-    return res.status(401).json({ message: "Session expired" });
+    (req as any).user = user;
+    next();
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    res.status(401).json({ message: "Unauthorized" });
   }
-
-  (req as any).user = sessionData.user;
-  next();
 };
