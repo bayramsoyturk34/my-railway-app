@@ -36,9 +36,13 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
 
   const createCustomerMutation = useMutation({
     mutationFn: async (data: InsertCustomer) => {
-      return await apiRequest("/api/customers", "POST", data);
+      console.log("🚀 Mutation starting...");
+      const result = await apiRequest("/api/customers", "POST", data);
+      console.log("✅ Mutation completed successfully:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("🎉 onSuccess triggered with data:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({
         title: "Başarılı",
@@ -47,14 +51,21 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       form.reset();
       onOpenChange(false);
     },
-    onError: () => {
+    onError: (error) => {
+      console.log("❌ onError triggered with error:", error);
       toast({
         title: "Hata",
         description: "Müşteri kaydı oluşturulamadı.",
         variant: "destructive",
       });
     },
-  });
+    onMutate: () => {
+      console.log("⏳ onMutate triggered");
+    },
+    onSettled: (data, error) => {
+      console.log("🏁 onSettled triggered - data:", data, "error:", error);
+    },
+  }, queryClient);
 
   const updateCustomerMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertCustomer> }) => {
@@ -97,7 +108,27 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       console.log("Updating existing customer:", customer.id);
       updateCustomerMutation.mutate({ id: customer.id, data: cleanedData });
     } else {
+      console.log("🎯 About to trigger mutation with:", cleanedData);
+      console.log("🔍 Mutation status before:", {
+        isIdle: createCustomerMutation.isIdle,
+        isPending: createCustomerMutation.isPending,
+        isError: createCustomerMutation.isError,
+        isSuccess: createCustomerMutation.isSuccess
+      });
+      
       createCustomerMutation.mutate(cleanedData);
+      
+      // Check status after mutation call
+      setTimeout(() => {
+        console.log("🔍 Mutation status after:", {
+          isIdle: createCustomerMutation.isIdle,
+          isPending: createCustomerMutation.isPending,
+          isError: createCustomerMutation.isError,
+          isSuccess: createCustomerMutation.isSuccess,
+          data: createCustomerMutation.data,
+          error: createCustomerMutation.error
+        });
+      }, 100);
     }
   };
 
