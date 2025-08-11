@@ -39,13 +39,16 @@ export default function Register() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Register Session ID stored:", data.sessionId);
         
-        // Force immediate auth refresh and redirect
-        queryClient.setQueryData(["/api/auth/user"], data.user);
+        // Set auth data in cache with sessionId
+        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
         
-        // Force immediate redirect to dashboard
+        // Force refresh of auth query
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
+        // Redirect after short delay
         setTimeout(() => {
           window.location.href = '/';
-        }, 500);
+        }, 1000);
       }
       
       toast({

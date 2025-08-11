@@ -31,18 +31,21 @@ export default function Login() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Session ID stored:", data.sessionId);
         
-        // Force immediate auth refresh and redirect
-        queryClient.setQueryData(["/api/auth/user"], data.user);
+        // Set auth data in cache with sessionId
+        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
+        
+        // Force refresh of auth query
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         
         toast({
           title: "Başarıyla giriş yapıldı!",
           description: "Dashboard'a yönlendiriliyorsunuz...",
         });
         
-        // Force immediate redirect to dashboard
+        // Redirect after short delay
         setTimeout(() => {
           window.location.href = '/';
-        }, 500);
+        }, 1000);
       }
     },
     onError: (error: Error) => {
@@ -67,18 +70,21 @@ export default function Login() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Demo Session ID stored:", data.sessionId);
         
-        // Force immediate auth refresh and redirect
-        queryClient.setQueryData(["/api/auth/user"], data.user);
+        // Set auth data in cache with sessionId
+        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
+        
+        // Force refresh of auth query
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         
         toast({
           title: "Demo hesabına giriş yapıldı!",
           description: "Dashboard'a yönlendiriliyorsunuz...",
         });
         
-        // Force immediate redirect to dashboard
+        // Redirect after short delay
         setTimeout(() => {
           window.location.href = '/';
-        }, 500);
+        }, 1000);
       }
     },
     onError: (error: Error) => {

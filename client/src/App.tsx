@@ -38,17 +38,31 @@ function DashboardWrapper() {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const hasSessionId = !!localStorage.getItem('sessionId');
 
-  console.log("Router Debug:", { isAuthenticated, isLoading });
+  console.log("Router Debug:", { 
+    isAuthenticated, 
+    isLoading, 
+    hasSessionId,
+    user: user ? `${user.email} (${user.id})` : 'null'
+  });
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
+        <div className="text-white">Sistemi kontrol ediyoruz...</div>
+      </div>
+    );
+  }
+
+  // Show authenticated routes if we have both session and user data
+  const shouldShowAuthenticatedRoutes = isAuthenticated && user && hasSessionId;
 
   return (
     <Switch>
-      {isLoading ? (
-        <div className="min-h-screen bg-dark-primary flex items-center justify-center">
-          <div className="text-white">Yükleniyor...</div>
-        </div>
-      ) : !isAuthenticated ? (
+      {!shouldShowAuthenticatedRoutes ? (
         <>
           <Route path="/" component={Landing} />
           <Route path="/login" component={Login} />
