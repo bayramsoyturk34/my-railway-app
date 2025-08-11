@@ -43,7 +43,10 @@ export async function apiRequest(
 
   console.log(`API Response: ${res.status} ${res.statusText}`, res);
 
-  await throwIfResNotOk(res);
+  // Only call throwIfResNotOk if response is not ok
+  if (!res.ok) {
+    await throwIfResNotOk(res);
+  }
   
   // Parse JSON response if content-type indicates JSON
   const contentType = res.headers.get("content-type");

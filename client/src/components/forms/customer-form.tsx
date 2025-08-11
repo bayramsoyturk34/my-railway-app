@@ -53,29 +53,33 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
     };
 
     try {
+      let result;
       if (customer) {
         // Update existing customer
-        await apiRequest(`/api/customers/${customer.id}`, "PUT", cleanedData);
+        result = await apiRequest(`/api/customers/${customer.id}`, "PUT", cleanedData);
+        console.log("✅ Update success:", result);
         toast({
           title: "Başarılı",
           description: "Müşteri kaydı güncellendi.",
         });
       } else {
         // Create new customer
-        await apiRequest("/api/customers", "POST", cleanedData);
+        result = await apiRequest("/api/customers", "POST", cleanedData);
+        console.log("✅ Create success:", result);
         toast({
           title: "Başarılı",
           description: "Müşteri kaydı oluşturuldu.",
         });
       }
       
-      // Success handling
+      // Success handling - only if we get here
+      console.log("✅ Running success handling...");
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       form.reset();
       onOpenChange(false);
       
     } catch (error) {
-      console.error("Customer operation failed:", error);
+      console.error("❌ Customer operation failed:", error);
       toast({
         title: "Hata",
         description: customer ? "Müşteri kaydı güncellenemedi." : "Müşteri kaydı oluşturulamadı.",
