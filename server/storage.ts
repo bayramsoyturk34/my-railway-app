@@ -833,6 +833,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(timesheets);
   }
 
+  async getTimesheetsByUserId(userId: string): Promise<Timesheet[]> {
+    return await db.select().from(timesheets).where(eq(timesheets.userId, userId));
+  }
+
   async getTimesheetsByPersonnel(personnelId: string): Promise<Timesheet[]> {
     return await db.select().from(timesheets).where(eq(timesheets.personnelId, personnelId));
   }

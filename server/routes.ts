@@ -187,15 +187,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/timesheets", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      // Get timesheets only for the user's personnel
-      const personnel = await storage.getPersonnelByUserId(userId);
-      const personnelIds = personnel.map(p => p.id);
-      
-      // Get all timesheets and filter by user's personnel
-      const timesheets = await storage.getTimesheets();
-      const userTimesheets = timesheets.filter(t => personnelIds.includes(t.personnelId));
-      
-      res.json(userTimesheets);
+      const timesheets = await storage.getTimesheetsByUserId(userId);
+      res.json(timesheets);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch timesheets" });
     }
@@ -224,9 +217,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied - Personnel not found" });
       }
       
-      // Convert string date to Date object
+      // Convert string date to Date object and add userId
       const processedBody = {
         ...req.body,
+        userId: userId,
         date: new Date(req.body.date)
       };
       const validatedData = insertTimesheetSchema.parse(processedBody);
