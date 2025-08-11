@@ -282,11 +282,14 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   createdAt: true,
 }).extend({
   category: z.string().optional().nullable(),
+  userId: z.string(),
 });
 
 export const insertNoteSchema = createInsertSchema(notes).omit({
   id: true,
   createdAt: true,
+}).extend({
+  userId: z.string(),
 });
 
 export const insertContractorSchema = createInsertSchema(contractors).omit({
@@ -296,6 +299,7 @@ export const insertContractorSchema = createInsertSchema(contractors).omit({
   company: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
+  userId: z.string(),
 });
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({
@@ -307,6 +311,7 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
   address: z.string().optional().nullable(),
   taxNumber: z.string().optional().nullable(),
   company: z.string().optional().nullable(),
+  userId: z.string(),
 });
 
 export const insertCustomerTaskSchema = createInsertSchema(customerTasks).omit({

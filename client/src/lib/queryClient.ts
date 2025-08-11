@@ -3,6 +3,15 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    
+    // Handle 401 Unauthorized - session expired
+    if (res.status === 401) {
+      console.log('Session expired, clearing localStorage');
+      localStorage.removeItem('sessionId');
+      // Trigger a re-render by dispatching a storage event
+      window.dispatchEvent(new Event('storage'));
+    }
+    
     throw new Error(`${res.status}: ${text}`);
   }
 }
