@@ -37,7 +37,13 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
   });
 
   const onSubmit = async (data: InsertCustomer) => {
-    if (isSubmitting) return; // Prevent double submission
+    console.log("🎯 FORM SUBMIT TRIGGERED!", data);
+    console.log("🔍 Form validation state:", form.formState.errors);
+    
+    if (isSubmitting) {
+      console.log("⏸️ Already submitting, skipping...");
+      return; // Prevent double submission
+    }
     
     setIsSubmitting(true);
 
@@ -52,7 +58,7 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       status: data.status,
     };
 
-    console.log("🎯 Form submitted - starting API call");
+    console.log("🎯 Form submitted - starting API call", cleanedData);
     
     try {
       let result;
