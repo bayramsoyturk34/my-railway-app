@@ -31,17 +31,19 @@ export default function Login() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Session ID stored:", data.sessionId);
         
-        // Force immediate auth refresh by setting data manually
+        // Force immediate auth refresh and redirect
         queryClient.setQueryData(["/api/auth/user"], data.user);
         
-        // Also invalidate to ensure fresh data
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        toast({
+          title: "Başarıyla giriş yapıldı!",
+          description: "Dashboard'a yönlendiriliyorsunuz...",
+        });
+        
+        // Force immediate redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       }
-      
-      toast({
-        title: "Başarıyla giriş yapıldı!",
-        description: "PuantajPro'ya hoş geldiniz.",
-      });
     },
     onError: (error: Error) => {
       console.error("Login error:", error);
@@ -65,17 +67,19 @@ export default function Login() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Demo Session ID stored:", data.sessionId);
         
-        // Force immediate auth refresh by setting data manually
+        // Force immediate auth refresh and redirect
         queryClient.setQueryData(["/api/auth/user"], data.user);
         
-        // Also invalidate to ensure fresh data
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        toast({
+          title: "Demo hesabına giriş yapıldı!",
+          description: "Dashboard'a yönlendiriliyorsunuz...",
+        });
+        
+        // Force immediate redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       }
-      
-      toast({
-        title: "Demo hesabına giriş yapıldı!",
-        description: "PuantajPro'yu keşfedin.",
-      });
     },
     onError: (error: Error) => {
       console.error("Demo login error:", error);

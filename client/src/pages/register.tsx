@@ -39,11 +39,13 @@ export default function Register() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Register Session ID stored:", data.sessionId);
         
-        // Force immediate auth refresh by setting data manually
+        // Force immediate auth refresh and redirect
         queryClient.setQueryData(["/api/auth/user"], data.user);
         
-        // Also invalidate to ensure fresh data
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        // Force immediate redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       }
       
       toast({
