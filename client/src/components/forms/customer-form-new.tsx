@@ -85,68 +85,66 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-2xl">
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">
+          <DialogTitle className="text-lg font-semibold text-white">
             {customer ? "Müşteri Düzenle" : "Yeni Müşteri"}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Müşteri Adı *</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="Müşteri adı"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300 text-sm">Müşteri Adı *</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="bg-dark-primary border-dark-accent text-white h-9"
+                      placeholder="Müşteri adı"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="company"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Şirket</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="Şirket adı"
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="company"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300 text-sm">Şirket</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="bg-dark-primary border-dark-accent text-white h-9"
+                      placeholder="Şirket adı"
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Telefon</FormLabel>
+                    <FormLabel className="text-gray-300 text-sm">Telefon</FormLabel>
                     <FormControl>
                       <Input
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="Telefon numarası"
+                        className="bg-dark-primary border-dark-accent text-white h-9"
+                        placeholder="Telefon"
                         value={field.value ?? ""}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -164,11 +162,11 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">E-posta</FormLabel>
+                    <FormLabel className="text-gray-300 text-sm">E-posta</FormLabel>
                     <FormControl>
                       <Input
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="E-posta adresi"
+                        className="bg-dark-primary border-dark-accent text-white h-9"
+                        placeholder="E-posta"
                         value={field.value ?? ""}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -187,11 +185,12 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Adres</FormLabel>
+                  <FormLabel className="text-gray-300 text-sm">Adres</FormLabel>
                   <FormControl>
                     <Textarea
-                      className="bg-dark-primary border-dark-accent text-white"
+                      className="bg-dark-primary border-dark-accent text-white resize-none"
                       placeholder="Adres bilgisi"
+                      rows={2}
                       value={field.value ?? ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
@@ -204,17 +203,17 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="taxNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Vergi No</FormLabel>
+                    <FormLabel className="text-gray-300 text-sm">Vergi No</FormLabel>
                     <FormControl>
                       <Input
-                        className="bg-dark-primary border-dark-accent text-white"
-                        placeholder="Vergi numarası"
+                        className="bg-dark-primary border-dark-accent text-white h-9"
+                        placeholder="Vergi No"
                         value={field.value ?? ""}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -232,11 +231,11 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Durum</FormLabel>
+                    <FormLabel className="text-gray-300 text-sm">Durum</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
-                          <SelectValue placeholder="Durum seçin" />
+                        <SelectTrigger className="bg-dark-primary border-dark-accent text-white h-9">
+                          <SelectValue placeholder="Durum" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-dark-secondary border-dark-accent">
@@ -250,19 +249,21 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
               />
             </div>
 
-            <div className="flex gap-2 pt-4">
+            <div className="flex gap-2 pt-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-dark-accent text-white hover:bg-dark-accent"
+                className="border-dark-accent text-white hover:bg-dark-accent h-9"
+                size="sm"
               >
                 İptal
               </Button>
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white h-9"
+                size="sm"
               >
                 {loading ? "Kaydediliyor..." : customer ? "Güncelle" : "Kaydet"}
               </Button>
