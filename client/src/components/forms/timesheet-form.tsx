@@ -84,66 +84,98 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
       } else {
         // Multi-create mode
         const promises = selectedPersonnelIds.map(async (personnelId) => {
-          const personnelData = personnel.find(p => p.id === personnelId);
-          if (!personnelData) return null;
-          
-          const salary = parseFloat(personnelData.salary || "0");
-          const salaryType = personnelData.salaryType || "monthly";
-          const dailyWage = salaryType === "daily" ? salary : salary / 30;
-          
-          let totalHours = "8.00";
-          let calculatedWage = "0.00";
-          let hourlyRate = "0.00";
-          
-          switch (workType) {
-            case "tam":
-              totalHours = "8.00";
-              calculatedWage = dailyWage.toFixed(2);
-              hourlyRate = (dailyWage / 8).toFixed(2);
-              break;
-            case "yarim":
-              totalHours = "4.00";
-              calculatedWage = (dailyWage / 2).toFixed(2);
-              hourlyRate = (dailyWage / 8).toFixed(2);
-              break;
-            case "mesai":
-              totalHours = overtimeHours;
-              hourlyRate = (dailyWage / 8).toFixed(2);
-              calculatedWage = (parseFloat(hourlyRate) * parseFloat(overtimeHours)).toFixed(2);
-              break;
+          try {
+            const personnelData = personnel.find(p => p.id === personnelId);
+            if (!personnelData) return { success: false, error: "Personnel not found" };
+            
+            const salary = parseFloat(personnelData.salary || "0");
+            const salaryType = personnelData.salaryType || "monthly";
+            const dailyWage = salaryType === "daily" ? salary : salary / 30;
+            
+            let totalHours = "8.00";
+            let calculatedWage = "0.00";
+            let hourlyRate = "0.00";
+            
+            switch (workType) {
+              case "tam":
+                totalHours = "8.00";
+                calculatedWage = dailyWage.toFixed(2);
+                hourlyRate = (dailyWage / 8).toFixed(2);
+                break;
+              case "yarim":
+                totalHours = "4.00";
+                calculatedWage = (dailyWage / 2).toFixed(2);
+                hourlyRate = (dailyWage / 8).toFixed(2);
+                break;
+              case "mesai":
+                totalHours = overtimeHours;
+                hourlyRate = (dailyWage / 8).toFixed(2);
+                calculatedWage = (parseFloat(hourlyRate) * parseFloat(overtimeHours)).toFixed(2);
+                break;
+            }
+            
+            const data = {
+              personnelId,
+              customerId,
+              date: new Date(date),
+              workType,
+              startTime: "08:00",
+              endTime: "17:00",
+              totalHours,
+              overtimeHours: workType === "mesai" ? overtimeHours : "0.00",
+              hourlyRate,
+              dailyWage: calculatedWage,
+              notes,
+            };
+            
+            const response = await apiRequest("/api/timesheets", "POST", data);
+            const result = await response.json();
+            return { success: true, data: result };
+          } catch (error) {
+            console.error("Timesheet creation error for personnel:", personnelId, error);
+            return { success: false, error: error.message };
           }
-          
-          const data = {
-            personnelId,
-            customerId,
-            date: new Date(date),
-            workType,
-            startTime: "08:00",
-            endTime: "17:00",
-            totalHours,
-            overtimeHours: workType === "mesai" ? overtimeHours : "0.00",
-            hourlyRate,
-            dailyWage: calculatedWage,
-            notes,
-          };
-          
-          const response = await apiRequest("/api/timesheets", "POST", data);
-          return response.json();
         });
         
-        const results = await Promise.all(promises);
-        return results.filter(r => r !== null);
+        const results = await Promise.allSettled(promises);
+        const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+        const failed = results.length - successful;
+        
+        if (failed > 0 && successful === 0) {
+          throw new Error("Hiçbir puantaj kaydı oluşturulamadı");
+        }
+        
+        return { successful, failed, total: results.length };
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/timesheets"] });
-      const count = editingTimesheet ? 1 : selectedPersonnelIds.length;
-      toast({
-        title: "Başarılı",
-        description: editingTimesheet 
-          ? "Puantaj kaydı güncellendi." 
-          : `${count} personel için puantaj kaydı oluşturuldu.`,
-      });
+      
+      if (editingTimesheet) {
+        toast({
+          title: "Başarılı",
+          description: "Puantaj kaydı güncellendi.",
+        });
+      } else {
+        // Handle batch creation results
+        if (data && typeof data === 'object' && 'successful' in data) {
+          const { successful, failed, total } = data;
+          if (successful > 0) {
+            toast({
+              title: "Başarılı",
+              description: failed > 0 
+                ? `${successful}/${total} puantaj kaydı oluşturuldu. ${failed} kayıt başarısız.`
+                : `${successful} puantaj kaydı oluşturuldu.`,
+            });
+          }
+        } else {
+          toast({
+            title: "Başarılı",
+            description: `${selectedPersonnelIds.length} personel için puantaj kaydı oluşturuldu.`,
+          });
+        }
+      }
+      
       onOpenChange(false);
     },
     onError: () => {
