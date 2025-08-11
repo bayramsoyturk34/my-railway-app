@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { insertCustomerSchema, type InsertCustomer, type Customer } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +21,7 @@ interface CustomerFormProps {
 export default function CustomerForm({ open, onOpenChange, customer }: CustomerFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<InsertCustomer>({
     resolver: zodResolver(insertCustomerSchema),
@@ -34,101 +36,53 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
     },
   });
 
-  const createCustomerMutation = useMutation({
-    mutationFn: async (data: InsertCustomer) => {
-      console.log("🚀 Mutation starting...");
-      const result = await apiRequest("/api/customers", "POST", data);
-      console.log("✅ Mutation completed successfully:", result);
-      return result;
-    },
-    onSuccess: (data) => {
-      console.log("🎉 onSuccess triggered with data:", data);
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      toast({
-        title: "Başarılı",
-        description: "Müşteri kaydı oluşturuldu.",
-      });
-      form.reset();
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      console.log("❌ onError triggered with error:", error);
-      toast({
-        title: "Hata",
-        description: "Müşteri kaydı oluşturulamadı.",
-        variant: "destructive",
-      });
-    },
-    onMutate: () => {
-      console.log("⏳ onMutate triggered");
-    },
-    onSettled: (data, error) => {
-      console.log("🏁 onSettled triggered - data:", data, "error:", error);
-    },
-  }, queryClient);
-
-  const updateCustomerMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertCustomer> }) => {
-      return await apiRequest(`/api/customers/${id}`, "PUT", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      toast({
-        title: "Başarılı",
-        description: "Müşteri kaydı güncellendi.",
-      });
-      form.reset();
-      onOpenChange(false);
-    },
-    onError: () => {
-      toast({
-        title: "Hata",
-        description: "Müşteri kaydı güncellenemedi.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = (data: InsertCustomer) => {
-    console.log("Form submitted with data:", data);
-    console.log("Form validation errors:", form.formState.errors);
+  const onSubmit = async (data: InsertCustomer) => {
+    if (isSubmitting) return; // Prevent double submission
     
+    setIsSubmitting(true);
+
+    // Clean data
     const cleanedData = {
-      ...data,
-      company: data.company?.trim() || null,
-      phone: data.phone?.trim() || null,
-      email: data.email?.trim() || null,
-      address: data.address?.trim() || null,
-      taxNumber: data.taxNumber?.trim() || null,
+      name: data.name,
+      company: data.company || null,
+      phone: data.phone || null,
+      email: data.email || null,
+      address: data.address || null,
+      taxNumber: data.taxNumber || null,
+      status: data.status,
     };
 
-    console.log("Cleaned data for submission:", cleanedData);
-
-    if (customer) {
-      console.log("Updating existing customer:", customer.id);
-      updateCustomerMutation.mutate({ id: customer.id, data: cleanedData });
-    } else {
-      console.log("🎯 About to trigger mutation with:", cleanedData);
-      console.log("🔍 Mutation status before:", {
-        isIdle: createCustomerMutation.isIdle,
-        isPending: createCustomerMutation.isPending,
-        isError: createCustomerMutation.isError,
-        isSuccess: createCustomerMutation.isSuccess
-      });
-      
-      createCustomerMutation.mutate(cleanedData);
-      
-      // Check status after mutation call
-      setTimeout(() => {
-        console.log("🔍 Mutation status after:", {
-          isIdle: createCustomerMutation.isIdle,
-          isPending: createCustomerMutation.isPending,
-          isError: createCustomerMutation.isError,
-          isSuccess: createCustomerMutation.isSuccess,
-          data: createCustomerMutation.data,
-          error: createCustomerMutation.error
+    try {
+      if (customer) {
+        // Update existing customer
+        await apiRequest(`/api/customers/${customer.id}`, "PUT", cleanedData);
+        toast({
+          title: "Başarılı",
+          description: "Müşteri kaydı güncellendi.",
         });
-      }, 100);
+      } else {
+        // Create new customer
+        await apiRequest("/api/customers", "POST", cleanedData);
+        toast({
+          title: "Başarılı",
+          description: "Müşteri kaydı oluşturuldu.",
+        });
+      }
+      
+      // Success handling
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      form.reset();
+      onOpenChange(false);
+      
+    } catch (error) {
+      console.error("Customer operation failed:", error);
+      toast({
+        title: "Hata",
+        description: customer ? "Müşteri kaydı güncellenemedi." : "Müşteri kaydı oluşturulamadı.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -138,55 +92,57 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-md max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-xl font-semibold text-white">
             {customer ? "Müşteri Düzenle" : "Yeni Müşteri"}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Müşteri Adı *</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="bg-dark-primary border-dark-accent text-white"
-                      placeholder="Müşteri adını girin"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Müşteri Adı *</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-dark-primary border-dark-accent text-white"
+                        placeholder="Müşteri adı"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Şirket</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="bg-dark-primary border-dark-accent text-white"
-                      placeholder="Şirket adını girin"
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Şirket</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-dark-primary border-dark-accent text-white"
+                        placeholder="Şirket adı"
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -197,6 +153,7 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
                     <FormLabel className="text-gray-300">Telefon</FormLabel>
                     <FormControl>
                       <Input
+                        type="tel"
                         className="bg-dark-primary border-dark-accent text-white"
                         placeholder="Telefon numarası"
                         value={field.value || ""}
@@ -300,33 +257,29 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
                     <FormMessage />
                   </FormItem>
                 )}
-            />
-          </div>
+              />
+            </div>
 
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
-              onClick={handleClose}
-            >
-              İptal
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
-              disabled={createCustomerMutation.isPending || updateCustomerMutation.isPending}
-            >
-              {(createCustomerMutation.isPending || updateCustomerMutation.isPending) 
-                ? "Kaydediliyor..." 
-                : customer 
-                  ? "Güncelle" 
-                  : "Kaydet"}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </DialogContent>
-  </Dialog>
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                onClick={handleClose}
+              >
+                İptal
+              </Button>
+              <Button 
+                type="submit" 
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Kaydediliyor..." : (customer ? "Güncelle" : "Kaydet")}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
