@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
+import { z } from "zod";
 import { 
   insertPersonnelSchema, 
   insertProjectSchema, 
@@ -223,7 +224,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: userId,
         date: new Date(req.body.date)
       };
-      const validatedData = insertTimesheetSchema.parse(processedBody);
+      // Create a server-side schema that includes userId
+      const serverTimesheetSchema = insertTimesheetSchema.extend({
+        userId: z.string()
+      });
+      const validatedData = serverTimesheetSchema.parse(processedBody);
       const timesheet = await storage.createTimesheet(validatedData);
       res.status(201).json(timesheet);
     } catch (error) {
