@@ -17,7 +17,8 @@ import {
   BarChart3,
   Briefcase,
   Calculator,
-  LogOut
+  LogOut,
+  Shield
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/header";
@@ -64,7 +65,8 @@ export default function Dashboard() {
     { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
     { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
     { id: "company-directory", icon: Building2, label: "Firma Rehberi", onClick: () => setLocation("/company-directory"), iconColor: "text-green-400" },
-    { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
+    { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" },
+    { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" }
   ]);
 
   const { data: summary } = useQuery<FinancialSummary>({

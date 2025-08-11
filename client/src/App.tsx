@@ -20,6 +20,7 @@ import Customers from "@/pages/customers";
 import CustomerDetail from "@/pages/customer-detail";
 import CompanyDirectory from "@/pages/company-directory";
 import Reports from "@/pages/reports";
+import AdminDashboard from "@/pages/admin-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -52,6 +53,7 @@ function Router() {
           <Route path="/customers/:customerName" component={CustomerDetail} />
           <Route path="/company-directory" component={CompanyDirectory} />
           <Route path="/reports" component={Reports} />
+          <Route path="/admin" component={AdminDashboard} />
           <Route component={Dashboard} />
         </>
       )}

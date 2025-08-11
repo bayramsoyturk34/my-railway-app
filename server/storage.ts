@@ -30,6 +30,15 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Admin operations
+  getAllUsers(): Promise<User[]>;
+  getAdminStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    demoUsers: number;
+    todayRegistrations: number;
+  }>;
 
   // Personnel
   getPersonnel(): Promise<Personnel[]>;
@@ -844,6 +853,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(transactions);
   }
 
+  async getTransactionsByUserId(userId: string): Promise<Transaction[]> {
+    return await db.select().from(transactions).where(eq(transactions.userId, userId));
+  }
+
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const [result] = await db.insert(transactions).values(insertTransaction).returning();
     return result;
@@ -1198,6 +1211,38 @@ export class DatabaseStorage implements IStorage {
   async updateConversation(id: string, updates: Partial<InsertConversation>): Promise<Conversation | undefined> {
     const [result] = await db.update(conversations).set(updates).where(eq(conversations.id, id)).returning();
     return result;
+  }
+
+  // Admin methods
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(users.createdAt);
+  }
+
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    demoUsers: number;
+    todayRegistrations: number;
+  }> {
+    const allUsers = await db.select().from(users);
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const totalUsers = allUsers.length;
+    const demoUsers = allUsers.filter(user => user.email.includes('demo')).length;
+    const todayRegistrations = allUsers.filter(user => 
+      new Date(user.createdAt) >= todayStart
+    ).length;
+    
+    // For now, assume all users are active (we don't track last login in current schema)
+    const activeUsers = totalUsers;
+
+    return {
+      totalUsers,
+      activeUsers,
+      demoUsers,
+      todayRegistrations
+    };
   }
 }
 

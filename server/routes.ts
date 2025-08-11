@@ -1546,6 +1546,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes
+  app.get("/api/admin/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      // For now, only allow specific admin user (you can modify this logic)
+      // const userId = req.user.id;
+      // if (userId !== 'admin_user_id') {
+      //   return res.status(403).json({ message: "Access denied" });
+      // }
+      
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Admin stats error:", error);
+      res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
+  app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
+    try {
+      // For now, only allow specific admin user (you can modify this logic)
+      // const userId = req.user.id;
+      // if (userId !== 'admin_user_id') {
+      //   return res.status(403).json({ message: "Access denied" });
+      // }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Admin users error:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
