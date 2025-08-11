@@ -24,10 +24,10 @@ export default function Landing() {
         // Clear auth cache and force immediate reload
         queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
         
-        // Force page reload to restart with valid session
+        // Redirect to dashboard after demo login
         setTimeout(() => {
-          console.log("Reloading page with new session...");
-          window.location.reload();
+          console.log("Redirecting to dashboard...");
+          window.location.href = "/";
         }, 500);
       }
       
