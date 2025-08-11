@@ -93,6 +93,10 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Added authentication checks to all data retrieval operations
   - New user registration now starts with completely empty dashboards
   - Each user now has complete data isolation with their own separate workspace
+  - **Fixed Timesheet Creation**: Resolved timesheet creation failures with proper userId handling
+    * Extended Zod validation schema to include userId field for server-side validation
+    * Timesheet creation now works perfectly with user isolation
+    * Each user can only create and view their own timesheet records
 
 # User Preferences
 
