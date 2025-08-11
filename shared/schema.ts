@@ -246,26 +246,27 @@ export const reports = pgTable("reports", {
 export const insertPersonnelSchema = createInsertSchema(personnel).omit({
   id: true,
   createdAt: true,
+  userId: true, // Server will add this
 }).extend({
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
   salary: z.string().optional().nullable(),
-  userId: z.string(),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
   createdAt: true,
+  userId: true, // Server will add this
 }).extend({
   description: z.string().optional().nullable(),
   clientName: z.string().optional().nullable(),
   endDate: z.date().optional().nullable(),
-  userId: z.string(),
 });
 
 export const insertTimesheetSchema = createInsertSchema(timesheets).omit({
   id: true,
   createdAt: true,
+  userId: true, // Server will add this
 }).extend({
   customerId: z.string().optional().nullable(),
   startTime: z.string().optional().nullable(),
@@ -274,44 +275,42 @@ export const insertTimesheetSchema = createInsertSchema(timesheets).omit({
   dailyWage: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   overtimeHours: z.string().optional().nullable(),
-  userId: z.string(),
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
+  userId: true, // Server will add this
 }).extend({
   category: z.string().optional().nullable(),
-  userId: z.string(),
 });
 
 export const insertNoteSchema = createInsertSchema(notes).omit({
   id: true,
   createdAt: true,
-}).extend({
-  userId: z.string(),
+  userId: true, // Server will add this
 });
 
 export const insertContractorSchema = createInsertSchema(contractors).omit({
   id: true,
   createdAt: true,
+  userId: true, // Server will add this
 }).extend({
   company: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
-  userId: z.string(),
 });
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({
   id: true,
   createdAt: true,
+  userId: true, // Server will add this
 }).extend({
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   taxNumber: z.string().optional().nullable(),
   company: z.string().optional().nullable(),
-  userId: z.string(),
 });
 
 export const insertCustomerTaskSchema = createInsertSchema(customerTasks).omit({
