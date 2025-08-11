@@ -289,22 +289,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Transactions routes
-  app.get("/api/transactions", async (req, res) => {
+  app.get("/api/transactions", isAuthenticated, async (req: any, res) => {
     try {
-      const transactions = await storage.getTransactions();
+      const userId = req.user.id;
+      const transactions = await storage.getTransactionsByUserId(userId);
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch transactions" });
     }
   });
 
-  app.post("/api/transactions", async (req, res) => {
+  app.post("/api/transactions", isAuthenticated, async (req: any, res) => {
     try {
       console.log("Transaction request body:", req.body);
       // Convert string date to Date object
       const processedBody = {
         ...req.body,
-        date: new Date(req.body.date)
+        date: new Date(req.body.date),
+        userId: req.user.id
       };
       const validatedData = insertTransactionSchema.parse(processedBody);
       const transaction = await storage.createTransaction(validatedData);
@@ -592,7 +594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/customer-payments", async (req, res) => {
+  app.post("/api/customer-payments", isAuthenticated, async (req: any, res) => {
     try {
       const processedBody = {
         ...req.body,
@@ -613,7 +615,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: validatedData.amount,
         description: `${customerName} - Müşteri Ödemesi: ${validatedData.description}`,
         date: validatedData.paymentDate,
-        category: "Müşteri Ödemesi"
+        category: "Müşteri Ödemesi",
+        userId: req.user.id
       };
       
       // Add the income transaction to the system
@@ -626,7 +629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/customer-payments/:id", async (req, res) => {
+  app.delete("/api/customer-payments/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       
@@ -987,7 +990,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/contractor-payments", async (req, res) => {
+  app.post("/api/contractor-payments", isAuthenticated, async (req: any, res) => {
     try {
       const processedBody = {
         ...req.body,
@@ -1008,7 +1011,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: validatedData.amount,
         description: `${contractorName} - Yüklenici Ödemesi: ${validatedData.description || validatedData.paymentMethod}`,
         date: validatedData.paymentDate,
-        category: "Yüklenici Ödemesi"
+        category: "Yüklenici Ödemesi",
+        userId: req.user.id
       };
       
       // Add the expense transaction to the system
@@ -1039,7 +1043,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/contractor-payments/:id", async (req, res) => {
+  app.delete("/api/contractor-payments/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       
