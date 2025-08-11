@@ -184,10 +184,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Timesheets routes
-  app.get("/api/timesheets", async (req, res) => {
+  app.get("/api/timesheets", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.id;
+      // Get timesheets only for the user's personnel
+      const personnel = await storage.getPersonnelByUserId(userId);
+      const personnelIds = personnel.map(p => p.id);
+      
+      // Get all timesheets and filter by user's personnel
       const timesheets = await storage.getTimesheets();
-      res.json(timesheets);
+      const userTimesheets = timesheets.filter(t => personnelIds.includes(t.personnelId));
+      
+      res.json(userTimesheets);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch timesheets" });
     }
@@ -203,9 +211,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/timesheets", async (req, res) => {
+  app.post("/api/timesheets", isAuthenticated, async (req: any, res) => {
     try {
       console.log("Timesheet request body:", req.body);
+      const userId = req.user.id;
+      
+      // Verify the personnel belongs to the user
+      const personnel = await storage.getPersonnelByUserId(userId);
+      const personnelExists = personnel.some(p => p.id === req.body.personnelId);
+      
+      if (!personnelExists) {
+        return res.status(403).json({ message: "Access denied - Personnel not found" });
+      }
+      
       // Convert string date to Date object
       const processedBody = {
         ...req.body,
@@ -332,8 +350,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Notes routes
-  app.get("/api/notes", async (req, res) => {
+  app.get("/api/notes", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.id;
+      // For now, filter notes by userId if we have that field, otherwise return all
       const notes = await storage.getNotes();
       res.json(notes);
     } catch (error) {
@@ -365,8 +385,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Contractors routes
-  app.get("/api/contractors", async (req, res) => {
+  app.get("/api/contractors", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.id;
+      // For now, return all contractors - later we can add userId filtering
       const contractors = await storage.getContractors();
       res.json(contractors);
     } catch (error) {
@@ -385,12 +407,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Financial summary endpoint
-  app.get("/api/financial-summary", async (req, res) => {
+  app.get("/api/financial-summary", isAuthenticated, async (req: any, res) => {
     try {
-      const transactions = await storage.getTransactions();
-      const customerTasks = await storage.getCustomerTasks();
-      const customerPayments = await storage.getCustomerPayments();
-      const customerQuotes = await storage.getCustomerQuotes();
+      const userId = req.user.id;
+      const transactions = await storage.getTransactionsByUserId(userId);
+      const customerTasks = await storage.getCustomerTasksByUserId(userId);
+      const customerPayments = await storage.getCustomerPaymentsByUserId(userId);
+      const customerQuotes = await storage.getCustomerQuotesByUserId(userId);
       
       console.log("All transactions:", transactions.map(t => ({ type: t.type, amount: t.amount, description: t.description })));
 
@@ -510,9 +533,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Customer Tasks routes
-  app.get("/api/customer-tasks", async (req, res) => {
+  app.get("/api/customer-tasks", isAuthenticated, async (req: any, res) => {
     try {
-      const tasks = await storage.getCustomerTasks();
+      const userId = req.user.id;
+      const tasks = await storage.getCustomerTasksByUserId(userId);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch customer tasks" });
@@ -575,9 +599,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Customer Payments routes
-  app.get("/api/customer-payments", async (req, res) => {
+  app.get("/api/customer-payments", isAuthenticated, async (req: any, res) => {
     try {
-      const payments = await storage.getCustomerPayments();
+      const userId = req.user.id;
+      const payments = await storage.getCustomerPaymentsByUserId(userId);
       res.json(payments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch customer payments" });
@@ -670,9 +695,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Customer Quotes routes
-  app.get("/api/customer-quotes", async (req, res) => {
+  app.get("/api/customer-quotes", isAuthenticated, async (req: any, res) => {
     try {
-      const quotes = await storage.getCustomerQuotes();
+      const userId = req.user.id;
+      const quotes = await storage.getCustomerQuotesByUserId(userId);
       res.json(quotes);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch customer quotes" });

@@ -65,6 +65,7 @@ export interface IStorage {
 
   // Transactions
   getTransactions(): Promise<Transaction[]>;
+  getTransactionsByUserId(userId: string): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   updateTransaction(id: string, transaction: Partial<InsertTransaction>): Promise<Transaction | undefined>;
   deleteTransaction(id: string): Promise<boolean>;
@@ -91,6 +92,7 @@ export interface IStorage {
 
   // Customer Tasks
   getCustomerTasks(): Promise<CustomerTask[]>;
+  getCustomerTasksByUserId(userId: string): Promise<CustomerTask[]>;
   getCustomerTasksByCustomerId(customerId: string): Promise<CustomerTask[]>;
   createCustomerTask(task: InsertCustomerTask): Promise<CustomerTask>;
   updateCustomerTask(id: string, task: Partial<InsertCustomerTask>): Promise<CustomerTask | undefined>;
@@ -98,6 +100,7 @@ export interface IStorage {
 
   // Customer Quotes
   getCustomerQuotes(): Promise<CustomerQuote[]>;
+  getCustomerQuotesByUserId(userId: string): Promise<CustomerQuote[]>;
   getCustomerQuotesByCustomerId(customerId: string): Promise<CustomerQuote[]>;
   createCustomerQuote(quote: InsertCustomerQuote): Promise<CustomerQuote>;
   updateCustomerQuote(id: string, quote: Partial<InsertCustomerQuote>): Promise<CustomerQuote | undefined>;
@@ -112,6 +115,7 @@ export interface IStorage {
 
   // Customer Payments
   getCustomerPayments(): Promise<CustomerPayment[]>;
+  getCustomerPaymentsByUserId(userId: string): Promise<CustomerPayment[]>;
   getCustomerPayment(id: string): Promise<CustomerPayment | undefined>;
   getCustomerPaymentsByCustomerId(customerId: string): Promise<CustomerPayment[]>;
   createCustomerPayment(payment: InsertCustomerPayment): Promise<CustomerPayment>;
@@ -857,6 +861,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(transactions).where(eq(transactions.userId, userId));
   }
 
+  async getTransactionsByUserId(userId: string): Promise<Transaction[]> {
+    return await db.select().from(transactions).where(eq(transactions.userId, userId));
+  }
+
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const [result] = await db.insert(transactions).values(insertTransaction).returning();
     return result;
@@ -946,6 +954,24 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(customerTasks);
   }
 
+  async getCustomerTasksByUserId(userId: string): Promise<CustomerTask[]> {
+    // Get customer tasks by joining with customers table to filter by userId
+    return await db.select({
+      id: customerTasks.id,
+      customerId: customerTasks.customerId,
+      title: customerTasks.title,
+      description: customerTasks.description,
+      amount: customerTasks.amount,
+      status: customerTasks.status,
+      dueDate: customerTasks.dueDate,
+      createdAt: customerTasks.createdAt,
+      hasVAT: customerTasks.hasVAT,
+      vatRate: customerTasks.vatRate,
+    }).from(customerTasks)
+      .innerJoin(customers, eq(customerTasks.customerId, customers.id))
+      .where(eq(customers.userId, userId));
+  }
+
   async getCustomerTasksByCustomerId(customerId: string): Promise<CustomerTask[]> {
     return await db.select().from(customerTasks).where(eq(customerTasks.customerId, customerId));
   }
@@ -968,6 +994,27 @@ export class DatabaseStorage implements IStorage {
   // Customer Quotes methods
   async getCustomerQuotes(): Promise<CustomerQuote[]> {
     return await db.select().from(customerQuotes);
+  }
+
+  async getCustomerQuotesByUserId(userId: string): Promise<CustomerQuote[]> {
+    // Get customer quotes by joining with customers table to filter by userId
+    return await db.select({
+      id: customerQuotes.id,
+      customerId: customerQuotes.customerId,
+      title: customerQuotes.title,
+      description: customerQuotes.description,
+      validUntil: customerQuotes.validUntil,
+      totalAmount: customerQuotes.totalAmount,
+      vatAmount: customerQuotes.vatAmount,
+      totalWithVAT: customerQuotes.totalWithVAT,
+      hasVAT: customerQuotes.hasVAT,
+      vatRate: customerQuotes.vatRate,
+      isApproved: customerQuotes.isApproved,
+      createdAt: customerQuotes.createdAt,
+      termsAndConditions: customerQuotes.termsAndConditions,
+    }).from(customerQuotes)
+      .innerJoin(customers, eq(customerQuotes.customerId, customers.id))
+      .where(eq(customers.userId, userId));
   }
 
   async getCustomerQuotesByCustomerId(customerId: string): Promise<CustomerQuote[]> {
@@ -1033,6 +1080,20 @@ export class DatabaseStorage implements IStorage {
   // Customer Payments methods
   async getCustomerPayments(): Promise<CustomerPayment[]> {
     return await db.select().from(customerPayments);
+  }
+
+  async getCustomerPaymentsByUserId(userId: string): Promise<CustomerPayment[]> {
+    // Get customer payments by joining with customers table to filter by userId
+    return await db.select({
+      id: customerPayments.id,
+      customerId: customerPayments.customerId,
+      amount: customerPayments.amount,
+      paymentDate: customerPayments.paymentDate,
+      description: customerPayments.description,
+      createdAt: customerPayments.createdAt,
+    }).from(customerPayments)
+      .innerJoin(customers, eq(customerPayments.customerId, customers.id))
+      .where(eq(customers.userId, userId));
   }
 
   async getCustomerPayment(id: string): Promise<CustomerPayment | undefined> {
