@@ -26,10 +26,12 @@ export default function Login() {
     onSuccess: async (data) => {
       console.log("Login success:", data);
       
-      // Store session ID in localStorage
+      // Store session ID and expiry in localStorage (7 days)
       if (data.sessionId) {
+        const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         localStorage.setItem('sessionId', data.sessionId);
-        console.log("Session ID stored:", data.sessionId);
+        localStorage.setItem('sessionExpiry', expiryDate.toISOString());
+        console.log("Session ID stored:", data.sessionId, "Expires:", expiryDate);
         
         // Clear auth cache and redirect to dashboard
         queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
@@ -63,10 +65,12 @@ export default function Login() {
     onSuccess: async (data) => {
       console.log("Demo login success:", data);
       
-      // Store session ID in localStorage
+      // Store session ID and expiry in localStorage (7 days)  
       if (data.sessionId) {
+        const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         localStorage.setItem('sessionId', data.sessionId);
-        console.log("Session ID stored:", data.sessionId);
+        localStorage.setItem('sessionExpiry', expiryDate.toISOString());
+        console.log("Session ID stored:", data.sessionId, "Expires:", expiryDate);
         
         // Clear auth cache and redirect to dashboard
         queryClient.removeQueries({ queryKey: ["/api/auth/user"] });

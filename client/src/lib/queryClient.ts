@@ -1,5 +1,14 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// Function to check if session is expired
+const isSessionExpired = (): boolean => {
+  const expiryStr = localStorage.getItem('sessionExpiry');
+  if (!expiryStr) return true;
+  
+  const expiryDate = new Date(expiryStr);
+  return expiryDate < new Date();
+};
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -8,6 +17,7 @@ async function throwIfResNotOk(res: Response) {
     if (res.status === 401) {
       console.log('Session expired, clearing localStorage');
       localStorage.removeItem('sessionId');
+      localStorage.removeItem('sessionExpiry');
       // Trigger a re-render by dispatching a storage event
       window.dispatchEvent(new Event('storage'));
     }
@@ -22,6 +32,15 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<any> {
   console.log(`API Request: ${method} ${url}`, data);
+  
+  // Check session expiry before making request (except for auth endpoints)
+  if (!url.includes('/api/auth/') && isSessionExpired()) {
+    console.log('Session expired locally, clearing localStorage');
+    localStorage.removeItem('sessionId');
+    localStorage.removeItem('sessionExpiry');
+    window.dispatchEvent(new Event('storage'));
+    throw new Error('401: Unauthorized');
+  }
   
   const sessionId = localStorage.getItem('sessionId');
   const headers: Record<string, string> = {};

@@ -32,9 +32,16 @@ export default function CompanyDirectory() {
   // Get messages for selected conversation
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages", selectedCompany?.id, "current-user"],
-    queryFn: () => selectedCompany ? 
-      fetch(`/api/messages/${selectedCompany.id}/current-user`).then(res => res.json()) : 
-      Promise.resolve([]),
+    queryFn: async () => {
+      if (!selectedCompany) return [];
+      try {
+        const response = await apiRequest(`/api/messages/${selectedCompany.id}/current-user`, "GET");
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error("Messages fetch error:", error);
+        return [];
+      }
+    },
     enabled: !!selectedCompany && showChat,
     refetchInterval: 3000, // Poll every 3 seconds for new messages
   });

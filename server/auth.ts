@@ -1,8 +1,19 @@
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
 
-// Simple in-memory auth store (resets on server restart)
-const authenticatedUsers = new Map<string, any>();
+// Improved session management with cleanup and session validation
+const authenticatedUsers = new Map<string, { user: any; expires: Date }>();
+
+// Session cleanup every 30 minutes
+setInterval(() => {
+  const now = new Date();
+  for (const [sessionId, sessionData] of authenticatedUsers.entries()) {
+    if (sessionData.expires < now) {
+      authenticatedUsers.delete(sessionId);
+      console.log("Expired session removed:", sessionId);
+    }
+  }
+}, 30 * 60 * 1000);
 
 export async function setupAuth(app: Express) {
   // Register endpoint
@@ -32,9 +43,10 @@ export async function setupAuth(app: Express) {
 
       const user = await storage.upsertUser(newUser);
       
-      // Generate session
+      // Generate session with expiration (7 days)
       const sessionId = Math.random().toString(36).substring(2, 15);
-      authenticatedUsers.set(sessionId, user);
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      authenticatedUsers.set(sessionId, { user, expires });
       
       console.log("User registered:", user.email, "Session:", sessionId);
       
@@ -74,9 +86,10 @@ export async function setupAuth(app: Express) {
         }
       }
       
-      // Generate session
+      // Generate session with expiration (7 days)
       const sessionId = Math.random().toString(36).substring(2, 15);
-      authenticatedUsers.set(sessionId, user);
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      authenticatedUsers.set(sessionId, { user, expires });
       
       console.log("User logged in:", user.email, "Session:", sessionId);
       console.log("Active sessions:", authenticatedUsers.size);
@@ -102,15 +115,22 @@ export async function setupAuth(app: Express) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const user = authenticatedUsers.get(sessionId);
+    const sessionData = authenticatedUsers.get(sessionId);
     
-    if (!user) {
+    if (!sessionData) {
       console.log("Session not found in memory");
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    console.log("Auth successful for user:", user.id);
-    res.json(user);
+    // Check if session has expired
+    if (sessionData.expires < new Date()) {
+      console.log("Session expired");
+      authenticatedUsers.delete(sessionId);
+      return res.status(401).json({ message: "Session expired" });
+    }
+
+    console.log("Auth successful for user:", sessionData.user.id);
+    res.json(sessionData.user);
   });
 
   // Logout endpoint
@@ -136,12 +156,18 @@ export const isAuthenticated: RequestHandler = (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const user = authenticatedUsers.get(sessionId);
+  const sessionData = authenticatedUsers.get(sessionId);
   
-  if (!user) {
+  if (!sessionData) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  (req as any).user = user;
+  // Check if session has expired
+  if (sessionData.expires < new Date()) {
+    authenticatedUsers.delete(sessionId);
+    return res.status(401).json({ message: "Session expired" });
+  }
+
+  (req as any).user = sessionData.user;
   next();
 };
