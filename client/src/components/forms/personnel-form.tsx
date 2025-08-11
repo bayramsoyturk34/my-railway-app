@@ -63,8 +63,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
 
   const createPersonnelMutation = useMutation({
     mutationFn: async (data: InsertPersonnel) => {
-      const response = await apiRequest("/api/personnel", "POST", data);
-      return response.json();
+      return await apiRequest("/api/personnel", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/personnel"] });
@@ -86,8 +85,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
 
   const updatePersonnelMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertPersonnel> }) => {
-      const response = await apiRequest(`/api/personnel/${id}`, "PUT", data);
-      return response.json();
+      return await apiRequest(`/api/personnel/${id}`, "PUT", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/personnel"] });
@@ -322,11 +320,7 @@ export default function PersonnelForm({ open, onOpenChange, personnel }: Personn
                 className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                 disabled={createPersonnelMutation.isPending || updatePersonnelMutation.isPending}
               >
-                {(createPersonnelMutation.isPending || updatePersonnelMutation.isPending)
-                  ? "Kaydediliyor..." 
-                  : personnel 
-                    ? "Güncelle" 
-                    : "Kaydet"}
+                {(createPersonnelMutation.isPending || updatePersonnelMutation.isPending) ? "Kaydediliyor..." : "Kaydet"}
               </Button>
             </div>
           </form>
