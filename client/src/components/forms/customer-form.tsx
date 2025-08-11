@@ -37,12 +37,17 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
   const createCustomerMutation = useMutation({
     mutationFn: async (data: InsertCustomer) => {
       console.log("Creating customer with data:", data);
-      const result = await apiRequest("/api/customers", "POST", data);
-      console.log("Customer creation result:", result);
-      return result;
+      try {
+        const result = await apiRequest("/api/customers", "POST", data);
+        console.log("Customer creation result:", result);
+        return result;
+      } catch (error) {
+        console.error("Error in mutationFn:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      console.log("Customer creation successful:", data);
+      console.log("✅ Customer creation successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({
         title: "Başarılı",
@@ -52,12 +57,15 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       onOpenChange(false);
     },
     onError: (error) => {
-      console.error("Customer creation failed:", error);
+      console.error("❌ Customer creation failed:", error);
       toast({
         title: "Hata",
         description: "Müşteri kaydı oluşturulamadı.",
         variant: "destructive",
       });
+    },
+    onSettled: (data, error) => {
+      console.log("🔄 Mutation settled - data:", data, "error:", error);
     },
   });
 
@@ -102,8 +110,15 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       console.log("Updating existing customer:", customer.id);
       updateCustomerMutation.mutate({ id: customer.id, data: cleanedData });
     } else {
-      console.log("Creating new customer");
-      createCustomerMutation.mutate(cleanedData);
+      console.log("Creating new customer - calling mutate");
+      createCustomerMutation.mutate(cleanedData, {
+        onSuccess: (data) => {
+          console.log("✅ Inline onSuccess called:", data);
+        },
+        onError: (error) => {
+          console.error("❌ Inline onError called:", error);
+        }
+      });
     }
   };
 
