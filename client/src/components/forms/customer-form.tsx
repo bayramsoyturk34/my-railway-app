@@ -111,14 +111,28 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       updateCustomerMutation.mutate({ id: customer.id, data: cleanedData });
     } else {
       console.log("Creating new customer - calling mutate");
-      createCustomerMutation.mutate(cleanedData, {
-        onSuccess: (data) => {
-          console.log("✅ Inline onSuccess called:", data);
-        },
-        onError: (error) => {
-          console.error("❌ Inline onError called:", error);
-        }
-      });
+      
+      // Direct API call with manual success handling
+      apiRequest("/api/customers", "POST", cleanedData)
+        .then((result) => {
+          console.log("✅ Customer created successfully:", result);
+          // Manual success handling
+          queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+          toast({
+            title: "Başarılı",
+            description: "Müşteri kaydı oluşturuldu.",
+          });
+          form.reset();
+          onOpenChange(false);
+        })
+        .catch((error) => {
+          console.error("❌ Customer creation failed:", error);
+          toast({
+            title: "Hata",
+            description: "Müşteri kaydı oluşturulamadı.",
+            variant: "destructive",
+          });
+        });
     }
   };
 
