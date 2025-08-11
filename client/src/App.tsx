@@ -25,11 +25,15 @@ import AdminDashboard from "@/pages/admin-dashboard";
 function DashboardWrapper() {
   const [location] = useLocation();
   
+  console.log("DashboardWrapper location:", location);
+  
   // Only render Dashboard on exact root path
   if (location !== "/") {
+    console.log("Not rendering Dashboard, location is:", location);
     return null;
   }
   
+  console.log("Rendering Dashboard");
   return <Dashboard />;
 }
 

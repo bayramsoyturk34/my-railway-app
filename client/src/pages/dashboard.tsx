@@ -69,7 +69,7 @@ export default function Dashboard() {
       { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
     ];
 
-    const adminCards = user?.isAdmin ? [
+    const adminCards = (user && 'isAdmin' in user && user.isAdmin) ? [
       { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" }
     ] : [];
 
@@ -88,13 +88,13 @@ export default function Dashboard() {
       { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
     ];
     
-    if (user?.isAdmin) {
+    if (user && 'isAdmin' in user && user.isAdmin) {
       const adminCard = { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" };
       setNavCards([...baseNavCards, adminCard]);
     } else {
       setNavCards(baseNavCards);
     }
-  }, [user?.isAdmin]);
+  }, [user && 'isAdmin' in user ? user.isAdmin : false]);
 
   const { data: summary } = useQuery<FinancialSummary>({
     queryKey: ["/api/financial-summary"],
