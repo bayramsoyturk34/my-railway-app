@@ -955,23 +955,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCustomerTasksByUserId(userId: string): Promise<CustomerTask[]> {
-    // Get customer tasks by joining with customers table to filter by userId
-    const results = await db.select({
-      id: customerTasks.id,
-      customerId: customerTasks.customerId,
-      title: customerTasks.title,
-      description: customerTasks.description,
-      amount: customerTasks.amount,
-      status: customerTasks.status,
-      dueDate: customerTasks.dueDate,
-      createdAt: customerTasks.createdAt,
-      hasVAT: customerTasks.hasVAT,
-      vatRate: customerTasks.vatRate,
-    }).from(customerTasks)
-      .innerJoin(customers, eq(customerTasks.customerId, customers.id))
-      .where(eq(customers.userId, userId));
+    // Simple approach: Get user's customers first, then filter tasks
+    const userCustomers = await db.select().from(customers).where(eq(customers.userId, userId));
+    const customerIds = userCustomers.map(c => c.id);
     
-    return results;
+    if (customerIds.length === 0) {
+      return [];
+    }
+    
+    // Get tasks for user's customers
+    const tasks = await db.select().from(customerTasks);
+    return tasks.filter(task => customerIds.includes(task.customerId));
   }
 
   async getCustomerTasksByCustomerId(customerId: string): Promise<CustomerTask[]> {
@@ -999,29 +993,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCustomerQuotesByUserId(userId: string): Promise<CustomerQuote[]> {
-    // Get customer quotes by joining with customers table to filter by userId
-    const results = await db.select({
-      id: customerQuotes.id,
-      customerId: customerQuotes.customerId,
-      title: customerQuotes.title,
-      description: customerQuotes.description,
-      validUntil: customerQuotes.validUntil,
-      totalAmount: customerQuotes.totalAmount,
-      vatAmount: customerQuotes.vatAmount,
-      totalWithVAT: customerQuotes.totalWithVAT,
-      hasVAT: customerQuotes.hasVAT,
-      vatRate: customerQuotes.vatRate,
-      isApproved: customerQuotes.isApproved,
-      createdAt: customerQuotes.createdAt,
-      updatedAt: customerQuotes.updatedAt,
-      quoteDate: customerQuotes.quoteDate,
-      status: customerQuotes.status,
-      termsAndConditions: customerQuotes.termsAndConditions,
-    }).from(customerQuotes)
-      .innerJoin(customers, eq(customerQuotes.customerId, customers.id))
-      .where(eq(customers.userId, userId));
+    // Simple approach: Get user's customers first, then filter quotes
+    const userCustomers = await db.select().from(customers).where(eq(customers.userId, userId));
+    const customerIds = userCustomers.map(c => c.id);
     
-    return results;
+    if (customerIds.length === 0) {
+      return [];
+    }
+    
+    // Get quotes for user's customers
+    const quotes = await db.select().from(customerQuotes);
+    return quotes.filter(quote => customerIds.includes(quote.customerId));
   }
 
   async getCustomerQuotesByCustomerId(customerId: string): Promise<CustomerQuote[]> {
@@ -1090,19 +1072,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCustomerPaymentsByUserId(userId: string): Promise<CustomerPayment[]> {
-    // Get customer payments by joining with customers table to filter by userId
-    const results = await db.select({
-      id: customerPayments.id,
-      customerId: customerPayments.customerId,
-      amount: customerPayments.amount,
-      paymentDate: customerPayments.paymentDate,
-      description: customerPayments.description,
-      createdAt: customerPayments.createdAt,
-    }).from(customerPayments)
-      .innerJoin(customers, eq(customerPayments.customerId, customers.id))
-      .where(eq(customers.userId, userId));
+    // Simple approach: Get user's customers first, then filter payments
+    const userCustomers = await db.select().from(customers).where(eq(customers.userId, userId));
+    const customerIds = userCustomers.map(c => c.id);
     
-    return results;
+    if (customerIds.length === 0) {
+      return [];
+    }
+    
+    // Get payments for user's customers
+    const payments = await db.select().from(customerPayments);
+    return payments.filter(payment => customerIds.includes(payment.customerId));
   }
 
   async getCustomerPayment(id: string): Promise<CustomerPayment | undefined> {
