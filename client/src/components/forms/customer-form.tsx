@@ -113,9 +113,12 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       console.log("Creating new customer - calling mutate");
       
       // Direct API call with manual success handling
-      apiRequest("/api/customers", "POST", cleanedData)
-        .then((result) => {
+      (async () => {
+        try {
+          console.log("🚀 Calling API...");
+          const result = await apiRequest("/api/customers", "POST", cleanedData);
           console.log("✅ Customer created successfully:", result);
+          
           // Manual success handling
           queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
           toast({
@@ -124,15 +127,15 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
           });
           form.reset();
           onOpenChange(false);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("❌ Customer creation failed:", error);
           toast({
             title: "Hata",
             description: "Müşteri kaydı oluşturulamadı.",
             variant: "destructive",
           });
-        });
+        }
+      })();
     }
   };
 
