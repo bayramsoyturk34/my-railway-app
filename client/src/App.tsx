@@ -52,9 +52,9 @@ function Router() {
           <Route path="/customers/:customerName" component={CustomerDetail} />
           <Route path="/company-directory" component={CompanyDirectory} />
           <Route path="/reports" component={Reports} />
+          <Route component={Dashboard} />
         </>
       )}
-      <Route component={NotFound} />
     </Switch>
   );
 }
