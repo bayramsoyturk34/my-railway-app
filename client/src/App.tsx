@@ -27,12 +27,7 @@ function DashboardWrapper() {
   
   console.log("DashboardWrapper location:", location);
   
-  // Only render Dashboard on exact root path
-  if (location !== "/") {
-    console.log("Not rendering Dashboard, location is:", location);
-    return null;
-  }
-  
+  // Always render Dashboard, let Router handle routing
   console.log("Rendering Dashboard");
   return <Dashboard />;
 }
@@ -57,19 +52,45 @@ function Router() {
         </>
       ) : (
         <>
-          <Route path="/personnel" component={Personnel} />
-          <Route path="/personnel/:id" component={PersonnelDetail} />
-          <Route path="/timesheet" component={Timesheet} />
-          <Route path="/projects" component={Projects} />
-          <Route path="/projects/:id" component={ProjectDetail} />
-          <Route path="/finances" component={Finances} />
-          <Route path="/customers" component={Customers} />
-          <Route path="/customers/:customerName" component={CustomerDetail} />
-          <Route path="/company-directory" component={CompanyDirectory} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/" component={DashboardWrapper} />
-          <Route component={DashboardWrapper} />
+          <Route path="/personnel">
+            <Personnel />
+          </Route>
+          <Route path="/personnel/:id">
+            <PersonnelDetail />
+          </Route>
+          <Route path="/timesheet">
+            <Timesheet />
+          </Route>
+          <Route path="/projects">
+            <Projects />
+          </Route>
+          <Route path="/projects/:id">
+            <ProjectDetail />
+          </Route>
+          <Route path="/finances">
+            <Finances />
+          </Route>
+          <Route path="/customers">
+            <Customers />
+          </Route>
+          <Route path="/customers/:customerName">
+            <CustomerDetail />
+          </Route>
+          <Route path="/company-directory">
+            <CompanyDirectory />
+          </Route>
+          <Route path="/reports">
+            <Reports />
+          </Route>
+          <Route path="/admin">
+            <AdminDashboard />
+          </Route>
+          <Route path="/">
+            <DashboardWrapper />
+          </Route>
+          <Route>
+            <DashboardWrapper />
+          </Route>
         </>
       )}
     </Switch>
