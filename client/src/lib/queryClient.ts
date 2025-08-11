@@ -17,7 +17,6 @@ async function throwIfResNotOk(res: Response) {
     if (res.status === 401) {
       console.log('Session expired, clearing localStorage');
       localStorage.removeItem('sessionId');
-      localStorage.removeItem('sessionExpiry');
       // Trigger a re-render by dispatching a storage event
       window.dispatchEvent(new Event('storage'));
     }
@@ -33,14 +32,7 @@ export async function apiRequest(
 ): Promise<any> {
   console.log(`API Request: ${method} ${url}`, data);
   
-  // Check session expiry before making request (except for auth endpoints)
-  if (!url.includes('/api/auth/') && isSessionExpired()) {
-    console.log('Session expired locally, clearing localStorage');
-    localStorage.removeItem('sessionId');
-    localStorage.removeItem('sessionExpiry');
-    window.dispatchEvent(new Event('storage'));
-    throw new Error('401: Unauthorized');
-  }
+  // Removed client-side session expiry check - only server validates sessions
   
   const sessionId = localStorage.getItem('sessionId');
   const headers: Record<string, string> = {};

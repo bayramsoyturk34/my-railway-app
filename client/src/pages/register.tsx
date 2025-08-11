@@ -34,21 +34,16 @@ export default function Register() {
     onSuccess: async (data) => {
       console.log("Register success:", data);
       
-      // Store session ID and expiry in localStorage (7 days)
+      // Store session ID in localStorage (30 days server-side expiry)
       if (data.sessionId) {
-        const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         localStorage.setItem('sessionId', data.sessionId);
-        localStorage.setItem('sessionExpiry', expiryDate.toISOString());
-        console.log("Session ID stored:", data.sessionId, "Expires:", expiryDate);
+        console.log("Register Session ID stored:", data.sessionId);
         
-        // Clear auth cache and redirect to dashboard
+        // Clear auth cache to refresh user data
         queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
         
-        // Force a complete page reload to properly initialize auth state
-        setTimeout(() => {
-          console.log("Reloading page to initialize auth...");
-          window.location.reload();
-        }, 500);
+        // Invalidate auth query to trigger re-fetch
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       }
       
       toast({

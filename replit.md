@@ -104,6 +104,14 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - Added userId-based message storage and retrieval methods
   - Companies remain visible to all users to enable business networking
   - Messages are properly isolated per user for privacy and security
+- ✅ **Persistent Session Management System**: Database-based authentication for reliable user experience (August 11, 2025)
+  - **Eliminated Repeated Login Issues**: Fixed session persistence problems that forced users to login repeatedly
+  - **PostgreSQL Session Storage**: Migrated from in-memory to database-based session storage 
+  - **30-Day Session Duration**: Extended session validity to 30 days for better user experience
+  - **Server Restart Immunity**: Sessions now survive server restarts and redeploys
+  - **Removed Page Reloads**: Eliminated unnecessary page refreshes during authentication
+  - **Automatic Session Cleanup**: Implemented database cleanup for expired sessions
+  - Users can now login once and stay logged in for weeks without interruption
 
 # User Preferences
 

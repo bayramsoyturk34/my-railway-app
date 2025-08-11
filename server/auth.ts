@@ -7,7 +7,7 @@ import { eq, and, lt } from "drizzle-orm";
 // Database-based session management
 const createSession = async (userId: string): Promise<string> => {
   const sessionId = Math.random().toString(36).substring(2, 15);
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
   
   await db.insert(sessions).values({
     sid: sessionId,
