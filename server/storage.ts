@@ -956,7 +956,7 @@ export class DatabaseStorage implements IStorage {
 
   async getCustomerTasksByUserId(userId: string): Promise<CustomerTask[]> {
     // Get customer tasks by joining with customers table to filter by userId
-    return await db.select({
+    const results = await db.select({
       id: customerTasks.id,
       customerId: customerTasks.customerId,
       title: customerTasks.title,
@@ -970,6 +970,8 @@ export class DatabaseStorage implements IStorage {
     }).from(customerTasks)
       .innerJoin(customers, eq(customerTasks.customerId, customers.id))
       .where(eq(customers.userId, userId));
+    
+    return results;
   }
 
   async getCustomerTasksByCustomerId(customerId: string): Promise<CustomerTask[]> {
@@ -998,7 +1000,7 @@ export class DatabaseStorage implements IStorage {
 
   async getCustomerQuotesByUserId(userId: string): Promise<CustomerQuote[]> {
     // Get customer quotes by joining with customers table to filter by userId
-    return await db.select({
+    const results = await db.select({
       id: customerQuotes.id,
       customerId: customerQuotes.customerId,
       title: customerQuotes.title,
@@ -1011,10 +1013,15 @@ export class DatabaseStorage implements IStorage {
       vatRate: customerQuotes.vatRate,
       isApproved: customerQuotes.isApproved,
       createdAt: customerQuotes.createdAt,
+      updatedAt: customerQuotes.updatedAt,
+      quoteDate: customerQuotes.quoteDate,
+      status: customerQuotes.status,
       termsAndConditions: customerQuotes.termsAndConditions,
     }).from(customerQuotes)
       .innerJoin(customers, eq(customerQuotes.customerId, customers.id))
       .where(eq(customers.userId, userId));
+    
+    return results;
   }
 
   async getCustomerQuotesByCustomerId(customerId: string): Promise<CustomerQuote[]> {
@@ -1084,7 +1091,7 @@ export class DatabaseStorage implements IStorage {
 
   async getCustomerPaymentsByUserId(userId: string): Promise<CustomerPayment[]> {
     // Get customer payments by joining with customers table to filter by userId
-    return await db.select({
+    const results = await db.select({
       id: customerPayments.id,
       customerId: customerPayments.customerId,
       amount: customerPayments.amount,
@@ -1094,6 +1101,8 @@ export class DatabaseStorage implements IStorage {
     }).from(customerPayments)
       .innerJoin(customers, eq(customerPayments.customerId, customers.id))
       .where(eq(customers.userId, userId));
+    
+    return results;
   }
 
   async getCustomerPayment(id: string): Promise<CustomerPayment | undefined> {
