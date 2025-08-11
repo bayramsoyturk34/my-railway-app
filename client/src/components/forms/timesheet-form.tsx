@@ -128,8 +128,7 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
               notes,
             };
             
-            const response = await apiRequest("/api/timesheets", "POST", data);
-            const result = await response.json();
+            const result = await apiRequest("/api/timesheets", "POST", data);
             return { success: true, data: result };
           } catch (error) {
             console.error("Timesheet creation error for personnel:", personnelId, error);
