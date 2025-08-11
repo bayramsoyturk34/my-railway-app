@@ -6,9 +6,10 @@ export function useAuth() {
     queryKey: ["/api/auth/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     retry: false,
-    refetchOnWindowFocus: false,
-    staleTime: 0, // Disable stale time to always check auth status
-    gcTime: 0, // Don't cache auth data
+    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 5, // 5 minutes stale time
+    gcTime: 1000 * 60 * 10, // 10 minutes cache time
+    refetchInterval: false,
   });
 
   console.log("useAuth debug:", { user, isLoading, isAuthenticated: !!user });

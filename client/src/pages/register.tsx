@@ -39,10 +39,10 @@ export default function Register() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Register Session ID stored:", data.sessionId);
         
-        // Clear auth cache to refresh user data
-        queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
+        // Force immediate auth refresh by setting data manually
+        queryClient.setQueryData(["/api/auth/user"], data.user);
         
-        // Invalidate auth query to trigger re-fetch
+        // Also invalidate to ensure fresh data
         queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       }
       
