@@ -36,18 +36,9 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
 
   const createCustomerMutation = useMutation({
     mutationFn: async (data: InsertCustomer) => {
-      console.log("Creating customer with data:", data);
-      try {
-        const result = await apiRequest("/api/customers", "POST", data);
-        console.log("Customer creation result:", result);
-        return result;
-      } catch (error) {
-        console.error("Error in mutationFn:", error);
-        throw error;
-      }
+      return await apiRequest("/api/customers", "POST", data);
     },
-    onSuccess: (data) => {
-      console.log("✅ Customer creation successful:", data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({
         title: "Başarılı",
@@ -56,16 +47,12 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       form.reset();
       onOpenChange(false);
     },
-    onError: (error) => {
-      console.error("❌ Customer creation failed:", error);
+    onError: () => {
       toast({
         title: "Hata",
         description: "Müşteri kaydı oluşturulamadı.",
         variant: "destructive",
       });
-    },
-    onSettled: (data, error) => {
-      console.log("🔄 Mutation settled - data:", data, "error:", error);
     },
   });
 
@@ -110,32 +97,7 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       console.log("Updating existing customer:", customer.id);
       updateCustomerMutation.mutate({ id: customer.id, data: cleanedData });
     } else {
-      console.log("Creating new customer - calling mutate");
-      
-      // Direct API call with manual success handling
-      (async () => {
-        try {
-          console.log("🚀 Calling API...");
-          const result = await apiRequest("/api/customers", "POST", cleanedData);
-          console.log("✅ Customer created successfully:", result);
-          
-          // Manual success handling
-          queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-          toast({
-            title: "Başarılı",
-            description: "Müşteri kaydı oluşturuldu.",
-          });
-          form.reset();
-          onOpenChange(false);
-        } catch (error) {
-          console.error("❌ Customer creation failed:", error);
-          toast({
-            title: "Hata",
-            description: "Müşteri kaydı oluşturulamadı.",
-            variant: "destructive",
-          });
-        }
-      })();
+      createCustomerMutation.mutate(cleanedData);
     }
   };
 
