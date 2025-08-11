@@ -1411,8 +1411,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Company Directory routes
   app.get("/api/company-directory", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req as any).user.id;
-      const companies = await storage.getCompanyDirectoryByUserId(userId);
+      // Tüm firmaları göster ki kullanıcılar birbirleriyle mesajlaşabilsin
+      const companies = await storage.getCompanyDirectory();
       res.json(companies);
     } catch (error) {
       console.error("Error fetching company directory:", error);
@@ -1475,9 +1475,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Messages routes
-  app.get("/api/messages", async (req, res) => {
+  app.get("/api/messages", isAuthenticated, async (req, res) => {
     try {
-      const messages = await storage.getMessages();
+      const userId = (req as any).user.id;
+      // Kullanıcının dahil olduğu tüm mesajları getir
+      const messages = await storage.getMessagesByUser(userId);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -1485,10 +1487,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/messages/:company1Id/:company2Id", async (req, res) => {
+  app.get("/api/messages/:company1Id/:company2Id", isAuthenticated, async (req, res) => {
     try {
+      const userId = (req as any).user.id;
       console.log(`Fetching messages between ${req.params.company1Id} and ${req.params.company2Id}`);
-      const messages = await storage.getMessagesByConversation(req.params.company1Id, req.params.company2Id);
+      const messages = await storage.getMessagesByConversationAndUser(req.params.company1Id, req.params.company2Id, userId);
       console.log(`Found ${messages.length} messages`);
       res.json(messages);
     } catch (error) {
@@ -1497,10 +1500,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/messages", async (req, res) => {
+  app.post("/api/messages", isAuthenticated, async (req, res) => {
     try {
+      const userId = (req as any).user.id;
       const { insertMessageSchema } = await import("@shared/schema");
-      const validatedData = insertMessageSchema.parse(req.body);
+      const messageData = {
+        ...req.body,
+        fromUserId: userId, // Mesajı gönderen kullanıcı
+        toUserId: req.body.toUserId || userId // Hedef kullanıcı
+      };
+      const validatedData = insertMessageSchema.parse(messageData);
       const message = await storage.createMessage(validatedData);
       res.status(201).json(message);
     } catch (error) {
@@ -1509,7 +1518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/messages/:id/read", async (req, res) => {
+  app.put("/api/messages/:id/read", isAuthenticated, async (req, res) => {
     try {
       const success = await storage.markMessageAsRead(req.params.id);
       if (!success) {

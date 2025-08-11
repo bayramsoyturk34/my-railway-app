@@ -157,7 +157,9 @@ export interface IStorage {
 
   // Messages
   getMessages(): Promise<Message[]>;
+  getMessagesByUser(userId: string): Promise<Message[]>;
   getMessagesByConversation(company1Id: string, company2Id: string): Promise<Message[]>;
+  getMessagesByConversationAndUser(company1Id: string, company2Id: string, userId: string): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   markMessageAsRead(id: string): Promise<boolean>;
 
@@ -1249,12 +1251,40 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(messages).orderBy(messages.createdAt);
   }
 
+  async getMessagesByUser(userId: string): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(
+        or(
+          eq(messages.fromUserId, userId),
+          eq(messages.toUserId, userId)
+        )
+      )
+      .orderBy(messages.createdAt);
+  }
+
   async getMessagesByConversation(company1Id: string, company2Id: string): Promise<Message[]> {
     return await db.select().from(messages)
       .where(
         or(
           and(eq(messages.fromCompanyId, company1Id), eq(messages.toCompanyId, company2Id)),
           and(eq(messages.fromCompanyId, company2Id), eq(messages.toCompanyId, company1Id))
+        )
+      )
+      .orderBy(messages.createdAt);
+  }
+
+  async getMessagesByConversationAndUser(company1Id: string, company2Id: string, userId: string): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(
+        and(
+          or(
+            and(eq(messages.fromCompanyId, company1Id), eq(messages.toCompanyId, company2Id)),
+            and(eq(messages.fromCompanyId, company2Id), eq(messages.toCompanyId, company1Id))
+          ),
+          or(
+            eq(messages.fromUserId, userId),
+            eq(messages.toUserId, userId)
+          )
         )
       )
       .orderBy(messages.createdAt);

@@ -97,6 +97,13 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
     * Extended Zod validation schema to include userId field for server-side validation
     * Timesheet creation now works perfectly with user isolation
     * Each user can only create and view their own timesheet records
+- ✅ **Company Directory Multi-User Communication System**: Enhanced messaging with proper access control (August 11, 2025)
+  - Company Directory shows all users' companies for inter-company communication
+  - Message isolation: Users can only see messages they sent or received
+  - Enhanced messaging API with user authentication and filtering
+  - Added userId-based message storage and retrieval methods
+  - Companies remain visible to all users to enable business networking
+  - Messages are properly isolated per user for privacy and security
 
 # User Preferences
 
