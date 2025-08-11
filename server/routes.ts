@@ -69,11 +69,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert string date to Date object
       const processedBody = {
         ...req.body,
-        userId,
         startDate: new Date(req.body.startDate)
       };
       const validatedData = insertPersonnelSchema.parse(processedBody);
-      const personnel = await storage.createPersonnel(validatedData);
+      // Add userId for database insertion
+      const personnelData = {
+        ...validatedData,
+        userId
+      };
+      const personnel = await storage.createPersonnel(personnelData);
       res.status(201).json(personnel);
     } catch (error) {
       console.error("Personnel validation error:", error);
@@ -131,11 +135,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert string date to Date object
       const processedBody = {
         ...req.body,
-        userId,
         startDate: new Date(req.body.startDate)
       };
       const validatedData = insertProjectSchema.parse(processedBody);
-      const project = await storage.createProject(validatedData);
+      // Add userId for database insertion
+      const projectData = {
+        ...validatedData,
+        userId
+      };
+      const project = await storage.createProject(projectData);
       res.status(201).json(project);
     } catch (error) {
       console.error("Project validation error:", error);
@@ -458,11 +466,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/customers", isAuthenticated, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const validatedData = insertCustomerSchema.parse({ ...req.body, userId });
-      const customer = await storage.createCustomer(validatedData);
+      const validatedData = insertCustomerSchema.parse(req.body);
+      // Add userId for database insertion
+      const customerData = {
+        ...validatedData,
+        userId
+      };
+      const customer = await storage.createCustomer(customerData);
       res.status(201).json(customer);
     } catch (error) {
-      res.status(400).json({ message: "Invalid customer data" });
+      console.error("Customer validation error:", error);
+      res.status(400).json({ message: "Invalid customer data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
