@@ -36,9 +36,13 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
 
   const createCustomerMutation = useMutation({
     mutationFn: async (data: InsertCustomer) => {
-      return await apiRequest("/api/customers", "POST", data);
+      console.log("Creating customer with data:", data);
+      const result = await apiRequest("/api/customers", "POST", data);
+      console.log("Customer creation result:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Customer creation successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({
         title: "Başarılı",
@@ -47,7 +51,8 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       form.reset();
       onOpenChange(false);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Customer creation failed:", error);
       toast({
         title: "Hata",
         description: "Müşteri kaydı oluşturulamadı.",
