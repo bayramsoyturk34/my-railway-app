@@ -41,22 +41,33 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  console.log(`API Response: ${res.status} ${res.statusText}`, res);
+  console.log(`API Response: ${res.status} ${res.statusText}`);
 
-  // Only call throwIfResNotOk if response is not ok
+  // Check for errors first
   if (!res.ok) {
+    console.log("❌ Response not OK, throwing error");
     await throwIfResNotOk(res);
+    return;
+  }
+
+  // Handle successful responses
+  console.log("✅ Response OK, processing...");
+  
+  // Handle 204 No Content
+  if (res.status === 204) {
+    console.log("✅ No Content Success (204)");
+    return {};
   }
   
-  // Parse JSON response if content-type indicates JSON
-  const contentType = res.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
+  // Try to parse JSON for other success statuses
+  try {
     const jsonResponse = await res.json();
-    console.log(`API JSON Response:`, jsonResponse);
+    console.log(`✅ JSON Response Success:`, jsonResponse);
     return jsonResponse;
+  } catch (parseError) {
+    console.log("⚠️ Could not parse JSON, returning empty object");
+    return {};
   }
-  
-  return res;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
