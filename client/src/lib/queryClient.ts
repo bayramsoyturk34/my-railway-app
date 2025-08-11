@@ -21,6 +21,8 @@ export async function apiRequest(
   method: string,
   data?: unknown | undefined,
 ): Promise<any> {
+  console.log(`API Request: ${method} ${url}`, data);
+  
   const sessionId = localStorage.getItem('sessionId');
   const headers: Record<string, string> = {};
   
@@ -39,12 +41,16 @@ export async function apiRequest(
     credentials: "include",
   });
 
+  console.log(`API Response: ${res.status} ${res.statusText}`, res);
+
   await throwIfResNotOk(res);
   
   // Parse JSON response if content-type indicates JSON
   const contentType = res.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
-    return await res.json();
+    const jsonResponse = await res.json();
+    console.log(`API JSON Response:`, jsonResponse);
+    return jsonResponse;
   }
   
   return res;

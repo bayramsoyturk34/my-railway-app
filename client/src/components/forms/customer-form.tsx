@@ -84,7 +84,8 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
   });
 
   const onSubmit = (data: InsertCustomer) => {
-    console.log("Submitting customer data:", data);
+    console.log("Form submitted with data:", data);
+    console.log("Form validation errors:", form.formState.errors);
     
     const cleanedData = {
       ...data,
@@ -95,9 +96,13 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       taxNumber: data.taxNumber?.trim() || null,
     };
 
+    console.log("Cleaned data for submission:", cleanedData);
+
     if (customer) {
+      console.log("Updating existing customer:", customer.id);
       updateCustomerMutation.mutate({ id: customer.id, data: cleanedData });
     } else {
+      console.log("Creating new customer");
       createCustomerMutation.mutate(cleanedData);
     }
   };
