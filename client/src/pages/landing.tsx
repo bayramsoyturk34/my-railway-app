@@ -21,14 +21,16 @@ export default function Landing() {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Session ID stored:", data.sessionId);
         
-        // Clear auth cache and force immediate reload
+        // Clear auth cache and force re-fetch
         queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
         
-        // Force a complete page reload to properly initialize auth state
+        // Trigger immediate auth refetch instead of page reload
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
+        // Navigate to dashboard without page reload
         setTimeout(() => {
-          console.log("Reloading page to initialize auth...");
-          window.location.reload();
-        }, 500);
+          window.location.href = '/';
+        }, 100);
       }
       
       toast({
