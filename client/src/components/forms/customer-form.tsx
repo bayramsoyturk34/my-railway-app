@@ -52,10 +52,13 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       status: data.status,
     };
 
+    console.log("🎯 Form submitted - starting API call");
+    
     try {
       let result;
       if (customer) {
         // Update existing customer
+        console.log("📝 Updating existing customer...");
         result = await apiRequest(`/api/customers/${customer.id}`, "PUT", cleanedData);
         console.log("✅ Update success:", result);
         toast({
@@ -64,6 +67,7 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
         });
       } else {
         // Create new customer
+        console.log("✨ Creating new customer...");
         result = await apiRequest("/api/customers", "POST", cleanedData);
         console.log("✅ Create success:", result);
         toast({
@@ -73,19 +77,24 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       }
       
       // Success handling - only if we get here
-      console.log("✅ Running success handling...");
+      console.log("🎉 Running success handling...");
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      console.log("🔄 Query invalidated");
       form.reset();
+      console.log("📝 Form reset");
       onOpenChange(false);
+      console.log("🚪 Dialog closed");
       
     } catch (error) {
       console.error("❌ Customer operation failed:", error);
+      console.error("❌ Error details:", error.message, error.stack);
       toast({
         title: "Hata",
         description: customer ? "Müşteri kaydı güncellenemedi." : "Müşteri kaydı oluşturulamadı.",
         variant: "destructive",
       });
     } finally {
+      console.log("🏁 Setting isSubmitting to false");
       setIsSubmitting(false);
     }
   };
