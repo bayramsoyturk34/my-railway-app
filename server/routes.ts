@@ -1549,11 +1549,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   app.get("/api/admin/stats", isAuthenticated, async (req: any, res) => {
     try {
-      // For now, only allow specific admin user (you can modify this logic)
-      // const userId = req.user.id;
-      // if (userId !== 'admin_user_id') {
-      //   return res.status(403).json({ message: "Access denied" });
-      // }
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Access denied - Admin privileges required" });
+      }
       
       const stats = await storage.getAdminStats();
       res.json(stats);
@@ -1565,11 +1566,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
     try {
-      // For now, only allow specific admin user (you can modify this logic)
-      // const userId = req.user.id;
-      // if (userId !== 'admin_user_id') {
-      //   return res.status(403).json({ message: "Access denied" });
-      // }
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Access denied - Admin privileges required" });
+      }
       
       const users = await storage.getAllUsers();
       res.json(users);

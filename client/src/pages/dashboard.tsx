@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { DndProvider } from "react-dnd";
@@ -57,17 +57,44 @@ export default function Dashboard() {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
   const { user } = useAuth();
 
-  // Navigation cards state for drag and drop
-  const [navCards, setNavCards] = useState([
-    { id: "timesheet", icon: Edit, label: "Puantaj Yaz", onClick: () => setShowTimesheetForm(true), iconColor: "text-blue-400" },
-    { id: "personnel", icon: Users, label: "Personeller", onClick: () => setLocation("/personnel"), iconColor: "text-orange-400" },
-    { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
-    { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
-    { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
-    { id: "company-directory", icon: Building2, label: "Firma Rehberi", onClick: () => setLocation("/company-directory"), iconColor: "text-green-400" },
-    { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" },
-    { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" }
-  ]);
+  // Navigation cards state for drag and drop  
+  const [navCards, setNavCards] = useState(() => {
+    const baseNavCards = [
+      { id: "timesheet", icon: Edit, label: "Puantaj Yaz", onClick: () => setShowTimesheetForm(true), iconColor: "text-blue-400" },
+      { id: "personnel", icon: Users, label: "Personeller", onClick: () => setLocation("/personnel"), iconColor: "text-orange-400" },
+      { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
+      { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
+      { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
+      { id: "company-directory", icon: Building2, label: "Firma Rehberi", onClick: () => setLocation("/company-directory"), iconColor: "text-green-400" },
+      { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
+    ];
+
+    const adminCards = user?.isAdmin ? [
+      { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" }
+    ] : [];
+
+    return [...baseNavCards, ...adminCards];
+  });
+
+  // Update navigation cards when user admin status changes
+  useEffect(() => {
+    const baseNavCards = [
+      { id: "timesheet", icon: Edit, label: "Puantaj Yaz", onClick: () => setShowTimesheetForm(true), iconColor: "text-blue-400" },
+      { id: "personnel", icon: Users, label: "Personeller", onClick: () => setLocation("/personnel"), iconColor: "text-orange-400" },
+      { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
+      { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
+      { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
+      { id: "company-directory", icon: Building2, label: "Firma Rehberi", onClick: () => setLocation("/company-directory"), iconColor: "text-green-400" },
+      { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
+    ];
+    
+    if (user?.isAdmin) {
+      const adminCard = { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" };
+      setNavCards([...baseNavCards, adminCard]);
+    } else {
+      setNavCards(baseNavCards);
+    }
+  }, [user?.isAdmin]);
 
   const { data: summary } = useQuery<FinancialSummary>({
     queryKey: ["/api/financial-summary"],
