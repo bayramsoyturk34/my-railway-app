@@ -5,37 +5,86 @@ import { storage } from "./storage";
 const authenticatedUsers = new Map<string, any>();
 
 export async function setupAuth(app: Express) {
-  // Login endpoint
-  app.post("/api/auth/login", async (req, res) => {
+  // Register endpoint
+  app.post("/api/auth/register", async (req, res) => {
     try {
-      // Create demo user
-      const demoUser = {
-        id: "demo-user-1",
-        email: "demo@puantajpro.com",
-        firstName: "Demo",
-        lastName: "User",
+      const { email, password, firstName, lastName } = req.body;
+      
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: "Tüm alanlar gereklidir" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Bu email adresi zaten kullanılıyor" });
+      }
+      
+      // Create new user
+      const newUser = {
+        id: Math.random().toString(36).substring(2, 15),
+        email,
+        password, // In production, hash this password
+        firstName,
+        lastName,
         profileImageUrl: null,
       };
 
-      // Store user in database
-      const user = await storage.upsertUser(demoUser);
+      const user = await storage.upsertUser(newUser);
       
-      // Generate simple session ID
+      // Generate session
       const sessionId = Math.random().toString(36).substring(2, 15);
-      
-      // Store in memory
       authenticatedUsers.set(sessionId, user);
       
-      console.log("User logged in:", user.id, "Session:", sessionId);
-      console.log("Active sessions:", authenticatedUsers.size);
+      console.log("User registered:", user.email, "Session:", sessionId);
       
-      // Don't use cookies - return session ID for frontend storage
-      console.log("Session created:", sessionId);
+      res.json({ success: true, user, sessionId });
+    } catch (error) {
+      console.error("Register error:", error);
+      res.status(500).json({ message: "Kayıt başarısız" });
+    }
+  });
+
+  // Login endpoint
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password, isDemo } = req.body;
+      
+      let user;
+      
+      if (isDemo) {
+        // Demo user login
+        const demoUser = {
+          id: "demo-user-1",
+          email: "demo@puantajpro.com",
+          firstName: "Demo",
+          lastName: "User",
+          profileImageUrl: null,
+        };
+        user = await storage.upsertUser(demoUser);
+      } else {
+        // Regular user login
+        if (!email || !password) {
+          return res.status(400).json({ message: "Email ve şifre gereklidir" });
+        }
+        
+        user = await storage.getUserByEmail(email);
+        if (!user || user.password !== password) {
+          return res.status(401).json({ message: "Geçersiz email veya şifre" });
+        }
+      }
+      
+      // Generate session
+      const sessionId = Math.random().toString(36).substring(2, 15);
+      authenticatedUsers.set(sessionId, user);
+      
+      console.log("User logged in:", user.email, "Session:", sessionId);
+      console.log("Active sessions:", authenticatedUsers.size);
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({ message: "Login failed" });
+      res.status(500).json({ message: "Giriş başarısız" });
     }
   });
 

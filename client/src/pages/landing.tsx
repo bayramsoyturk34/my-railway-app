@@ -4,13 +4,14 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Clock, DollarSign, BarChart3, MessageSquare } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Landing() {
   const { toast } = useToast();
 
   const loginMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/auth/login", "POST", {});
+      return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
     onSuccess: async (data) => {
       console.log("Login success:", data);
@@ -60,13 +61,29 @@ export default function Landing() {
             Türkiye'nin en gelişmiş personel puantaj ve proje yönetim sistemi. 
             İş gücü verimliliğinizi artırın, finansal takibinizi optimize edin.
           </p>
-          <Button 
-            size="lg" 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
-            onClick={() => window.location.href = '/api/login'}
-          >
-            Giriş Yap / Kaydol
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => loginMutation.mutate()}
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-lg text-lg"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? "Giriş yapılıyor..." : "Demo Giriş Yap"}
+            </Button>
+            
+            <div className="flex gap-2 justify-center">
+              <Link href="/login">
+                <Button variant="outline" size="lg" className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white px-6 py-4 text-lg">
+                  Giriş Yap
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button variant="outline" size="lg" className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white px-6 py-4 text-lg">
+                  Kayıt Ol
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Features Grid */}
