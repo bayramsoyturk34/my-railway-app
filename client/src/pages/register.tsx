@@ -42,10 +42,10 @@ export default function Register() {
         // Clear auth cache and redirect to dashboard
         queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
         
-        // Redirect to dashboard after successful registration
+        // Force a complete page reload to properly initialize auth state
         setTimeout(() => {
-          console.log("Redirecting to dashboard...");
-          window.location.href = "/";
+          console.log("Reloading page to initialize auth...");
+          window.location.reload();
         }, 500);
       }
       
