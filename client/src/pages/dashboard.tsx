@@ -53,7 +53,7 @@ interface CardItem {
 }
 
 export default function Dashboard() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
   const { user } = useAuth();
 
@@ -117,6 +117,14 @@ export default function Dashboard() {
       minimumFractionDigits: 2,
     }).format(amount);
   };
+
+  console.log("Dashboard component location:", location);
+  
+  // Don't render if not on exact root path
+  if (location !== "/") {
+    console.log("Dashboard: Not rendering, wrong location:", location);
+    return null;
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>

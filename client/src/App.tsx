@@ -27,7 +27,12 @@ function DashboardWrapper() {
   
   console.log("DashboardWrapper location:", location);
   
-  // Always render Dashboard, let Router handle routing
+  // Only render Dashboard on exact root path
+  if (location !== "/") {
+    console.log("Not rendering Dashboard, location is:", location);
+    return null;
+  }
+  
   console.log("Rendering Dashboard");
   return <Dashboard />;
 }
