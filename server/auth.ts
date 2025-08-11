@@ -115,11 +115,12 @@ export async function setupAuth(app: Express) {
 
   // Logout endpoint
   app.post("/api/auth/logout", (req, res) => {
-    const sessionId = req.cookies.session;
+    const sessionId = req.headers.authorization?.replace('Bearer ', '') || req.cookies.session;
     
     if (sessionId) {
       authenticatedUsers.delete(sessionId);
       console.log("Session removed:", sessionId);
+      console.log("Remaining sessions:", authenticatedUsers.size);
     }
     
     res.clearCookie('session');

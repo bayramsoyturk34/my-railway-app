@@ -52,21 +52,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth endpoints handled in auth.ts
   // Personnel routes
-  app.get("/api/personnel", async (req, res) => {
+  app.get("/api/personnel", isAuthenticated, async (req, res) => {
     try {
-      const personnel = await storage.getPersonnel();
+      const userId = (req as any).user.id;
+      const personnel = await storage.getPersonnelByUserId(userId);
       res.json(personnel);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch personnel" });
     }
   });
 
-  app.post("/api/personnel", async (req, res) => {
+  app.post("/api/personnel", isAuthenticated, async (req, res) => {
     try {
       console.log("Personnel request body:", req.body);
+      const userId = (req as any).user.id;
       // Convert string date to Date object
       const processedBody = {
         ...req.body,
+        userId,
         startDate: new Date(req.body.startDate)
       };
       const validatedData = insertPersonnelSchema.parse(processedBody);
@@ -111,21 +114,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Projects routes
-  app.get("/api/projects", async (req, res) => {
+  app.get("/api/projects", isAuthenticated, async (req, res) => {
     try {
-      const projects = await storage.getProjects();
+      const userId = (req as any).user.id;
+      const projects = await storage.getProjectsByUserId(userId);
       res.json(projects);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch projects" });
     }
   });
 
-  app.post("/api/projects", async (req, res) => {
+  app.post("/api/projects", isAuthenticated, async (req, res) => {
     try {
       console.log("Project request body:", req.body);
+      const userId = (req as any).user.id;
       // Convert string date to Date object
       const processedBody = {
         ...req.body,
+        userId,
         startDate: new Date(req.body.startDate)
       };
       const validatedData = insertProjectSchema.parse(processedBody);
@@ -439,18 +445,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Customers routes
-  app.get("/api/customers", async (req, res) => {
+  app.get("/api/customers", isAuthenticated, async (req, res) => {
     try {
-      const customers = await storage.getCustomers();
+      const userId = (req as any).user.id;
+      const customers = await storage.getCustomersByUserId(userId);
       res.json(customers);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch customers" });
     }
   });
 
-  app.post("/api/customers", async (req, res) => {
+  app.post("/api/customers", isAuthenticated, async (req, res) => {
     try {
-      const validatedData = insertCustomerSchema.parse(req.body);
+      const userId = (req as any).user.id;
+      const validatedData = insertCustomerSchema.parse({ ...req.body, userId });
       const customer = await storage.createCustomer(validatedData);
       res.status(201).json(customer);
     } catch (error) {

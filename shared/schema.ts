@@ -33,6 +33,7 @@ export type User = typeof users.$inferSelect;
 
 export const personnel = pgTable("personnel", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
   name: text("name").notNull(),
   position: text("position").notNull(),
   startDate: timestamp("start_date").notNull(),
@@ -46,6 +47,7 @@ export const personnel = pgTable("personnel", {
 
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
   name: text("name").notNull(),
   type: text("type").notNull(), // "given" or "received"
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
@@ -59,6 +61,7 @@ export const projects = pgTable("projects", {
 
 export const timesheets = pgTable("timesheets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
   personnelId: varchar("personnel_id").notNull(),
   customerId: varchar("customer_id"),
   date: timestamp("date").notNull(),
@@ -75,6 +78,7 @@ export const timesheets = pgTable("timesheets", {
 
 export const transactions = pgTable("transactions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
   type: text("type").notNull(), // "income" or "expense"
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   description: text("description").notNull(),
@@ -85,12 +89,14 @@ export const transactions = pgTable("transactions", {
 
 export const notes = pgTable("notes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
   content: text("content").notNull(),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
 export const contractors = pgTable("contractors", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
   name: text("name").notNull(),
   company: text("company"),
   phone: text("phone"),
@@ -102,6 +108,7 @@ export const contractors = pgTable("contractors", {
 
 export const customers = pgTable("customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
   name: text("name").notNull(),
   company: text("company"),
   phone: text("phone"),
@@ -243,6 +250,7 @@ export const insertPersonnelSchema = createInsertSchema(personnel).omit({
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
   salary: z.string().optional().nullable(),
+  userId: z.string(),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
@@ -252,6 +260,7 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
   description: z.string().optional().nullable(),
   clientName: z.string().optional().nullable(),
   endDate: z.date().optional().nullable(),
+  userId: z.string(),
 });
 
 export const insertTimesheetSchema = createInsertSchema(timesheets).omit({
@@ -265,6 +274,7 @@ export const insertTimesheetSchema = createInsertSchema(timesheets).omit({
   dailyWage: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   overtimeHours: z.string().optional().nullable(),
+  userId: z.string(),
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({

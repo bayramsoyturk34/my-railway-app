@@ -33,6 +33,7 @@ export interface IStorage {
 
   // Personnel
   getPersonnel(): Promise<Personnel[]>;
+  getPersonnelByUserId(userId: string): Promise<Personnel[]>;
   getPersonnelById(id: string): Promise<Personnel | undefined>;
   createPersonnel(personnel: InsertPersonnel): Promise<Personnel>;
   updatePersonnel(id: string, personnel: Partial<InsertPersonnel>): Promise<Personnel | undefined>;
@@ -40,6 +41,7 @@ export interface IStorage {
 
   // Projects
   getProjects(): Promise<Project[]>;
+  getProjectsByUserId(userId: string): Promise<Project[]>;
   getProjectById(id: string): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: string, project: Partial<InsertProject>): Promise<Project | undefined>;
@@ -71,6 +73,7 @@ export interface IStorage {
 
   // Customers
   getCustomers(): Promise<Customer[]>;
+  getCustomersByUserId(userId: string): Promise<Customer[]>;
   getCustomer(id: string): Promise<Customer | undefined>;
   getCustomerById(id: string): Promise<Customer | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
@@ -754,6 +757,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(personnel);
   }
 
+  async getPersonnelByUserId(userId: string): Promise<Personnel[]> {
+    return await db.select().from(personnel).where(eq(personnel.userId, userId));
+  }
+
   async getPersonnelById(id: string): Promise<Personnel | undefined> {
     const [result] = await db.select().from(personnel).where(eq(personnel.id, id));
     return result;
@@ -777,6 +784,10 @@ export class DatabaseStorage implements IStorage {
   // Projects methods
   async getProjects(): Promise<Project[]> {
     return await db.select().from(projects);
+  }
+
+  async getProjectsByUserId(userId: string): Promise<Project[]> {
+    return await db.select().from(projects).where(eq(projects.userId, userId));
   }
 
   async getProjectById(id: string): Promise<Project | undefined> {
@@ -886,6 +897,10 @@ export class DatabaseStorage implements IStorage {
   // Customers methods
   async getCustomers(): Promise<Customer[]> {
     return await db.select().from(customers);
+  }
+
+  async getCustomersByUserId(userId: string): Promise<Customer[]> {
+    return await db.select().from(customers).where(eq(customers.userId, userId));
   }
 
   async getCustomer(id: string): Promise<Customer | undefined> {

@@ -19,11 +19,19 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       return await apiRequest("/api/auth/logout", "POST", {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Clear localStorage and cache
+      localStorage.removeItem('sessionId');
+      queryClient.clear();
+      
       toast({
         title: "Başarıyla çıkış yapıldı",
         description: "Güle güle!",
       });
+      
+      // Redirect to landing page
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     },
     onError: (error: any) => {
       toast({
@@ -55,7 +63,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         {user && (
           <div className="flex items-center gap-2 text-white text-sm">
             <User className="h-4 w-4" />
-            <span>{(user as any).firstName || (user as any).email || "Kullanıcı"}</span>
+            <span>{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
           </div>
         )}
         <Button
