@@ -2,7 +2,7 @@ import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
 import { db } from "./db";
 import { sessions } from "@shared/schema";
-import { eq, and, lt } from "drizzle-orm";
+import { eq, and, lt, gt } from "drizzle-orm";
 
 // Database-based session management
 const createSession = async (userId: string): Promise<string> => {
@@ -23,7 +23,7 @@ export const getSession = async (sessionId: string): Promise<any | null> => {
     const [session] = await db
       .select()
       .from(sessions)
-      .where(and(eq(sessions.sid, sessionId), lt(new Date(), sessions.expire)));
+      .where(and(eq(sessions.sid, sessionId), gt(sessions.expire, new Date())));
     
     if (!session) return null;
     
