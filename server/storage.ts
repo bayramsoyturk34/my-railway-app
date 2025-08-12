@@ -206,6 +206,7 @@ export interface IStorage {
   getOrCreateDirectThread(firm1Id: string, firm2Id: string): Promise<DirectThread>;
   getDirectThreads(firmId: string): Promise<DirectThread[]>;
   getDirectThreadsByUserId(userId: string): Promise<DirectThread[]>;
+  getDirectThreadById(threadId: string): Promise<DirectThread | undefined>;
   getDirectThreadMessages(threadId: string, offset?: number, limit?: number): Promise<DirectMessage[]>;
   createDirectMessage(message: InsertDirectMessage): Promise<DirectMessage>;
   markDirectMessageAsRead(messageId: string): Promise<boolean>;
@@ -1834,6 +1835,11 @@ export class DatabaseStorage implements IStorage {
     );
     
     return enrichedThreads;
+  }
+
+  async getDirectThreadById(threadId: string): Promise<DirectThread | undefined> {
+    const [thread] = await db.select().from(directThreads).where(eq(directThreads.id, threadId));
+    return thread;
   }
 
   async getDirectThreadMessages(threadId: string, offset = 0, limit = 50): Promise<DirectMessage[]> {

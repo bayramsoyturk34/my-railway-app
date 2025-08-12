@@ -2436,12 +2436,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { threadId } = req.params;
       const { body, attachmentUrl, attachmentType } = req.body;
       
-      // Get thread to determine receiver
-      const threads = await storage.getDirectThreads(firmId);
-      const currentThread = threads.find(t => t.id === threadId);
+      // Get thread by ID directly
+      const currentThread = await storage.getDirectThreadById(threadId);
       
       if (!currentThread) {
+        console.log("Thread not found with ID:", threadId);
         return res.status(404).json({ error: "Thread not found" });
+      }
+      
+      // Verify user has access to this thread
+      if (currentThread.firm1Id !== firmId && currentThread.firm2Id !== firmId) {
+        console.log("User firmId:", firmId, "not authorized for thread:", currentThread);
+        return res.status(403).json({ error: "Not authorized to message in this thread" });
       }
       
       const receiverFirmId = currentThread.firm1Id === firmId ? currentThread.firm2Id : currentThread.firm1Id;
