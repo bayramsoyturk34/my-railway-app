@@ -206,7 +206,7 @@ export default function EnhancedCompanyDirectory() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
-      const response = await apiRequest(`/api/directory/firms?${params.toString()}`);
+      const response = await apiRequest(`/api/directory/firms?${params.toString()}`, "GET");
       return Array.isArray(response) ? response : [];
     },
   });
@@ -221,7 +221,7 @@ export default function EnhancedCompanyDirectory() {
   // Messages for active thread
   const { data: messages = [] } = useQuery<DirectMessage[]>({
     queryKey: ["/api/threads", activeThread, "messages"],
-    queryFn: () => apiRequest(`/api/threads/${activeThread}/messages`),
+    queryFn: () => apiRequest(`/api/threads/${activeThread}/messages`, "GET"),
     enabled: !!activeThread,
     refetchInterval: 2000,
   });
@@ -242,7 +242,7 @@ export default function EnhancedCompanyDirectory() {
   useQuery({
     queryKey: ["/api/drafts", activeThread],
     queryFn: async () => {
-      const response = await apiRequest(`/api/drafts/${activeThread}`);
+      const response = await apiRequest(`/api/drafts/${activeThread}`, "GET");
       setDraftText(response.body || "");
       return response;
     },
