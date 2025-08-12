@@ -141,35 +141,9 @@ export default function Messages() {
           {/* Dropdown Firma Seçici */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-3">Sohbetler</h3>
-            <Select 
-              value={activeThread || ""} 
-              onValueChange={setActiveThread}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Firma seç..." />
-              </SelectTrigger>
-              <SelectContent className="max-h-40 overflow-y-auto">
-                {filteredCompanies.length === 0 ? (
-                  <SelectItem value="no-companies" disabled>
-                    {searchTerm ? "Eşleşen firma bulunamadı" : "Henüz firma eklenmemiş"}
-                  </SelectItem>
-                ) : (
-                  filteredCompanies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.companyName}
-                      {company.industry && (
-                        <span className="text-sm text-muted-foreground ml-2">
-                          - {company.industry}
-                        </span>
-                      )}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
             
             {/* Arama Kutusu */}
-            <div className="relative mt-3">
+            <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Firma ara..."
@@ -177,6 +151,30 @@ export default function Messages() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
+            </div>
+
+            {/* Firma Listesi */}
+            <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md">
+              {filteredCompanies.length === 0 ? (
+                <div className="p-3 text-sm text-muted-foreground text-center">
+                  {searchTerm ? "Eşleşen firma bulunamadı" : "Henüz firma eklenmemiş"}
+                </div>
+              ) : (
+                filteredCompanies.map((company) => (
+                  <div
+                    key={company.id}
+                    onClick={() => setActiveThread(company.id)}
+                    className={`p-3 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                      activeThread === company.id ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-l-blue-500' : ''
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{company.companyName}</div>
+                    {company.industry && (
+                      <div className="text-xs text-muted-foreground mt-1">{company.industry}</div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
