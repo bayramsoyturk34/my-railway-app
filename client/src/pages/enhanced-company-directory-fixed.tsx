@@ -320,7 +320,7 @@ export default function EnhancedCompanyDirectory() {
                           </div>
                         ) : (
                           messages.map((message) => {
-                            const isOutgoing = message.senderFirmId === currentUserFirmId;
+                            const isOutgoing = message.fromCompanyId === currentUserFirmId;
                             return (
                               <div
                                 key={message.id}
@@ -331,7 +331,7 @@ export default function EnhancedCompanyDirectory() {
                                     ? 'bg-primary text-primary-foreground' 
                                     : 'bg-muted text-foreground'
                                 }`}>
-                                  <p>{message.body}</p>
+                                  <p>{message.message}</p>
                                   <div className="flex items-center gap-1 mt-1">
                                     <span className="text-xs opacity-70">
                                       {new Date(message.createdAt).toLocaleTimeString('tr-TR', {
