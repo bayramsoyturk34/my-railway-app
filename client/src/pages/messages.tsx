@@ -153,10 +153,10 @@ export default function Messages() {
               />
             </div>
 
-            {/* Firma Listesi */}
-            <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md">
+            {/* Kısa Firma Listesi */}
+            <div className="max-h-32 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md">
               {filteredCompanies.length === 0 ? (
-                <div className="p-3 text-sm text-muted-foreground text-center">
+                <div className="p-2 text-sm text-muted-foreground text-center">
                   {searchTerm ? "Eşleşen firma bulunamadı" : "Henüz firma eklenmemiş"}
                 </div>
               ) : (
@@ -164,13 +164,13 @@ export default function Messages() {
                   <div
                     key={company.id}
                     onClick={() => setActiveThread(company.id)}
-                    className={`p-3 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    className={`px-3 py-2 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 ${
                       activeThread === company.id ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-l-blue-500' : ''
                     }`}
                   >
                     <div className="font-medium text-sm">{company.companyName}</div>
                     {company.industry && (
-                      <div className="text-xs text-muted-foreground mt-1">{company.industry}</div>
+                      <div className="text-xs text-muted-foreground">{company.industry}</div>
                     )}
                   </div>
                 ))
