@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -18,7 +18,10 @@ import {
   Briefcase,
   Calculator,
   LogOut,
-  Shield
+  Shield,
+  Bell,
+  X,
+  MessageCircle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/header";
@@ -29,6 +32,9 @@ import TimesheetForm from "@/components/forms/timesheet-form";
 import DashboardCharts from "@/components/analytics/dashboard-charts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Notification } from "@shared/schema";
 
 interface FinancialSummary {
   totalIncome: number;
@@ -55,7 +61,10 @@ interface CardItem {
 export default function Dashboard() {
   const [location, setLocation] = useLocation();
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Navigation cards state for drag and drop  
   const [navCards, setNavCards] = useState(() => {
@@ -100,6 +109,24 @@ export default function Dashboard() {
     queryKey: ["/api/financial-summary"],
   });
 
+  // Notifications query
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ["/api/notifications"],
+    refetchInterval: 5000, // Poll every 5 seconds
+  });
+
+  // Mark notification as read mutation
+  const markNotificationAsReadMutation = useMutation({
+    mutationFn: (notificationId: string) =>
+      apiRequest(`/api/notifications/${notificationId}/read`, "PATCH"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    },
+    onError: () => {
+      console.error("Failed to mark notification as read");
+    },
+  });
+
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
     setNavCards((prevCards) => {
       const newCards = [...prevCards];
@@ -129,7 +156,151 @@ export default function Dashboard() {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="min-h-screen bg-dark-primary text-white">
-        <Header />
+        <header className="flex justify-between items-center p-4 bg-dark-primary border-b border-dark-accent">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold text-white">PuantajPro</h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {/* Notifications */}
+            {notifications.filter(n => !n.isRead).length > 0 && (
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-white hover:bg-dark-accent relative"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {notifications.filter(n => !n.isRead).length}
+                  </span>
+                </Button>
+                
+                {showNotifications && (
+                  <div className="absolute top-full right-0 mt-2 w-80 bg-dark-secondary border border-dark-accent rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                    <div className="p-4 border-b border-dark-accent">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-white font-semibold">Bildirimler</h3>
+                        <div className="flex items-center gap-2">
+                          {notifications.filter(n => !n.isRead).length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                notifications.filter(n => !n.isRead).forEach(n => {
+                                  markNotificationAsReadMutation.mutate(n.id);
+                                });
+                              }}
+                              className="text-xs text-blue-400 hover:text-blue-300"
+                            >
+                              Tümünü okundu işaretle
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowNotifications(false)}
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-gray-400">
+                          Henüz bildirim yok
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <div 
+                            key={notification.id} 
+                            className={`p-4 border-b border-dark-accent/50 hover:bg-dark-primary/50 cursor-pointer ${
+                              !notification.isRead ? 'bg-blue-600/10' : ''
+                            }`}
+                            onClick={() => {
+                              if (!notification.isRead) {
+                                markNotificationAsReadMutation.mutate(notification.id);
+                              }
+                              
+                              if (notification.type === 'NEW_DM' && notification.payload) {
+                                const payload = notification.payload as any;
+                                setLocation("/company-directory");
+                                setShowNotifications(false);
+                                toast({
+                                  title: "Mesaja Yönlendiriliyor",
+                                  description: `${payload.fromCompanyName} firmasından gelen mesaj`,
+                                });
+                              }
+                            }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0">
+                                {notification.type === 'NEW_DM' ? (
+                                  <MessageCircle className="h-5 w-5 text-blue-400" />
+                                ) : (
+                                  <Bell className="h-5 w-5 text-blue-400" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                {notification.type === 'NEW_DM' && notification.payload && (
+                                  <>
+                                    <div className="text-white font-medium">
+                                      {(notification.payload as any).fromCompanyName}
+                                    </div>
+                                    <div className="text-gray-300 text-sm mt-1 truncate">
+                                      {(notification.payload as any).message}
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      {new Date(notification.createdAt).toLocaleString('tr-TR')}
+                                    </div>
+                                  </>
+                                )}
+                                {!notification.isRead && (
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* User info */}
+            {user && (
+              <div className="flex items-center gap-2 text-white text-sm">
+                <span>{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
+              </div>
+            )}
+
+            {/* Logout button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-dark-accent"
+              onClick={() => {
+                localStorage.removeItem('sessionId');
+                queryClient.clear();
+                toast({
+                  title: "Başarıyla çıkış yapıldı",
+                  description: "Güle güle!",
+                });
+                setTimeout(() => {
+                  window.location.href = "/";
+                }, 500);
+              }}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Çıkış
+            </Button>
+          </div>
+        </header>
       
 
 
