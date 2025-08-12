@@ -2402,9 +2402,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const thread = await storage.getOrCreateDirectThread(firmId, targetCompanyId);
       console.log("Thread created/found:", thread);
       
-      // Refresh threads after creation
-      queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
-      
       res.json(thread);
     } catch (error) {
       console.error("Thread creation error:", error);

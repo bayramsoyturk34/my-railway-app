@@ -1797,7 +1797,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(directThreads.lastMessageAt));
   }
 
-  async getDirectThreadsByUserId(userId: string): Promise<DirectThread[]> {
+  async getDirectThreadsByUserId(userId: string): Promise<any[]> {
     // Get user's company first
     const userCompanies = await this.getCompanyDirectoryByUserId(userId);
     if (userCompanies.length === 0) {
@@ -1805,7 +1805,35 @@ export class DatabaseStorage implements IStorage {
     }
     
     const userCompanyId = userCompanies[0].id;
-    return await this.getDirectThreads(userCompanyId);
+    const threads = await this.getDirectThreads(userCompanyId);
+    
+    // Enrich threads with participant information
+    const enrichedThreads = await Promise.all(
+      threads.map(async (thread) => {
+        // Determine other company ID
+        const otherCompanyId = thread.firm1Id === userCompanyId ? thread.firm2Id : thread.firm1Id;
+        
+        // Get other company details
+        const otherCompany = await this.getCompany(otherCompanyId);
+        
+        // Get last message
+        const messages = await this.getDirectThreadMessages(thread.id, 0, 1);
+        const lastMessage = messages.length > 0 ? messages[0] : null;
+        
+        return {
+          ...thread,
+          participants: [{
+            userId: "other", // We don't track individual user IDs in DirectThread
+            companyId: otherCompanyId,
+            company: otherCompany
+          }],
+          lastMessage,
+          lastMessageAt: lastMessage?.createdAt || thread.lastMessageAt
+        };
+      })
+    );
+    
+    return enrichedThreads;
   }
 
   async getDirectThreadMessages(threadId: string, offset = 0, limit = 50): Promise<DirectMessage[]> {
