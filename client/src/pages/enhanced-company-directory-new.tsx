@@ -315,9 +315,12 @@ export default function EnhancedCompanyDirectory() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: (data: { body?: string; attachmentUrl?: string; attachmentType?: string }) =>
-      apiRequest(`/api/threads/${activeThread}/messages`, "POST", data),
-    onSuccess: () => {
+    mutationFn: (data: { body?: string; attachmentUrl?: string; attachmentType?: string }) => {
+      console.log("sendMessageMutation running with data:", data, "activeThread:", activeThread);
+      return apiRequest(`/api/threads/${activeThread}/messages`, "POST", data);
+    },
+    onSuccess: (response) => {
+      console.log("Message sent successfully:", response);
       queryClient.invalidateQueries({ queryKey: ["/api/threads", activeThread, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
       setMessageText("");
@@ -328,7 +331,8 @@ export default function EnhancedCompanyDirectory() {
         body: "",
       }).catch(() => {});
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Message send error:", error);
       toast({ title: "Hata", description: "Mesaj gönderilemedi", variant: "destructive" });
     },
   });
@@ -385,8 +389,14 @@ export default function EnhancedCompanyDirectory() {
 
   // Event handlers
   const handleSendMessage = () => {
-    if ((!messageText.trim() && !uploadingImage) || !activeThread) return;
+    console.log("handleSendMessage called", { messageText, activeThread, uploadingImage });
     
+    if ((!messageText.trim() && !uploadingImage) || !activeThread) {
+      console.log("Validation failed - no message or thread");
+      return;
+    }
+    
+    console.log("Sending message via mutation");
     sendMessageMutation.mutate({ 
       body: messageText.trim(),
       attachmentType: "text" 

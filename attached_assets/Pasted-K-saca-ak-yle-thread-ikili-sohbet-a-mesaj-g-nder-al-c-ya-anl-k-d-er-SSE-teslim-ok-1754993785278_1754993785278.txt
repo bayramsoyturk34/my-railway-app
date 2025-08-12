@@ -1,0 +1,185 @@
+Kısaca akış şöyle: “thread (ikili sohbet)” aç → mesaj gönder → alıcıya anlık düşer (SSE) → teslim/okundu durumları güncellenir → bildirimler çalışır. Aşağıya işleyişi hem mantıksal hem de pratik istek/yanıt örnekleriyle özetledim.
+
+1) Kimlik & Yetki
+Tüm uçlar JWT ile çalışır (login sonrası tarayıcı cookie).
+
+Her kullanıcı bir firmaya bağlıdır; her thread tam iki firma arasında olur.
+
+2) Rehberden Mesaj Başlatma (Thread açma)
+Kullanıcı, Rehber sayfasında PRO bir firmayı seçer → “Mesaj Gönder”.
+
+İstek: POST /api/threads/open { "targetFirmId": "<FIRMA_ID>" }
+
+Zaten bir konuşma varsa aynı threadId döner; yoksa yeni oluşturulur.
+
+Yanıt (özet):
+
+json
+Kopyala
+Düzenle
+{ "id":"thr_123", "otherFirm": { "id":"firm_B", "displayName":"B Şti." }, "unreadCount":0 }
+3) Mesaj Gönderme (metin / resim)
+Metin: POST /api/threads/:id/messages { "body":"Merhaba!" }
+
+Resim:
+
+POST /api/upload-image ile dosyayı yükle → { "url": "...", "thumbUrl":"..." }
+
+Sonra:
+POST /api/threads/:id/messages { "attachmentUrl":"...", "attachmentType":"image", "body":"" }
+
+Gönderdikten sonra:
+
+Alıcı blokladıysa 403.
+
+Başarılıysa mesaj kaydolur, ve SSE ile alıcının tarayıcısına NEW_DM eventi düşer.
+
+4) Anlık Bildirim (SSE)
+Frontend login olduğunda bağlanır: new EventSource("/api/events")
+
+Olası eventler:
+
+NEW_DM { threadId, messageId, preview, senderFirmId }
+
+DM_DELIVERED { threadId, messageId }
+
+DM_READ { threadId, messageId }
+
+PRESENCE_UPDATE { userId, online, lastSeen }
+
+İsteğe bağlı e-posta bildirimi (SMTP env varsa) de tetiklenir.
+
+5) Teslim / Okundu Durumları
+Teslim (DELIVERED): Alıcı konuşmayı veya mevcut thread’i açıp mesaj listesini çektiğinde sunucu, o thread’de karşıdan gelen okunmamış mesajları DELIVERED yapar ve DM_DELIVERED yayınlar.
+
+İstek: GET /api/threads/:id (sayfalama destekler)
+
+Okundu (READ): Alıcı bir mesajı gerçekten okuduğunda:
+
+POST /api/messages/:id/read → mesaj READ olur, gönderene DM_READ eventi gider.
+
+Mesaj nesnesi basitçe:
+{ id, threadId, senderFirmId, body, attachmentUrl?, delivery:"SENT|DELIVERED|READ", createdAt }
+
+6) Taslak (draft) Kaydetme
+Sohbet kutusunda yazarken client, debounced olarak şunu atar:
+POST /api/drafts/upsert { "threadId":"thr_123", "body":"...yazıyorum..." }
+
+Geri geldiğinde: GET /api/drafts/thr_123 ile kaldığı yer yüklenir.
+
+7) Otomatik Yanıt (Auto-responder)
+Firma bazlı kuralları ADMIN belirler:
+POST /api/autoresponder { enabled:true, mode:"KEYWORD", keywords:["fiyat","teklif"], messageBody:"Merhaba, mesajınızı aldık." }
+
+Yeni mesaj gelince backend şu sırayla kontrol eder:
+
+ALWAYS → her yeni gönderende 1 kez/cooldown
+
+KEYWORD → içerikte anahtar sözcük varsa
+
+OFFHOURS → mesai dışındaysa
+
+Koşul sağlanırsa aynı thread’e firma adına otomatik cevap mesajı düşer.
+
+8) Çevrimiçi / Son Görülme
+İstemci 30 sn’de bir: POST /api/presence/heartbeat
+
+Kural: now - lastHeartbeat <= PRESENCE_TTL_SECONDS → online, değilse offline; son görülme = lastHeartbeat.
+
+Gizlilik: Presence sadece aynı firmadaki kullanıcılar ve aktif sohbet ortağınız için görünür (rehberde genel görünmez).
+
+9) Engelle / Sessize Al / Şikayet
+Engelle: POST /api/blocks { targetFirmId } → bundan sonra bu firmadan mesaj gelmez (403).
+
+Sessize al: POST /api/mutes { targetFirmId } → mesaj gelir ama bildirim üretmez.
+
+Şikayet: POST /api/reports { targetFirmId, reason, messageSample? } → moderasyona düşer.
+
+10) Oran Sınırlama (Rate Limit) & Güvenlik
+Mesaj: ~30/dk (burst 5) aşımlarda 429.
+
+Görsel yükleme: max MAX_IMAGE_MB, MIME whitelist (png/jpg/webp). EXIF temizlenir, dosya adı random.
+
+Thread iki firma arasında tekildir; her istekte RBAC ve firmalar arası izolasyon yapılır.
+
+Hızlı API Örnekleri (curl)
+Thread aç:
+
+bash
+Kopyala
+Düzenle
+curl -X POST /api/threads/open \
+  -H "Content-Type: application/json" \
+  -b cookie.jar -c cookie.jar \
+  -d '{ "targetFirmId":"firm_B" }'
+Mesaj gönder (metin):
+
+bash
+Kopyala
+Düzenle
+curl -X POST /api/threads/thr_123/messages \
+  -H "Content-Type: application/json" \
+  -b cookie.jar -c cookie.jar \
+  -d '{ "body":"Merhaba, teklifinizi iletebilir misiniz?" }'
+Resim yükle → mesaj gönder:
+
+bash
+Kopyala
+Düzenle
+curl -X POST /api/upload-image \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/path/foto.jpg" \
+  -b cookie.jar -c cookie.jar
+# dönen url/ thumbUrl ile:
+curl -X POST /api/threads/thr_123/messages \
+  -H "Content-Type: application/json" \
+  -b cookie.jar -c cookie.jar \
+  -d '{ "attachmentUrl":"https://.../foto.jpg", "attachmentType":"image", "body":"" }'
+Mesajları çek (teslim olur):
+
+bash
+Kopyala
+Düzenle
+curl -X GET /api/threads/thr_123 \
+  -b cookie.jar -c cookie.jar
+Okundu işaretle:
+
+bash
+Kopyala
+Düzenle
+curl -X POST /api/messages/msg_999/read \
+  -b cookie.jar -c cookie.jar
+Taslak kaydet/yükle:
+
+bash
+Kopyala
+Düzenle
+curl -X POST /api/drafts/upsert \
+  -H "Content-Type: application/json" \
+  -b cookie.jar -c cookie.jar \
+  -d '{ "threadId":"thr_123", "body":"...yazıyorum..." }'
+
+curl -X GET /api/drafts/thr_123 -b cookie.jar -c cookie.jar
+Heartbeat (presence):
+
+bash
+Kopyala
+Düzenle
+curl -X POST /api/presence/heartbeat \
+  -H "Content-Type: application/json" \
+  -d '{ "clientInfo":"Chrome 139 / Windows" }' \
+  -b cookie.jar -c cookie.jar
+UI’de nasıl görünecek?
+Directory: PRO firmalar listesi → “Mesaj gönder”.
+
+Messages:
+
+Sol: Thread listesi (son mesaj, okunmamış badge, küçük görsel thumb’ı).
+
+Orta: Sohbet (metin + resim balonları, auto-reply farklı rozetle).
+
+Alt: Mesaj kutusu (taslak kaydı), Resim ekle butonu, Ctrl+Enter gönder.
+
+Sağ: Karşı firmanın mini profili, Son görülme bilgisi, Engelle/Sessize/Şikayet.
+
+İstersen sana Replit’e tek parça yapıştırmalık “kurulum + seed + Postman koleksiyonu” içeren kısa bir “Test Planı” da hazırlayayım; açıp hemen tıklayarak tüm akışı uçtan uca test edebilirsin.
