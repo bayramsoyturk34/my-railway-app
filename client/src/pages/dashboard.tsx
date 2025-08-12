@@ -261,10 +261,10 @@ export default function Dashboard() {
                                 {(notification.type === 'NEW_MESSAGE' || notification.type === 'NEW_DM') && notification.payload ? (
                                   <>
                                     <div className="text-white font-medium">
-                                      {(notification.payload as any).fromCompanyName || notification.title || 'Yeni Mesaj'}
+                                      {(notification.payload as any).fromCompanyName || 'Yeni Mesaj'}
                                     </div>
                                     <div className="text-gray-300 text-sm mt-1 truncate">
-                                      {notification.content || (notification.payload as any).message || 'Mesaj içeriği'}
+                                      {(notification.payload as any).message || 'Mesaj içeriği'}
                                     </div>
                                     <div className="text-xs text-gray-500 mt-1">
                                       {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
@@ -273,10 +273,10 @@ export default function Dashboard() {
                                 ) : (
                                   <>
                                     <div className="text-white font-medium">
-                                      {notification.title || 'Bildirim'}
+                                      {(notification.payload as any)?.title || 'Bildirim'}
                                     </div>
                                     <div className="text-gray-300 text-sm mt-1 truncate">
-                                      {notification.content || 'Bildirim içeriği'}
+                                      {(notification.payload as any)?.content || 'Bildirim içeriği'}
                                     </div>
                                     <div className="text-xs text-gray-500 mt-1">
                                       {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
