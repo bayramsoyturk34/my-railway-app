@@ -233,25 +233,27 @@ export default function EnhancedCompanyDirectory() {
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Mesaj
                     </Button>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingEntry(company);
-                          setShowDirectoryForm(true);
-                        }}
-                      >
-                        Düzenle
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteCompanyMutation.mutate(company.id)}
-                      >
-                        Sil
-                      </Button>
-                    </div>
+                    {myCompanies.some(myComp => myComp.id === company.id) && (
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingEntry(company);
+                            setShowDirectoryForm(true);
+                          }}
+                        >
+                          Düzenle
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteCompanyMutation.mutate(company.id)}
+                        >
+                          Sil
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
