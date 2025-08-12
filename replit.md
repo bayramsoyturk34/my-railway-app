@@ -1,124 +1,6 @@
 # Overview
 
-PuantajPro is a Turkish personnel timesheet and project management application. It's a full-stack web application that helps businesses track employee work hours, manage projects, handle financial transactions, and maintain personnel records. The application features a dark-themed interface with Turkish language support and includes comprehensive CRUD operations for managing personnel, timesheets, projects, and financial data.
-
-## Recent Changes (August 2025)
-- ✅ Fixed customer search functionality in customer management page
-- ✅ Implemented drag-and-drop navigation cards on dashboard
-- ✅ Resolved SelectItem empty value prop errors in advanced filters
-- ✅ Dashboard navigation cards: Puantaj Yaz, Personeller, Verilen Projeler, Kasa, Müşteriler, Raporlar
-- ✅ Real-time data updates working properly with React Query cache invalidation
-- ✅ Simplified dashboard card titles and removed customer data from cash management
-- ✅ Updated timesheet form with customer selection and work type (TAM/YARIM/MESAİ)
-- ✅ Removed overtime 50% bonus - mesai now uses normal hourly rate
-- ✅ Converted personnel management to individual card layout (tekil kartlar)
-- ✅ Added personnel detail pages with dedicated routes (/personnel/:id)
-- ✅ Implemented personnel detail page with tabs: Puantaj, Hakediş, Ödeme
-- ✅ Fixed date formatting issues in personnel detail views
-- ✅ Migrated from memory storage to PostgreSQL database for data persistence
-- ✅ Removed "Personel Aktivitesi" and "Günlük Aktivite" charts from analytics dashboard
-- ✅ **Multi-Item Quote System**: Transformed customer quotes to support multiple tasks per quote
-  - Added customerQuoteItems table for individual quote line items
-  - Enhanced quote form UI with item addition/removal functionality
-  - Implemented automatic total calculation for multi-task quotes
-  - Updated backend storage layer for multi-item quote operations
-  - Added unit selection (adet, m², m) for each quote item
-  - Implemented edit/delete functionality for quote items
-  - Added professional quote form design with detailed sections
-  - Implemented Excel (CSV) and PDF export functionality
-  - Enhanced form with visual feedback and better UX
-- ✅ **Turkish Character Support**: Fixed Turkish character encoding issues throughout the application
-  - Added character conversion for PDF exports (ş→s, ğ→g, ı→i, ç→c, ü→u, ö→o)
-  - Ensured proper display of Turkish characters in all export formats
-  - Fixed filename encoding for downloaded files
-- ✅ **Editable Quote Terms**: Made quote terms section fully customizable
-  - Added dynamic quote terms with add/remove functionality
-  - Integrated editable terms with PDF exports
-  - Users can now customize standard quote conditions per their business needs
-- ✅ **Quote Creation System**: Fully resolved and enhanced quote creation functionality
-  - Fixed critical API response serialization bug in apiRequest function
-  - Server successfully creates quotes and returns proper JSON responses to frontend
-  - Quote items now create successfully with correct quoteId linking
-  - Enhanced debugging capabilities with comprehensive server logging
-  - System now supports decimal quantities (e.g., 1.3, 2.5) for quote items
-  - Updated database schema to use decimal precision for quantities
-  - Improved quantity display formatting in UI, PDF exports, and CSV exports
-- ✅ **Quote Approval Task Creation System**: Comprehensive fix for duplicate task creation and VAT handling
-  - Eliminated duplicate task creation when quotes are approved (August 10, 2025)
-  - Implemented duplicate prevention mechanism checking existing tasks by customer and title
-  - Fixed VAT-inclusive amount calculation for approved quote tasks
-  - Tasks now correctly use totalWithVAT for VAT-enabled quotes, totalAmount for VAT-disabled quotes
-  - Individual quote item approval no longer creates automatic tasks - only full quote approval creates tasks
-  - Enhanced logging system for debugging task creation process
-  - Database cleanup performed to remove duplicate entries and correct VAT amounts
-- ✅ **Task Form VAT Display Fix**: Corrected VAT-exclusive vs VAT-inclusive amount display (August 10, 2025)
-  - Fixed "Ana Tutar" to show VAT-exclusive amounts, "Toplam Tutar" to show VAT-inclusive amounts
-  - Updated task creation form to properly calculate and store VAT amounts
-  - Enhanced task editing form to correctly populate quantity, unitPrice, and unit fields from approved quotes
-  - Improved VAT calculation logic for both new task creation and existing task editing
-- ✅ **Company Directory System**: Complete company directory with messaging infrastructure (August 10, 2025)
-  - Implemented database schema for companyDirectory, messages, and conversations tables
-  - Created comprehensive backend API endpoints for CRUD operations
-  - Built responsive frontend with company listing, search, and form functionality
-  - Added company directory navigation card to dashboard
-  - Fixed ES modules import issues in backend routes
-  - Optimized form dialog size for better user experience
-  - **Active Messaging System**: Real-time messaging functionality fully operational
-    * Professional chat interface with bubble design and timestamps
-    * Auto-scroll to new messages and Enter key message sending
-    * Real-time message polling every 3 seconds for live updates
-    * Bidirectional messaging between current user and companies
-    * Message persistence in PostgreSQL database
-- ✅ **Authentication System**: Complete user registration and login system (August 11, 2025)
-  - Migrated from Replit Auth to custom email/password authentication system
-  - Implemented LocalStorage-based session management due to Replit cookie limitations
-  - Added user registration functionality with email/password
-  - Created dedicated login and register pages with form validation
-  - Enhanced landing page with multiple login options (Demo, Login, Register)
-  - Updated database schema with password field for users table
-  - Maintained secure session management with Authorization headers
-  - Users can now register with different accounts and login independently
-- ✅ **Role-Based Admin System**: Complete administrative panel with access control (August 11, 2025)
-  - Added isAdmin boolean field to users table for role management
-  - Implemented admin-only navigation card visibility in dashboard
-  - Created comprehensive admin dashboard with user statistics and management
-  - Added backend API endpoints with proper admin authorization checks
-  - Admin panel shows user listings, search functionality, and system statistics
-  - Admin privileges restricted to designated administrator accounts only
-  - Automatic redirection for non-admin users attempting to access admin routes
-- ✅ **Complete Data Isolation System**: Comprehensive user data separation (August 11, 2025)
-  - Fixed critical security issue where users could see other users' data
-  - Implemented user ID filtering across all API endpoints and storage methods
-  - Enhanced financial summary to display user-specific data only
-  - Added authentication checks to all data retrieval operations
-  - New user registration now starts with completely empty dashboards
-  - Each user now has complete data isolation with their own separate workspace
-  - **Fixed Timesheet Creation**: Resolved timesheet creation failures with proper userId handling
-    * Extended Zod validation schema to include userId field for server-side validation
-    * Timesheet creation now works perfectly with user isolation
-    * Each user can only create and view their own timesheet records
-- ✅ **Company Directory Multi-User Communication System**: Enhanced messaging with proper access control (August 11, 2025)
-  - Company Directory shows all users' companies for inter-company communication
-  - Message isolation: Users can only see messages they sent or received
-  - Enhanced messaging API with user authentication and filtering
-  - Added userId-based message storage and retrieval methods
-  - Companies remain visible to all users to enable business networking
-  - Messages are properly isolated per user for privacy and security
-- ✅ **Persistent Session Management System**: Database-based authentication for reliable user experience (August 11, 2025)
-  - **Eliminated Repeated Login Issues**: Fixed session persistence problems that forced users to login repeatedly
-  - **PostgreSQL Session Storage**: Migrated from in-memory to database-based session storage 
-  - **30-Day Session Duration**: Extended session validity to 30 days for better user experience
-  - **Server Restart Immunity**: Sessions now survive server restarts and redeploys
-  - **Removed Page Reloads**: Eliminated unnecessary page refreshes during authentication
-  - **Automatic Session Cleanup**: Implemented database cleanup for expired sessions
-  - Users can now login once and stay logged in for weeks without interruption
-- ✅ **Authentication & Payment Systems Fix**: Critical authentication and payment processing fixes (August 12, 2025)
-  - **Fixed Signed Cookie Parsing**: Resolved authentication failures caused by signed cookie decoding issues
-  - **Personnel Payment System**: Fixed duplicate transaction creation, now properly creates single expense entries
-  - **Contractor Payment System**: Implemented complete contractor payment workflow with automatic kasa entries
-  - **Authentication Middleware**: Fixed authentication middleware to properly handle both signed cookies and Authorization headers
-  - **User Data Isolation**: Ensured all payment operations respect user-specific data boundaries
-  - **Automatic Cash Management**: Both personnel and contractor payments now automatically create corresponding expense transactions
+PuantajPro is a full-stack web application designed for personnel timesheet and project management, primarily for businesses in Turkey. It enables tracking employee work hours, managing projects, handling financial transactions, and maintaining personnel records. Key features include a dark-themed interface with Turkish language support, comprehensive CRUD operations, a multi-item quote system, an integrated company directory with messaging, and a robust authentication and administrative system with data isolation. The business vision is to provide a comprehensive, user-friendly solution for managing various aspects of business operations efficiently.
 
 # User Preferences
 
@@ -127,66 +9,80 @@ Preferred communication style: Simple, everyday language.
 # System Architecture
 
 ## Frontend Architecture
-- **Framework**: React 18 with TypeScript using Vite as the build tool
-- **Routing**: Client-side routing with Wouter library for lightweight navigation
-- **UI Framework**: Custom component library built on Radix UI primitives with Tailwind CSS
-- **Design System**: shadcn/ui components with dark theme as default, using CSS custom properties for theming
-- **State Management**: TanStack Query (React Query) for server state management and caching
-- **Form Handling**: React Hook Form with Zod validation for type-safe form validation
-- **Styling**: Tailwind CSS with custom color scheme including gradient utilities and dark mode support
+- **Framework**: React 18 with TypeScript, using Vite.
+- **Routing**: Client-side routing with Wouter.
+- **UI Framework**: Custom components based on Radix UI primitives and shadcn/ui, styled with Tailwind CSS.
+- **Design System**: Dark theme as default with CSS custom properties for theming.
+- **State Management**: TanStack Query (React Query) for server state management and caching.
+- **Form Handling**: React Hook Form with Zod for validation.
+- **Styling**: Tailwind CSS with custom color scheme and gradient utilities.
 
 ## Backend Architecture
-- **Runtime**: Node.js with Express.js framework
-- **Language**: TypeScript with ES modules
-- **API Design**: RESTful API architecture with consistent endpoint patterns
-- **Request Handling**: Express middleware for JSON parsing, URL encoding, and request logging
-- **Error Handling**: Centralized error handling middleware with proper HTTP status codes
-- **Development**: Hot module replacement via Vite integration for seamless development experience
+- **Runtime**: Node.js with Express.js.
+- **Language**: TypeScript with ES modules.
+- **API Design**: RESTful API with consistent endpoint patterns.
+- **Request Handling**: Express middleware for JSON parsing and URL encoding.
+- **Error Handling**: Centralized error handling.
 
 ## Data Architecture
-- **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
-- **Schema Definition**: Centralized schema definitions in shared directory using Drizzle and Zod
-- **Data Validation**: Input validation using Zod schemas for both client and server
-- **Storage Layer**: Abstract storage interface allowing for flexible database implementations
-- **Migrations**: Database migrations managed through Drizzle Kit
+- **Database**: PostgreSQL with Drizzle ORM for type-safe operations.
+- **Schema Definition**: Centralized schema definitions using Drizzle and Zod.
+- **Data Validation**: Input validation using Zod schemas.
+- **Storage Layer**: Abstract storage interface for flexibility.
+- **Migrations**: Database migrations managed by Drizzle Kit.
 
 ## Core Data Models
-- **Personnel**: Employee records with personal information, positions, and status tracking
-- **Projects**: Project management with client information, financial details, and status tracking
-- **Timesheets**: Work hour tracking linked to personnel with date, time ranges, and notes
-- **Transactions**: Financial record keeping for income and expenses with categorization
-- **Notes**: General note-taking functionality
-- **Contractors**: External contractor management
+- **Personnel**: Employee records.
+- **Projects**: Project management with client and financial details.
+- **Timesheets**: Work hour tracking.
+- **Transactions**: Financial records (income/expenses).
+- **Notes**: General note-taking.
+- **Contractors**: External contractor management.
+- **Quotes**: Multi-item customer quote system with detailed line items and calculations.
+- **Company Directory**: Company listings for inter-company communication.
+- **Messages**: Real-time messaging and conversation storage.
+- **Users**: User authentication, roles, and session management.
 
 ## Authentication & Security
-- Currently implements basic session-based architecture preparation
-- Request validation through Zod schemas
-- Type-safe API contracts between frontend and backend
+- Custom email/password authentication system.
+- Role-based access control with an admin system.
+- Complete user data isolation, ensuring users only access their own data.
+- Persistent session management using database storage.
+- Request validation via Zod schemas and type-safe API contracts.
+
+## Key Features Implemented
+- Multi-Item Quote System with Excel/PDF export and editable terms.
+- Robust Authentication and Role-Based Admin System.
+- Comprehensive Data Isolation ensuring user-specific data.
+- Company Directory with Real-time Messaging.
+- Persistent Session Management.
+- Integrated Personnel and Contractor Payment Systems with automatic cash management.
+- Enhanced Messaging Notification System with direct routing.
+- Turkish character support throughout the application, including exports.
 
 # External Dependencies
 
 ## Database
-- **Neon Database**: Serverless PostgreSQL database hosting
-- **Drizzle ORM**: Type-safe ORM with schema-first approach
-- **connect-pg-simple**: PostgreSQL session store for Express sessions
+- **Neon Database**: Serverless PostgreSQL hosting.
+- **Drizzle ORM**: Type-safe ORM.
+- **connect-pg-simple**: PostgreSQL session store.
 
 ## UI & Styling
-- **Radix UI**: Accessible, unstyled UI primitives for complex components
-- **Tailwind CSS**: Utility-first CSS framework for styling
-- **Lucide React**: Icon library for consistent iconography
-- **Inter Font**: Typography via Google Fonts
+- **Radix UI**: Accessible UI primitives.
+- **Tailwind CSS**: Utility-first CSS framework.
+- **Lucide React**: Icon library.
+- **Inter Font**: Typography via Google Fonts.
 
 ## Development Tools
-- **Vite**: Build tool and development server with HMR
-- **TypeScript**: Static type checking and enhanced developer experience
-- **ESBuild**: Fast JavaScript bundler for production builds
-- **PostCSS**: CSS processing with Autoprefixer
+- **Vite**: Build tool and development server.
+- **TypeScript**: Static type checking.
+- **ESBuild**: Fast JavaScript bundler.
+- **PostCSS**: CSS processing.
 
 ## State Management & API
-- **TanStack Query**: Server state management, caching, and synchronization
-- **React Hook Form**: Form state management and validation
-- **Zod**: Runtime type validation and schema definition
+- **TanStack Query**: Server state management.
+- **React Hook Form**: Form state management.
+- **Zod**: Runtime type validation.
 
 ## Development Environment
-- **Replit Integration**: Development environment optimizations for Replit platform
-- **Runtime Error Overlay**: Enhanced error reporting during development
+- **Replit Integration**: Optimizations for the Replit platform.
