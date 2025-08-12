@@ -27,13 +27,9 @@ import AdminDashboard from "@/pages/admin-dashboard";
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const hasSessionId = !!localStorage.getItem('sessionId');
+  const [location] = useLocation();
 
-  console.log("Router Debug:", { 
-    isAuthenticated, 
-    isLoading, 
-    hasSessionId,
-    user: user ? `${user.email} (${user.id})` : 'null'
-  });
+  // Debug removed - routing now stable
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -47,34 +43,38 @@ function Router() {
   // Show authenticated routes if we have both session and user data
   const shouldShowAuthenticatedRoutes = isAuthenticated && user && hasSessionId;
 
+  // Direct rendering for unauthenticated users
+  if (!shouldShowAuthenticatedRoutes) {
+    return (
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route path="/register" component={Register} />
+        <Route component={Landing} />
+      </Switch>
+    );
+  }
+
+  // For authenticated users, prioritize dashboard for root path
+  if (location === "/") {
+    return <Dashboard />;
+  }
+
   return (
     <Switch>
-      {!shouldShowAuthenticatedRoutes ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
-          <Route component={Landing} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Dashboard} />
-          <Route path="/personnel" component={Personnel} />
-          <Route path="/personnel/:id" component={PersonnelDetail} />
-          <Route path="/timesheet" component={Timesheet} />
-          <Route path="/projects" component={Projects} />
-          <Route path="/projects/:id" component={ProjectDetail} />
-          <Route path="/finances" component={Finances} />
-          <Route path="/customers" component={Customers} />
-          <Route path="/customers/:customerName" component={CustomerDetail} />
-          <Route path="/company-directory" component={EnhancedCompanyDirectory} />
-          <Route path="/enhanced-company-directory" component={EnhancedCompanyDirectory} />
-          <Route path="/messages" component={Messages} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/admin" component={AdminDashboard} />
-          <Route component={NotFound} />
-        </>
-      )}
+      <Route path="/personnel/:id" component={PersonnelDetail} />
+      <Route path="/personnel" component={Personnel} />
+      <Route path="/timesheet" component={Timesheet} />
+      <Route path="/projects/:id" component={ProjectDetail} />
+      <Route path="/projects" component={Projects} />
+      <Route path="/finances" component={Finances} />
+      <Route path="/customers/:customerName" component={CustomerDetail} />
+      <Route path="/customers" component={Customers} />
+      <Route path="/company-directory" component={EnhancedCompanyDirectory} />
+      <Route path="/enhanced-company-directory" component={EnhancedCompanyDirectory} />
+      <Route path="/messages" component={Messages} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route component={Dashboard} />
     </Switch>
   );
 }
