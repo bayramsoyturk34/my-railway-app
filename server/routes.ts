@@ -1983,7 +1983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req as any).user.id;
       
       // Kullanıcının firmalarını al
-      const userCompanies = await storage.getCompanyDirectoryByUser(userId);
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
       const fromCompanyId = userCompanies?.[0]?.id || "";
       
       // Frontend'den gelen veri: { receiverFirmId, body }
