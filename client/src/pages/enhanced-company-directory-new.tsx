@@ -321,6 +321,7 @@ export default function EnhancedCompanyDirectory() {
     },
     onSuccess: (response) => {
       console.log("Message sent successfully:", response);
+      // Use the exact same query key format as the messages query
       queryClient.invalidateQueries({ queryKey: ["/api/threads", activeThread, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
       setMessageText("");

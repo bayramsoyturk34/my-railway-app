@@ -1,0 +1,35 @@
+
+> rest-express@1.0.0 dev
+10:40:11 AM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Auth successful for user: eynffxrvr1e
+10:40:17 AM [express] GET /api/auth/user 304 in 399ms :: {"id":"eynffxrvr1e","email":"modacizimtasari…
+10:40:17 AM [express] GET /api/directory/firms 304 in 260ms :: [{"id":"ff71cf53-f9b4-4fcc-8437-1aba3c…
+10:40:17 AM [express] POST /api/presence/heartbeat 200 in 303ms :: {"success":true}
+10:40:48 AM [express] POST /api/presence/heartbeat 200 in 491ms :: {"success":true}
+10:41:18 AM [express] POST /api/presence/heartbeat 200 in 517ms :: {"success":true}
+Creating thread for userId: eynffxrvr1e targetCompanyId: 84d28281-40c5-4355-b4f1-1a53b95ddaf1
+User company ID: 150dc89b-e83f-44d7-a6d3-413867a18c1c
+Thread created/found: {
+  id: 'cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e',
+  firm1Id: '150dc89b-e83f-44d7-a6d3-413867a18c1c',
+  firm2Id: '84d28281-40c5-4355-b4f1-1a53b95ddaf1',
+  lastMessageAt: null,
+  createdAt: 2025-08-12T09:52:34.493Z
+}
+10:41:34 AM [express] POST /api/threads/create 200 in 430ms :: {"id":"cd851f12-ec8f-4f10-91b6-dcd95bb…
+10:41:35 AM [express] GET /api/threads/cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e/messages 304 in 387ms :: …
+10:41:35 AM [express] GET /api/drafts/cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e 200 in 445ms :: {"body":"h…
+DirectThreads found: 1
+10:41:35 AM [express] GET /api/threads 304 in 479ms :: [{"id":"cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e",…
+10:41:36 AM [express] POST /api/drafts/upsert 200 in 294ms :: {"success":true,"action":"saved","draft…
+10:41:38 AM [express] GET /api/threads/cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e/messages 304 in 176ms :: …
+DirectThreads found: 1
+10:41:38 AM [express] GET /api/threads 304 in 472ms :: [{"id":"cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e",…
+10:41:40 AM [express] POST /api/drafts/upsert 200 in 291ms :: {"success":true,"action":"saved","draft…
+Legacy message endpoint called - threadId: cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e userId: eynffxrvr1e
+Legacy endpoint - Message created: {
+  id: '4f02457e-edcc-410b-b33a-496c1d1aae05',
+  threadId: 'cd851f12-ec8f-4f10-91b6-dcd95bb9bc9e',
