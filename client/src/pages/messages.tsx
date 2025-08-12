@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +20,8 @@ import {
   VolumeX,
   Flag,
   CheckCheck,
-  Check
+  Check,
+  Home
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -595,6 +596,21 @@ export default function Messages() {
 
   return (
     <div className="min-h-screen bg-dark-primary text-white">
+      {/* Header with Home Button */}
+      <div className="border-b bg-background/10 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold">Mesajlar</h1>
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                <Home className="h-4 w-4 mr-2" />
+                Ana Sayfa
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+      
       <div className="container mx-auto p-4 h-[calc(100vh-80px)]">
         <div className={`grid gap-4 h-full ${
           showInfoPanel 
