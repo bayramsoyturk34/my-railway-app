@@ -2008,8 +2008,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const message = await storage.createMessage(messageData);
       
-      // Gönderen firmanın adını al
-      const fromCompany = userCompanies?.find(c => c.id === req.body.fromCompanyId);
+      // Gönderen firmanın adını al  
+      const fromCompany = userCompanies?.[0]; // Kullanıcının kendi firması
       
       // Alıcı için bildirim oluştur
       const notification = {
@@ -2018,8 +2018,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: "Yeni Mesaj",
         content: `${fromCompany?.companyName || 'Bir firma'} size mesaj gönderdi`,
         payload: {
-          fromCompanyId: req.body.fromCompanyId,
-          toCompanyId: req.body.toCompanyId,
+          fromCompanyId: fromCompanyId,
+          toCompanyId: req.body.receiverFirmId,
           messageId: message.id,
           fromCompanyName: fromCompany?.companyName
         }
