@@ -1660,12 +1660,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/threads/:id/messages", isAuthenticated, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const conversationId = req.params.id;
-      const { body, attachment } = req.body;
+      const threadId = req.params.id;
+      const { body, attachment, attachmentUrl, attachmentType } = req.body;
 
-      if (!body && !attachment) {
-        return res.status(400).json({ error: "Message body or attachment is required" });
-      }
+      console.log("Legacy message endpoint called - threadId:", threadId, "userId:", userId);
 
       // Get user's company
       const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
@@ -1675,62 +1673,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userCompanyId = userCompanies[0].id;
 
-      // Get conversation to find target company
-      const conversation = await storage.getConversationById(conversationId);
-      if (!conversation) {
+      // Get DirectThread instead of conversation
+      const currentThread = await storage.getDirectThreadById(threadId);
+      if (!currentThread) {
+        console.log("Thread not found with ID:", threadId);
         return res.status(404).json({ error: "Conversation not found" });
       }
 
-      const targetCompanyId = conversation.company1Id === userCompanyId ? conversation.company2Id : conversation.company1Id;
-
-      // Check if target company blocked the sender
-      const isBlocked = await storage.isCompanyBlocked(targetCompanyId, userCompanyId);
-      if (isBlocked) {
-        return res.status(403).json({ error: "Cannot send message - you are blocked" });
+      // Verify user has access to this thread
+      if (currentThread.firm1Id !== userCompanyId && currentThread.firm2Id !== userCompanyId) {
+        console.log("User firmId:", userCompanyId, "not authorized for thread:", currentThread);
+        return res.status(403).json({ error: "Not authorized to message in this thread" });
       }
 
-      // Get target company owner for notification
-      const targetCompany = await storage.getCompany(targetCompanyId);
-      if (!targetCompany) {
-        return res.status(404).json({ error: "Target company not found" });
-      }
+      const targetCompanyId = currentThread.firm1Id === userCompanyId ? currentThread.firm2Id : currentThread.firm1Id;
 
-      const messageData = {
-        fromUserId: userId,
-        toUserId: targetCompany.userId,
-        fromCompanyId: userCompanyId,
-        toCompanyId: targetCompanyId,
-        message: body || "",
-        attachmentUrl: attachment,
-        messageType: attachment ? "file" : "text"
-      };
+      // Create DirectMessage using new schema
+      const message = await storage.createDirectMessage({
+        threadId,
+        senderFirmId: userCompanyId,
+        receiverFirmId: targetCompanyId,
+        body: body || "",
+        attachmentUrl: attachmentUrl || attachment,
+        attachmentType: attachmentType || (attachment ? "file" : "text")
+      });
 
-      const message = await storage.createMessage(messageData);
-
-      // Update conversation last message
-      await storage.updateConversationLastMessage(conversationId, message.id);
-
-      // Create notification if not muted
-      const isMuted = await storage.isCompanyMuted(targetCompanyId, userCompanyId);
-      if (!isMuted) {
-        await storage.createNotification({
-          userId: targetCompany.userId,
-          type: "NEW_DM",
-          payload: {
-            messageId: message.id,
-            fromCompanyId: userCompanyId,
-            fromCompanyName: userCompanies[0].companyName,
-            message: body
-          }
-        });
-      }
-
-      res.status(201).json(message);
+      console.log("Legacy endpoint - Message created:", message);
+      res.json(message);
     } catch (error) {
-      console.error("Error sending message:", error);
-      res.status(500).json({ error: "Failed to send message" });
+      console.error("Legacy message creation error:", error);
+      res.status(500).json({ error: "Failed to create message" });
     }
   });
+
+
 
   app.post("/api/messages/:id/read", isAuthenticated, async (req, res) => {
     try {
