@@ -2007,6 +2007,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating message with data:", messageData);
       
       const message = await storage.createMessage(messageData);
+      
+      // Alıcı için bildirim oluştur
+      const notification = {
+        userId: userId, // Şimdilik aynı kullanıcı
+        type: "NEW_MESSAGE",
+        payload: {
+          fromCompanyName: userCompanies?.[0]?.companyName,
+          messagePreview: req.body.body.substring(0, 50)
+        }
+      };
+      
+      await storage.createNotification(notification);
       res.status(201).json(message);
     } catch (error) {
       console.error("Error creating message:", error);
