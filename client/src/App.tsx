@@ -24,10 +24,6 @@ import Messages from "@/pages/messages";
 import Reports from "@/pages/reports";
 import AdminDashboard from "@/pages/admin-dashboard";
 
-function DashboardWrapper() {
-  return <Dashboard />;
-}
-
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const hasSessionId = !!localStorage.getItem('sessionId');
@@ -101,9 +97,7 @@ function Router() {
           <Route path="/admin">
             <AdminDashboard />
           </Route>
-          <Route path="/">
-            <DashboardWrapper />
-          </Route>
+          <Route path="/" component={Dashboard} />
           <Route>
             <NotFound />
           </Route>
