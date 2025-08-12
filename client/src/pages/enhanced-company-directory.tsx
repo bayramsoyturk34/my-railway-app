@@ -258,38 +258,38 @@ export default function EnhancedCompanyDirectory() {
                 className="pl-10 bg-dark-primary border-dark-accent text-white"
               />
             </div>
-            <Select value={cityFilter} onValueChange={setCityFilter}>
+            <Select value={cityFilter || "all"} onValueChange={(value) => setCityFilter(value === "all" ? "" : value)}>
               <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
                 <SelectValue placeholder="Şehir seçin" />
               </SelectTrigger>
               <SelectContent className="bg-dark-secondary border-dark-accent">
-                <SelectItem value="">Tüm Şehirler</SelectItem>
+                <SelectItem value="all">Tüm Şehirler</SelectItem>
                 <SelectItem value="İstanbul">İstanbul</SelectItem>
                 <SelectItem value="Ankara">Ankara</SelectItem>
                 <SelectItem value="İzmir">İzmir</SelectItem>
                 <SelectItem value="Bursa">Bursa</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={industryFilter} onValueChange={setIndustryFilter}>
+            <Select value={industryFilter || "all"} onValueChange={(value) => setIndustryFilter(value === "all" ? "" : value)}>
               <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
                 <SelectValue placeholder="Sektör seçin" />
               </SelectTrigger>
               <SelectContent className="bg-dark-secondary border-dark-accent">
-                <SelectItem value="">Tüm Sektörler</SelectItem>
+                <SelectItem value="all">Tüm Sektörler</SelectItem>
                 <SelectItem value="İnşaat">İnşaat</SelectItem>
                 <SelectItem value="Teknoloji">Teknoloji</SelectItem>
                 <SelectItem value="Hizmet">Hizmet</SelectItem>
                 <SelectItem value="Üretim">Üretim</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={verifiedFilter?.toString() || ""} onValueChange={(value) => 
-              setVerifiedFilter(value === "" ? undefined : value === "true")
+            <Select value={verifiedFilter?.toString() || "all"} onValueChange={(value) => 
+              setVerifiedFilter(value === "all" ? undefined : value === "true")
             }>
               <SelectTrigger className="bg-dark-primary border-dark-accent text-white">
                 <SelectValue placeholder="Doğrulama" />
               </SelectTrigger>
               <SelectContent className="bg-dark-secondary border-dark-accent">
-                <SelectItem value="">Tüm Firmalar</SelectItem>
+                <SelectItem value="all">Tüm Firmalar</SelectItem>
                 <SelectItem value="true">Doğrulanmış</SelectItem>
                 <SelectItem value="false">Doğrulanmamış</SelectItem>
               </SelectContent>
