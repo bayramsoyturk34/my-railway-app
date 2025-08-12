@@ -449,9 +449,9 @@ export default function EnhancedCompanyDirectory() {
                         console.log("🔥 Payload:", notification.payload);
                         
                         // Mesaj bildirimi ise mesajlaşma tabını aç
-                        if (notification.type === "NEW_DM") {
+                        if (notification.type === "NEW_MESSAGE" || notification.type === "NEW_DM") {
                           const payload = notification.payload as any;
-                          console.log("🔥 Found NEW_DM notification");
+                          console.log("🔥 Found message notification");
                           console.log("🔥 FromCompanyId:", payload?.fromCompanyId);
                           if (payload?.fromCompanyId) {
                             console.log("🔥 Switching to messaging tab with thread:", payload.fromCompanyId);
@@ -462,7 +462,7 @@ export default function EnhancedCompanyDirectory() {
                             console.log("🔥 No fromCompanyId found in payload");
                           }
                         } else {
-                          console.log("🔥 Not a NEW_DM notification, type is:", notification.type);
+                          console.log("🔥 Not a message notification, type is:", notification.type);
                         }
                         
                         // Bildirimi okundu olarak işaretle
