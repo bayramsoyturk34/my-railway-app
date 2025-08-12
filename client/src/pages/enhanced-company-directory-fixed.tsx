@@ -238,7 +238,7 @@ export default function EnhancedCompanyDirectory() {
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Mesaj
                     </Button>
-                    {userCompanies?.some(myComp => myComp.id === company.id) && (
+                    {userCompanies?.some((myComp: any) => myComp.id === company.id) && (
                       <div className="flex gap-1">
                         <Button
                           variant="ghost"
@@ -325,7 +325,7 @@ export default function EnhancedCompanyDirectory() {
                           </div>
                         ) : (
                           messages.map((message) => {
-                            const isOutgoing = message.fromCompanyId === currentUserFirmId;
+                            const isOutgoing = (message as any).fromCompanyId === currentUserFirmId;
                             return (
                               <div
                                 key={message.id}
@@ -336,13 +336,13 @@ export default function EnhancedCompanyDirectory() {
                                     ? 'bg-primary text-primary-foreground' 
                                     : 'bg-muted text-foreground'
                                 }`}>
-                                  <p>{message.message}</p>
+                                  <p>{(message as any).message || (message as any).content}</p>
                                   <div className="flex items-center gap-1 mt-1">
                                     <span className="text-xs opacity-70">
-                                      {new Date(message.createdAt).toLocaleTimeString('tr-TR', {
+                                      {message.createdAt ? new Date(message.createdAt).toLocaleTimeString('tr-TR', {
                                         hour: '2-digit',
                                         minute: '2-digit'
-                                      })}
+                                      }) : ''}
                                     </span>
                                     {isOutgoing && (
                                       message.isRead ? (
@@ -438,10 +438,13 @@ export default function EnhancedCompanyDirectory() {
                       }`}
                       onClick={(e) => {
                         // Mesaj bildirimi ise mesajlaşma tabını aç
-                        if (notification.type === "NEW_MESSAGE" && notification.payload?.fromCompanyId) {
-                          setActiveThread(notification.payload.fromCompanyId);
-                          setActiveTab("messaging");
-                          setShowNotifications(false);
+                        if (notification.type === "NEW_MESSAGE") {
+                          const payload = notification.payload as any;
+                          if (payload?.fromCompanyId) {
+                            setActiveThread(payload.fromCompanyId);
+                            setActiveTab("messaging");
+                            setShowNotifications(false);
+                          }
                         }
                         
                         // Bildirimi okundu olarak işaretle
@@ -451,8 +454,8 @@ export default function EnhancedCompanyDirectory() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="font-medium text-sm">{notification.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{notification.content}</p>
+                          <p className="font-medium text-sm">{(notification as any).title || 'Bildirim'}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{(notification as any).content || 'Yeni bildirim'}</p>
                           <p className="text-xs text-muted-foreground mt-2">
                             {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
                           </p>
