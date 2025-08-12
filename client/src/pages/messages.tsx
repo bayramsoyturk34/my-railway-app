@@ -146,12 +146,17 @@ export default function Messages() {
               <SelectContent className="max-h-40 overflow-y-auto">
                 {filteredCompanies.length === 0 ? (
                   <SelectItem value="no-companies" disabled>
-                    Henüz firma eklenmemiş
+                    {searchTerm ? "Eşleşen firma bulunamadı" : "Henüz firma eklenmemiş"}
                   </SelectItem>
                 ) : (
                   filteredCompanies.map((company) => (
                     <SelectItem key={company.id} value={company.id}>
                       {company.companyName}
+                      {company.industry && (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          - {company.industry}
+                        </span>
+                      )}
                     </SelectItem>
                   ))
                 )}
