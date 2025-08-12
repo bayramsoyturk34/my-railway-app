@@ -1699,6 +1699,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       console.log("Legacy endpoint - Message created:", message);
+      
+      // Create notification for the receiver
+      try {
+        const targetCompany = await storage.getCompany(targetCompanyId);
+        if (targetCompany && targetCompany.userId) {
+          const notification = await storage.createNotification({
+            userId: targetCompany.userId,
+            type: "NEW_MESSAGE",
+            payload: {
+              threadId,
+              fromCompanyId: userCompanyId,
+              fromCompanyName: userCompanies[0].companyName,
+              messageId: message.id,
+              title: "Yeni Mesaj",
+              message: `${userCompanies[0].companyName} size mesaj gönderdi`
+            }
+          });
+          console.log("Notification created:", notification);
+        }
+      } catch (notificationError) {
+        console.error("Failed to create notification:", notificationError);
+      }
+      
       res.json(message);
     } catch (error) {
       console.error("Legacy message creation error:", error);
@@ -2445,6 +2468,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       console.log("Message created:", message);
+      
+      // Create notification for the receiver (new endpoint)
+      try {
+        const targetCompany = await storage.getCompany(receiverFirmId);
+        if (targetCompany && targetCompany.userId) {
+          const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+          if (userCompanies.length > 0) {
+            const notification = await storage.createNotification({
+              userId: targetCompany.userId,
+              type: "NEW_MESSAGE",
+              payload: {
+                threadId,
+                fromCompanyId: firmId,
+                fromCompanyName: userCompanies[0].companyName,
+                messageId: message.id,
+                title: "Yeni Mesaj",
+                message: `${userCompanies[0].companyName} size mesaj gönderdi`
+              }
+            });
+            console.log("Notification created (new endpoint):", notification);
+          }
+        }
+      } catch (notificationError) {
+        console.error("Failed to create notification (new endpoint):", notificationError);
+      }
+      
       res.json(message);
     } catch (error) {
       console.error("Message creation error:", error);
