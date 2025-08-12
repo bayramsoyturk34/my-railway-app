@@ -116,7 +116,7 @@ function Router() {
             <DashboardWrapper />
           </Route>
           <Route>
-            <DashboardWrapper />
+            <NotFound />
           </Route>
         </>
       )}
