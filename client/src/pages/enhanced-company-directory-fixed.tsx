@@ -434,23 +434,15 @@ export default function EnhancedCompanyDirectory() {
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {notifications.map((notification) => {
-                    console.log("Bildirim render:", notification);
-                    return (
+                  {notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-3 rounded border cursor-pointer hover:bg-muted/30 ${
-                        notification.isRead ? 'bg-muted/50' : 'bg-primary/10'
+                      className={`p-3 rounded border cursor-pointer hover:bg-muted/30 transition-colors ${
+                        notification.isRead ? 'bg-muted/50' : 'bg-primary/10 border-primary/20'
                       }`}
-                      onMouseEnter={() => console.log("Mouse enter bildirim")}
                       onClick={(e) => {
-                        console.log("TIKLANDIIII");
-                        alert("Bildirim tıklandı!");
-                        console.log("Notification:", notification);
-                        console.log("Payload:", notification.payload);
-                        
+                        // Mesaj bildirimi ise mesajlaşma tabını aç
                         if (notification.type === "NEW_MESSAGE" && notification.payload?.fromCompanyId) {
-                          console.log("Mesaj thread açılıyor:", notification.payload.fromCompanyId);
                           setActiveThread(notification.payload.fromCompanyId);
                           setActiveTab("messaging");
                           setShowNotifications(false);
@@ -458,21 +450,23 @@ export default function EnhancedCompanyDirectory() {
                         
                         // Bildirimi okundu olarak işaretle
                         markAsReadMutation.mutate(notification.id);
+                        e.stopPropagation();
                       }}
                     >
-                      <p className="font-medium text-sm">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground">{notification.content}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {notification.createdAt ? new Date(notification.createdAt).toLocaleTimeString('tr-TR') : ''}
-                      </p>
-                      <div className="text-xs text-blue-500 mt-1 border p-1">
-                        <strong>DEBUG:</strong><br/>
-                        Type: {notification.type}<br/>
-                        Payload: {JSON.stringify(notification.payload, null, 2)}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{notification.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{notification.content}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
+                          </p>
+                        </div>
+                        {!notification.isRead && (
+                          <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1"></div>
+                        )}
                       </div>
                     </div>
-                  );
-                  })}
+                  ))}
                 </div>
               )}
             </ScrollArea>
