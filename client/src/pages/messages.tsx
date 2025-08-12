@@ -102,6 +102,20 @@ export default function Messages() {
     scrollToBottom();
   }, [messages]);
 
+  // Search terimi değiştiğinde activeThread'i temizle eğer filtrede yoksa
+  useEffect(() => {
+    if (activeThread && searchTerm && companies.length > 0) {
+      const filtered = companies.filter(company =>
+        company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        company.industry?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      const isActiveThreadInFiltered = filtered.some(c => c.id === activeThread);
+      if (!isActiveThreadInFiltered) {
+        setActiveThread(null);
+      }
+    }
+  }, [searchTerm, activeThread, companies]);
+
   // Search filtreleme
   const filteredCompanies = companies.filter(company =>
     company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
