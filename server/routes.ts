@@ -1157,26 +1157,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Personnel Payments routes
-  app.get("/api/personnel-payments", async (req, res) => {
+  app.get("/api/personnel-payments", isAuthenticated, async (req: any, res) => {
     try {
-      const payments = await storage.getPersonnelPayments();
+      const userId = req.user.id;
+      const payments = await storage.getPersonnelPaymentsByUserId(userId);
       res.json(payments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch personnel payments" });
     }
   });
 
-  app.get("/api/personnel-payments/personnel/:personnelId", async (req, res) => {
+  app.get("/api/personnel-payments/personnel/:personnelId", isAuthenticated, async (req: any, res) => {
     try {
       const { personnelId } = req.params;
-      const payments = await storage.getPersonnelPaymentsByPersonnelId(personnelId);
+      const userId = req.user.id;
+      const payments = await storage.getPersonnelPaymentsByPersonnelIdAndUserId(personnelId, userId);
       res.json(payments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch personnel payments" });
     }
   });
 
-  app.post("/api/personnel-payments", async (req, res) => {
+  app.post("/api/personnel-payments", isAuthenticated, async (req: any, res) => {
     try {
       console.log("Personnel payment request body:", req.body);
       // Convert string date to Date object
@@ -1185,7 +1187,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentDate: new Date(req.body.paymentDate)
       };
       const validatedData = insertPersonnelPaymentSchema.parse(processedBody);
+      
+      // Create the personnel payment
       const payment = await storage.createPersonnelPayment(validatedData);
+      
+      // Get personnel name for the transaction description
+      const personnel = await storage.getPersonnelByUserId(req.user.id);
+      const person = personnel.find(p => p.id === validatedData.personnelId);
+      const personnelName = person?.name || "Bilinmeyen Personel";
+      
+      // Create a corresponding expense transaction
+      const expenseTransaction = {
+        type: "expense" as const,
+        amount: validatedData.amount,
+        description: `${personnelName} - Maaş Ödemesi (${validatedData.description || validatedData.paymentType})`,
+        date: validatedData.paymentDate,
+        category: "Personel Ödemesi",
+        userId: req.user.id
+      };
+      
+      // Add the expense transaction to the system
+      await storage.createTransaction(expenseTransaction);
+      
       res.status(201).json(payment);
     } catch (error) {
       console.error("Personnel payment validation error:", error);

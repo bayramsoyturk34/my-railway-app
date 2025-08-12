@@ -22,7 +22,7 @@ import {
   companyDirectory, messages, conversations, users
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or } from "drizzle-orm";
+import { eq, and, or, inArray } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -1134,12 +1134,33 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(personnelPayments);
   }
 
+  async getPersonnelPaymentsByUserId(userId: string): Promise<PersonnelPayment[]> {
+    // Get personnel belonging to this user first
+    const userPersonnel = await db.select().from(personnel).where(eq(personnel.userId, userId));
+    const personnelIds = userPersonnel.map(p => p.id);
+    
+    if (personnelIds.length === 0) return [];
+    
+    return await db.select().from(personnelPayments)
+      .where(inArray(personnelPayments.personnelId, personnelIds));
+  }
+
   async getPersonnelPayment(id: string): Promise<PersonnelPayment | undefined> {
     const [result] = await db.select().from(personnelPayments).where(eq(personnelPayments.id, id));
     return result;
   }
 
   async getPersonnelPaymentsByPersonnelId(personnelId: string): Promise<PersonnelPayment[]> {
+    return await db.select().from(personnelPayments).where(eq(personnelPayments.personnelId, personnelId));
+  }
+
+  async getPersonnelPaymentsByPersonnelIdAndUserId(personnelId: string, userId: string): Promise<PersonnelPayment[]> {
+    // First verify that the personnel belongs to this user
+    const person = await db.select().from(personnel)
+      .where(and(eq(personnel.id, personnelId), eq(personnel.userId, userId)));
+    
+    if (person.length === 0) return []; // Personnel doesn't belong to this user
+    
     return await db.select().from(personnelPayments).where(eq(personnelPayments.personnelId, personnelId));
   }
 
