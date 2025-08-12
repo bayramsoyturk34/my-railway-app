@@ -18,7 +18,7 @@ const createSession = async (userId: string): Promise<string> => {
   return sessionId;
 };
 
-const getSession = async (sessionId: string): Promise<any | null> => {
+export const getSession = async (sessionId: string): Promise<any | null> => {
   try {
     const [session] = await db
       .select()

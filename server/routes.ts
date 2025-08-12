@@ -2078,15 +2078,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint
-  app.post("/api/upload-image", isAuthenticated, upload.single('image'), async (req: any, res) => {
+  // Image upload endpoint  
+  app.post("/api/upload-image", upload.single('image'), async (req: any, res) => {
     try {
+      // Manual authentication check for file upload
+      const authHeader = req.headers.authorization;
+      let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'];
+      
+      // Handle signed cookies format: s:sessionId.signature
+      if (sessionId && sessionId.startsWith('s:')) {
+        sessionId = sessionId.substring(2).split('.')[0];
+      }
+      
+      if (!sessionId) {
+        console.log("No session ID found for image upload");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { getSession } = await import("./auth");
+      const user = await getSession(sessionId);
+      
+      if (!user) {
+        console.log("Session not found or expired for image upload");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       if (!req.file) {
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const userId = req.user.id;
-      const user = await storage.getUser(userId);
+      const userId = user.id;
       const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
       
       if (!userCompanies.length) {

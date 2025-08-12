@@ -327,10 +327,14 @@ export default function EnhancedCompanyDirectory() {
       const formData = new FormData();
       formData.append("image", file);
       
+      const sessionId = localStorage.getItem("sessionId");
+      
+      // Use apiRequest with form data for consistent authentication
       const response = await fetch("/api/upload-image", {
         method: "POST",
+        credentials: "include", // Include cookies for session auth
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${sessionId}`,
         },
         body: formData,
       });
