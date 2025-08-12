@@ -407,11 +407,18 @@ export const companyDirectory = pgTable("company_directory", {
   phone: text("phone"),
   email: text("email"),
   address: text("address"),
+  city: text("city"), // Şehir
   industry: text("industry"), // Sektör
   website: text("website"),
   description: text("description"),
+  bio: text("bio"), // Biyografi
+  logoUrl: text("logo_url"), // Logo URL
   isActive: boolean("is_active").default(true),
+  isProVisible: boolean("is_pro_visible").default(false), // PRO üyelik görünürlüğü
+  isVerified: boolean("is_verified").default(false), // Doğrulanmış firma rozeti
+  subscriptionStatus: text("subscription_status").default("FREE"), // FREE, PRO
   profileImage: text("profile_image"), // Avatar URL
+  verifiedAt: timestamp("verified_at"),
   lastSeen: timestamp("last_seen"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
@@ -442,19 +449,63 @@ export const conversations = pgTable("conversations", {
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
+// Notification system for messaging
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  type: text("type").notNull(), // NEW_DM, DM_DELIVERED, DM_READ, PROFILE_VERIFIED
+  payload: jsonb("payload"),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Company blocking system
+export const companyBlocks = pgTable("company_blocks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  blockerCompanyId: varchar("blocker_company_id").notNull(),
+  blockedCompanyId: varchar("blocked_company_id").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Company mute system
+export const companyMutes = pgTable("company_mutes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  muterCompanyId: varchar("muter_company_id").notNull(),
+  mutedCompanyId: varchar("muted_company_id").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Report abuse system
+export const abuseReports = pgTable("abuse_reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reporterCompanyId: varchar("reporter_company_id").notNull(),
+  reportedCompanyId: varchar("reported_company_id").notNull(),
+  reason: text("reason").notNull(),
+  messageSample: text("message_sample"),
+  isResolved: boolean("is_resolved").default(false),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: varchar("resolved_by"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
 export const insertCompanyDirectorySchema = createInsertSchema(companyDirectory).omit({
   id: true,
   userId: true, // Server will add this
   createdAt: true,
   lastSeen: true,
   profileImage: true,
+  verifiedAt: true,
+  isVerified: true,
 }).extend({
   phone: z.string().optional(),
   email: z.string().optional(),
   address: z.string().optional(),
+  city: z.string().optional(),
   industry: z.string().optional(),
   website: z.string().optional(),
   description: z.string().optional(),
+  bio: z.string().optional(),
+  logoUrl: z.string().optional(),
 });
 
 export const insertMessageSchema = createInsertSchema(messages).omit({
@@ -465,6 +516,28 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 export const insertConversationSchema = createInsertSchema(conversations).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCompanyBlockSchema = createInsertSchema(companyBlocks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCompanyMuteSchema = createInsertSchema(companyMutes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAbuseReportSchema = createInsertSchema(abuseReports).omit({
+  id: true,
+  createdAt: true,
+  resolvedAt: true,
+  resolvedBy: true,
 });
 
 // Types
@@ -527,3 +600,15 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type CompanyBlock = typeof companyBlocks.$inferSelect;
+export type InsertCompanyBlock = z.infer<typeof insertCompanyBlockSchema>;
+
+export type CompanyMute = typeof companyMutes.$inferSelect;
+export type InsertCompanyMute = z.infer<typeof insertCompanyMuteSchema>;
+
+export type AbuseReport = typeof abuseReports.$inferSelect;
+export type InsertAbuseReport = z.infer<typeof insertAbuseReportSchema>;

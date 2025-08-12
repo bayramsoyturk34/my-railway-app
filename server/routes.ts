@@ -20,7 +20,13 @@ import {
   insertInvoiceSchema,
   insertInvoiceItemSchema,
   insertReportSchema,
-  insertPersonnelPaymentSchema
+  insertPersonnelPaymentSchema,
+  insertCompanyDirectorySchema,
+  insertMessageSchema,
+  insertNotificationSchema,
+  insertCompanyBlockSchema,
+  insertCompanyMuteSchema,
+  insertAbuseReportSchema
 } from "@shared/schema";
 
 // Helper function to update quote total
@@ -1469,6 +1475,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced PRO Company Directory routes
+  app.get("/api/directory/firms", async (req, res) => {
+    try {
+      const { search, city, industry, verified } = req.query;
+      const filters = {
+        search: search as string,
+        city: city as string,
+        industry: industry as string,
+        verified: verified === "true" ? true : verified === "false" ? false : undefined
+      };
+
+      // Remove undefined values
+      Object.keys(filters).forEach(key => {
+        if (filters[key as keyof typeof filters] === undefined) {
+          delete filters[key as keyof typeof filters];
+        }
+      });
+
+      const companies = await storage.getProCompanyDirectory(Object.keys(filters).length > 0 ? filters : undefined);
+      res.json(companies);
+    } catch (error) {
+      console.error("Error fetching PRO company directory:", error);
+      res.status(500).json({ error: "Failed to fetch PRO company directory" });
+    }
+  });
+
   app.get("/api/company-directory/:id", isAuthenticated, async (req, res) => {
     try {
       const company = await storage.getCompany(req.params.id);
@@ -1520,6 +1552,361 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting company:", error);
       res.status(500).json({ error: "Failed to delete company" });
+    }
+  });
+
+  // Enhanced Messaging and Conversation routes
+  app.post("/api/threads/open", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { targetCompanyId } = req.body;
+      
+      if (!targetCompanyId) {
+        return res.status(400).json({ error: "targetCompanyId is required" });
+      }
+
+      // Get current user's company
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      if (userCompanies.length === 0) {
+        return res.status(400).json({ error: "User has no company profile" });
+      }
+      
+      const userCompanyId = userCompanies[0].id;
+
+      // Check if target company is blocked
+      const isBlocked = await storage.isCompanyBlocked(targetCompanyId, userCompanyId);
+      if (isBlocked) {
+        return res.status(403).json({ error: "Cannot message this company" });
+      }
+
+      const conversation = await storage.getOrCreateConversation(userCompanyId, targetCompanyId);
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error opening conversation:", error);
+      res.status(500).json({ error: "Failed to open conversation" });
+    }
+  });
+
+  app.get("/api/threads", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (userCompanies.length === 0) {
+        return res.json([]);
+      }
+      
+      const userCompanyId = userCompanies[0].id;
+      const conversations = await storage.getConversationsByCompanyId(userCompanyId);
+      
+      // Enrich with company details and message info
+      const enrichedConversations = await Promise.all(conversations.map(async (conv) => {
+        const otherCompanyId = conv.company1Id === userCompanyId ? conv.company2Id : conv.company1Id;
+        const otherCompany = await storage.getCompany(otherCompanyId);
+        const messages = await storage.getMessagesByConversation(conv.company1Id, conv.company2Id);
+        const unreadCount = messages.filter(m => !m.isRead && m.toCompanyId === userCompanyId).length;
+        
+        return {
+          ...conv,
+          otherCompany,
+          unreadCount,
+          lastMessage: messages[messages.length - 1] || null
+        };
+      }));
+      
+      res.json(enrichedConversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+
+  app.get("/api/threads/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const conversationId = req.params.id;
+      
+      // Get conversation details
+      const conversation = await storage.getConversation(conversationId, conversationId); // This needs to be updated
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+
+      const messages = await storage.getMessagesByConversation(conversation.company1Id, conversation.company2Id);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/threads/:id/messages", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const conversationId = req.params.id;
+      const { body, attachment } = req.body;
+
+      if (!body && !attachment) {
+        return res.status(400).json({ error: "Message body or attachment is required" });
+      }
+
+      // Get user's company
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      if (userCompanies.length === 0) {
+        return res.status(400).json({ error: "User has no company profile" });
+      }
+      
+      const userCompanyId = userCompanies[0].id;
+
+      // Get conversation to find target company
+      const conversation = await storage.getConversation(conversationId, conversationId); // This needs updating
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+
+      const targetCompanyId = conversation.company1Id === userCompanyId ? conversation.company2Id : conversation.company1Id;
+
+      // Check if target company blocked the sender
+      const isBlocked = await storage.isCompanyBlocked(targetCompanyId, userCompanyId);
+      if (isBlocked) {
+        return res.status(403).json({ error: "Cannot send message - you are blocked" });
+      }
+
+      // Get target company owner for notification
+      const targetCompany = await storage.getCompany(targetCompanyId);
+      if (!targetCompany) {
+        return res.status(404).json({ error: "Target company not found" });
+      }
+
+      const messageData = {
+        fromUserId: userId,
+        toUserId: targetCompany.userId,
+        fromCompanyId: userCompanyId,
+        toCompanyId: targetCompanyId,
+        message: body || "",
+        attachmentUrl: attachment,
+        messageType: attachment ? "file" : "text"
+      };
+
+      const message = await storage.createMessage(messageData);
+
+      // Update conversation last message
+      await storage.updateConversationLastMessage(conversationId, message.id);
+
+      // Create notification if not muted
+      const isMuted = await storage.isCompanyMuted(targetCompanyId, userCompanyId);
+      if (!isMuted) {
+        await storage.createNotification({
+          userId: targetCompany.userId,
+          type: "NEW_DM",
+          payload: {
+            messageId: message.id,
+            fromCompanyId: userCompanyId,
+            fromCompanyName: userCompanies[0].companyName,
+            message: body
+          }
+        });
+      }
+
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
+  app.post("/api/messages/:id/read", isAuthenticated, async (req, res) => {
+    try {
+      const messageId = req.params.id;
+      const success = await storage.markMessageAsRead(messageId);
+      
+      if (success) {
+        // Create read notification for sender
+        const message = await storage.getMessages().then(messages => 
+          messages.find(m => m.id === messageId)
+        );
+        
+        if (message) {
+          await storage.createNotification({
+            userId: message.fromUserId,
+            type: "DM_READ",
+            payload: {
+              messageId: message.id,
+              readByCompanyId: message.toCompanyId
+            }
+          });
+        }
+      }
+      
+      res.json({ success });
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ error: "Failed to mark message as read" });
+    }
+  });
+
+  // Notification routes
+  app.get("/api/notifications", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const notifications = await storage.getNotificationsByUserId(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  app.patch("/api/notifications/:id/read", isAuthenticated, async (req, res) => {
+    try {
+      const notificationId = req.params.id;
+      const success = await storage.markNotificationAsRead(notificationId);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+  });
+
+  // Blocking and muting routes
+  app.post("/api/blocks", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { targetCompanyId } = req.body;
+
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      if (userCompanies.length === 0) {
+        return res.status(400).json({ error: "User has no company profile" });
+      }
+
+      const userCompanyId = userCompanies[0].id;
+      const block = await storage.createCompanyBlock(userCompanyId, targetCompanyId);
+      res.status(201).json(block);
+    } catch (error) {
+      console.error("Error creating block:", error);
+      res.status(500).json({ error: "Failed to block company" });
+    }
+  });
+
+  app.delete("/api/blocks/:targetCompanyId", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { targetCompanyId } = req.params;
+
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      if (userCompanies.length === 0) {
+        return res.status(400).json({ error: "User has no company profile" });
+      }
+
+      const userCompanyId = userCompanies[0].id;
+      const success = await storage.removeCompanyBlock(userCompanyId, targetCompanyId);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error removing block:", error);
+      res.status(500).json({ error: "Failed to unblock company" });
+    }
+  });
+
+  app.post("/api/mutes", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { targetCompanyId } = req.body;
+
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      if (userCompanies.length === 0) {
+        return res.status(400).json({ error: "User has no company profile" });
+      }
+
+      const userCompanyId = userCompanies[0].id;
+      const mute = await storage.createCompanyMute(userCompanyId, targetCompanyId);
+      res.status(201).json(mute);
+    } catch (error) {
+      console.error("Error creating mute:", error);
+      res.status(500).json({ error: "Failed to mute company" });
+    }
+  });
+
+  app.delete("/api/mutes/:targetCompanyId", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { targetCompanyId } = req.params;
+
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      if (userCompanies.length === 0) {
+        return res.status(400).json({ error: "User has no company profile" });
+      }
+
+      const userCompanyId = userCompanies[0].id;
+      const success = await storage.removeCompanyMute(userCompanyId, targetCompanyId);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error removing mute:", error);
+      res.status(500).json({ error: "Failed to unmute company" });
+    }
+  });
+
+  // Abuse reporting routes
+  app.post("/api/reports", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { targetCompanyId, reason, messageSample } = req.body;
+
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      if (userCompanies.length === 0) {
+        return res.status(400).json({ error: "User has no company profile" });
+      }
+
+      const userCompanyId = userCompanies[0].id;
+      const validatedData = insertAbuseReportSchema.parse({
+        reporterCompanyId: userCompanyId,
+        reportedCompanyId: targetCompanyId,
+        reason,
+        messageSample
+      });
+
+      const report = await storage.createAbuseReport(validatedData);
+      res.status(201).json(report);
+    } catch (error) {
+      console.error("Error creating abuse report:", error);
+      res.status(500).json({ error: "Failed to create abuse report" });
+    }
+  });
+
+  // Admin routes for PRO system
+  app.patch("/api/admin/directory/:companyId/verify", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const { companyId } = req.params;
+      const success = await storage.verifyCompanyProfile(companyId);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error verifying company:", error);
+      res.status(500).json({ error: "Failed to verify company" });
+    }
+  });
+
+  app.patch("/api/admin/directory/:companyId/pro-status", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const { companyId } = req.params;
+      const { isProVisible } = req.body;
+      const success = await storage.updateCompanyProStatus(companyId, isProVisible);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error updating PRO status:", error);
+      res.status(500).json({ error: "Failed to update PRO status" });
     }
   });
 

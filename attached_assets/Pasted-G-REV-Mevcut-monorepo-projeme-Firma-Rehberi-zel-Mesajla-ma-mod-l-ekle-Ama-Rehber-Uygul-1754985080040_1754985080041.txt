@@ -1,0 +1,153 @@
+GÖREV: Mevcut monorepo projeme “Firma Rehberi & Özel Mesajlaşma” modülü ekle. Amaç:
+- Rehber: Uygulamaya kayıtlı ve aboneliği PRO olan firmalar listelensin (rozetli).
+- Mesaj: Tüm kullanıcılar PRO firmalara 1-1 (point-to-point) mesaj atabilsin. Mesajlar sadece iki tarafça görülsün.
+- Bildirim: Alıcıya in-app bildirim + (ENV varsa) e-posta bildirimi gitsin. Canlı güncelleme (SSE veya WebSocket) ile anlık düşsün.
+- Güvenlik, moderasyon, spam önleme, oran sınırlama, engelle/şikayet et, dosya eki, okundu bilgisini de kapsa.
+
+# TEKNİK
+- Frontend: React+TS (Vite), TanStack Query, Zustand, Tailwind, shadcn/ui.
+- Backend: Node+TS (Express), Prisma ORM.
+- Realtime: Server-Sent Events (SSE) tercih et. (WebSocket opsiyonel bayrakla)
+- Veri: SQLite (dev) / Postgres’e hazır. Prisma migrate.
+- Kimlik: JWT + HttpOnly cookie. Kullanıcı firma ilişkisi var.
+- E-posta: nodemailer (ENV ile opsiyonel).
+- Dosya eki: yerel storage dev’de, prod’da S3-uyumlu (MinIO/S3) adapter.
+
+# VERİTABANI (Prisma modelleri – var olanları bozma, gerekirse extend)
+model FirmDirectoryProfile {
+  id            String   @id @default(cuid())
+  firmId        String   @unique
+  displayName   String
+  sector        String?
+  city          String?
+  phone         String?
+  email         String?
+  bio           String?
+  logoUrl       String?
+  isProVisible  Boolean  @default(false) // PRO ise listelenecek
+  verifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  firm          Firm     @relation(fields: [firmId], references: [id])
+}
+
+model DirectThread {
+  id           String   @id @default(cuid())
+  firmAId      String
+  firmBId      String
+  createdAt    DateTime @default(now())
+  // İki firma arasında tekil olsun, küçük id'yi başa koyup unique index
+  @@unique([firmAId, firmBId])
+}
+
+model DirectMessage {
+  id           String   @id @default(cuid())
+  threadId     String
+  senderFirmId String
+  body         String?
+  attachmentUrl String?
+  delivery     MessageDeliveryStatus @default(SENT) // SENT|DELIVERED|READ
+  createdAt    DateTime @default(now())
+
+  thread       DirectThread @relation(fields: [threadId], references: [id])
+}
+
+enum MessageDeliveryStatus { SENT DELIVERED READ }
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  messageId String   @unique
+  readerFirmId String
+  readAt    DateTime @default(now())
+}
+
+model FirmBlock {
+  id          String   @id @default(cuid())
+  blockerFirmId String
+  blockedFirmId String
+  createdAt   DateTime  @default(now())
+  @@unique([blockerFirmId, blockedFirmId])
+}
+
+model FirmMute {
+  id          String   @id @default(cuid())
+  muterFirmId String
+  mutedFirmId String
+  createdAt   DateTime @default(now())
+  @@unique([muterFirmId, mutedFirmId])
+}
+
+model ReportAbuse {
+  id          String   @id @default(cuid())
+  reporterFirmId String
+  reportedFirmId String
+  reason      String
+  messageSample String?
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+  resolvedBy  String?
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // NEW_DM, DM_DELIVERED, DM_READ, PROFILE_VERIFIED vs.
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+# İŞ KURALLARI
+- Sadece subscriptionStatus=ACTIVE (PRO plan) olan firmaların FirmDirectoryProfile.isProVisible=true olur; rehber listesinde sadece bunlar görünür.
+- 1-1 mesajlaşma: Bir thread iki firma arasında tekil. Yeni mesaj gelince:
+  * Alıcı engellediyse 403.
+  * Mesaj kaydı -> alıcı online ise SSE ile anlık düşsün; Notification NEW_DM oluştur.
+  * Teslim (DELIVERED): Alıcının /threads/:id GET veya /events bağlanmasıyla işaretlenir.
+  * Okundu (READ): Alıcı /messages/:id/read çağırınca MessageRead eklenir ve mesaj delivery=READ yapılır; gönderen için DM_READ bildirimi düşer.
+- Mute: Bildirim üretme ama mesajları engelleme (sessize al).
+- Block: Mesaj gönderimini engelle.
+- Spam/RL: Mesaj endpointinde rate limit (örn: firmabaşına 30/sn burst 5) ve içerik uzunluğu sınırlaması.
+
+# API UÇLARI (REST)
+BASE: /api
+// Rehber & Profil
+GET    /directory/firms?search=&city=&sector=&verified= // sadece isProVisible=true
+GET    /directory/firms/:firmId                          // profil detayı
+POST   /directory/profile                                // kendi profilini oluştur/güncelle (ADMIN)
+PATCH  /directory/profile                                // alan bazlı update
+POST   /directory/profile/verify-request                 // doğrulama talebi (admin’e düşer)
+PATCH  /admin/directory/:firmId/verify                   // SUPER_ADMIN onayı
+
+// Threads & Messages
+POST   /threads/open { targetFirmId }                    // thread getir/oluştur
+GET    /threads                                         // benim tüm thread’lerim (son mesaj, okunmamış sayısı ile)
+GET    /threads/:id                                     // mesaj listesi (sayfalama: cursor/limit)
+POST   /threads/:id/messages { body, attachment? }      // mesaj gönder
+POST   /messages/:id/read                               // okundu işareti
+// Dosya eki (opsiyonel)
+POST   /upload                                          // returns { url } (S3/local)
+
+// Realtime (SSE)
+GET    /events                                          // NEW_DM, DM_DELIVERED, DM_READ, VERIFIED vb. akışı
+
+// Bildirimler
+GET    /notifications
+PATCH  /notifications/:id/read
+
+// Güvenlik & Moderasyon
+POST   /blocks { targetFirmId }                         // engelle
+DELETE /blocks/:targetFirmId
+POST   /mutes { targetFirmId }                          // sessize al
+DELETE /mutes/:targetFirmId
+POST   /reports { targetFirmId, reason, messageSample? } // kötüye kullanım
+
+# ERİŞİM KONTROLÜ
+- Tüm uçlar JWT zorunlu. firmId, user.role -> middleware’de set.
+- /directory GET herkese açık olabilir ama sadece PRO profiller döner; firmaya özel alanlar (email/telefon) isPrivate ise yalnızca login kullanıcı görür.
+- Her sorguda firmId izolasyonu ve block/mute kontrolleri.
+
+# FRONTEND SAYFALARI
+- /app/directory
+  * Sol: Filtre (ara, şehir, sektör, doğrulanmış), rozetler: PRO, VERIFIED.
+  * Grid liste: kartl*

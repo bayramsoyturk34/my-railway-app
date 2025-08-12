@@ -16,13 +16,17 @@ import {
   type CompanyDirectory, type InsertCompanyDirectory,
   type Message, type InsertMessage,
   type Conversation, type InsertConversation,
+  type Notification, type InsertNotification,
+  type CompanyBlock, type InsertCompanyBlock,
+  type CompanyMute, type InsertCompanyMute,
+  type AbuseReport, type InsertAbuseReport,
   type User, type UpsertUser,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
-  companyDirectory, messages, conversations, users
+  companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, inArray } from "drizzle-orm";
+import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -1258,6 +1262,48 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(companyDirectory).where(eq(companyDirectory.isActive, true));
   }
 
+  async getProCompanyDirectory(filters?: { search?: string; city?: string; industry?: string; verified?: boolean }): Promise<CompanyDirectory[]> {
+    let whereConditions = and(
+      eq(companyDirectory.isActive, true),
+      eq(companyDirectory.isProVisible, true)
+    );
+
+    if (filters) {
+      const conditions = [
+        eq(companyDirectory.isActive, true),
+        eq(companyDirectory.isProVisible, true)
+      ];
+
+      if (filters.search) {
+        // Search in company name, contact person, or description
+        const searchTerm = `%${filters.search}%`;
+        conditions.push(
+          or(
+            sql`${companyDirectory.companyName} ILIKE ${searchTerm}`,
+            sql`${companyDirectory.contactPerson} ILIKE ${searchTerm}`,
+            sql`${companyDirectory.description} ILIKE ${searchTerm}`
+          )
+        );
+      }
+
+      if (filters.city) {
+        conditions.push(eq(companyDirectory.city, filters.city));
+      }
+
+      if (filters.industry) {
+        conditions.push(eq(companyDirectory.industry, filters.industry));
+      }
+
+      if (filters.verified !== undefined) {
+        conditions.push(eq(companyDirectory.isVerified, filters.verified));
+      }
+
+      whereConditions = and(...conditions);
+    }
+
+    return await db.select().from(companyDirectory).where(whereConditions);
+  }
+
   async getCompanyDirectoryByUserId(userId: string): Promise<CompanyDirectory[]> {
     return await db.select().from(companyDirectory).where(
       and(eq(companyDirectory.userId, userId), eq(companyDirectory.isActive, true))
@@ -1361,6 +1407,149 @@ export class DatabaseStorage implements IStorage {
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
     const [result] = await db.insert(conversations).values(insertConversation).returning();
     return result;
+  }
+
+  // Enhanced messaging methods
+  async getOrCreateConversation(company1Id: string, company2Id: string): Promise<Conversation> {
+    // Ensure consistent ordering for conversation lookup
+    const [firstId, secondId] = [company1Id, company2Id].sort();
+    
+    let [conversation] = await db.select().from(conversations)
+      .where(and(eq(conversations.company1Id, firstId), eq(conversations.company2Id, secondId)));
+
+    if (!conversation) {
+      [conversation] = await db.insert(conversations)
+        .values({ company1Id: firstId, company2Id: secondId })
+        .returning();
+    }
+
+    return conversation;
+  }
+
+  async getConversationsByCompanyId(companyId: string): Promise<Conversation[]> {
+    return await db.select().from(conversations)
+      .where(or(eq(conversations.company1Id, companyId), eq(conversations.company2Id, companyId)));
+  }
+
+  async updateConversationLastMessage(conversationId: string, messageId: string): Promise<void> {
+    await db.update(conversations)
+      .set({ 
+        lastMessageId: messageId, 
+        lastMessageAt: new Date() 
+      })
+      .where(eq(conversations.id, conversationId));
+  }
+
+  // Notification methods
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
+    const [result] = await db.insert(notifications).values(insertNotification).returning();
+    return result;
+  }
+
+  async getNotificationsByUserId(userId: string): Promise<Notification[]> {
+    return await db.select().from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<boolean> {
+    const result = await db.update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, notificationId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Blocking and muting methods
+  async createCompanyBlock(blockerCompanyId: string, blockedCompanyId: string): Promise<CompanyBlock> {
+    const [result] = await db.insert(companyBlocks)
+      .values({ blockerCompanyId, blockedCompanyId })
+      .returning();
+    return result;
+  }
+
+  async removeCompanyBlock(blockerCompanyId: string, blockedCompanyId: string): Promise<boolean> {
+    const result = await db.delete(companyBlocks)
+      .where(and(
+        eq(companyBlocks.blockerCompanyId, blockerCompanyId),
+        eq(companyBlocks.blockedCompanyId, blockedCompanyId)
+      ));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async isCompanyBlocked(blockerCompanyId: string, blockedCompanyId: string): Promise<boolean> {
+    const [result] = await db.select().from(companyBlocks)
+      .where(and(
+        eq(companyBlocks.blockerCompanyId, blockerCompanyId),
+        eq(companyBlocks.blockedCompanyId, blockedCompanyId)
+      ));
+    return !!result;
+  }
+
+  async createCompanyMute(muterCompanyId: string, mutedCompanyId: string): Promise<CompanyMute> {
+    const [result] = await db.insert(companyMutes)
+      .values({ muterCompanyId, mutedCompanyId })
+      .returning();
+    return result;
+  }
+
+  async removeCompanyMute(muterCompanyId: string, mutedCompanyId: string): Promise<boolean> {
+    const result = await db.delete(companyMutes)
+      .where(and(
+        eq(companyMutes.muterCompanyId, muterCompanyId),
+        eq(companyMutes.mutedCompanyId, mutedCompanyId)
+      ));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async isCompanyMuted(muterCompanyId: string, mutedCompanyId: string): Promise<boolean> {
+    const [result] = await db.select().from(companyMutes)
+      .where(and(
+        eq(companyMutes.muterCompanyId, muterCompanyId),
+        eq(companyMutes.mutedCompanyId, mutedCompanyId)
+      ));
+    return !!result;
+  }
+
+  // Abuse reporting methods
+  async createAbuseReport(insertReport: InsertAbuseReport): Promise<AbuseReport> {
+    const [result] = await db.insert(abuseReports).values(insertReport).returning();
+    return result;
+  }
+
+  async getAbuseReports(): Promise<AbuseReport[]> {
+    return await db.select().from(abuseReports).orderBy(desc(abuseReports.createdAt));
+  }
+
+  async resolveAbuseReport(reportId: string, resolvedBy: string): Promise<boolean> {
+    const result = await db.update(abuseReports)
+      .set({ 
+        isResolved: true, 
+        resolvedAt: new Date(), 
+        resolvedBy 
+      })
+      .where(eq(abuseReports.id, reportId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Company profile verification
+  async verifyCompanyProfile(companyId: string): Promise<boolean> {
+    const result = await db.update(companyDirectory)
+      .set({ 
+        isVerified: true, 
+        verifiedAt: new Date() 
+      })
+      .where(eq(companyDirectory.id, companyId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async updateCompanyProStatus(companyId: string, isProVisible: boolean): Promise<boolean> {
+    const result = await db.update(companyDirectory)
+      .set({ 
+        isProVisible,
+        subscriptionStatus: isProVisible ? "PRO" : "FREE"
+      })
+      .where(eq(companyDirectory.id, companyId));
+    return (result.rowCount ?? 0) > 0;
   }
 
   async updateConversation(id: string, updates: Partial<InsertConversation>): Promise<Conversation | undefined> {

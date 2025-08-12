@@ -6,27 +6,57 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCompanyDirectorySchema, insertMessageSchema, type CompanyDirectory, type InsertCompanyDirectory, type Message, type InsertMessage } from "@shared/schema";
-import { Building2, Phone, Mail, Globe, MapPin, MessageCircle, Plus, Search, Users, Send, X } from "lucide-react";
+import { insertCompanyDirectorySchema, insertMessageSchema, type CompanyDirectory, type InsertCompanyDirectory, type Message, type InsertMessage, type Notification } from "@shared/schema";
+import { Building2, Phone, Mail, Globe, MapPin, MessageCircle, Plus, Search, Users, Send, X, Star, Shield, Filter, Bell, Block, VolumeX, Flag, CheckCircle, Crown, Verified } from "lucide-react";
 
 export default function CompanyDirectory() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [industryFilter, setIndustryFilter] = useState("");
+  const [verifiedFilter, setVerifiedFilter] = useState<boolean | undefined>(undefined);
   const [selectedCompany, setSelectedCompany] = useState<CompanyDirectory | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("directory");
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Enhanced PRO Company Directory query with filters
   const { data: companies = [], isLoading } = useQuery<CompanyDirectory[]>({
-    queryKey: ["/api/company-directory"],
+    queryKey: ["/api/directory/firms", { searchTerm, cityFilter, industryFilter, verifiedFilter }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("search", searchTerm);
+      if (cityFilter) params.append("city", cityFilter);
+      if (industryFilter) params.append("industry", industryFilter);
+      if (verifiedFilter !== undefined) params.append("verified", verifiedFilter.toString());
+      
+      const response = await apiRequest(`/api/directory/firms?${params.toString()}`, "GET");
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  // Notifications query
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ["/api/notifications"],
+    refetchInterval: 5000, // Poll every 5 seconds
+  });
+
+  // Conversations query
+  const { data: conversations = [] } = useQuery({
+    queryKey: ["/api/threads"],
+    enabled: activeTab === "messages",
+    refetchInterval: 3000, // Poll every 3 seconds when on messages tab
   });
 
   // Get messages for selected conversation
@@ -79,10 +109,15 @@ export default function CompanyDirectory() {
       phone: "",
       email: "",
       address: "",
+      city: "",
       industry: "",
       website: "",
       description: "",
+      bio: "",
+      logoUrl: "",
       isActive: true,
+      isProVisible: false,
+      subscriptionStatus: "FREE"
     },
   });
 
