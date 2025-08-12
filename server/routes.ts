@@ -1706,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (targetCompany && targetCompany.userId) {
           const notification = await storage.createNotification({
             userId: targetCompany.userId,
-            type: "NEW_MESSAGE",
+            type: "NEW_DM",
             payload: {
               threadId,
               fromCompanyId: userCompanyId,
@@ -2477,7 +2477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (userCompanies.length > 0) {
             const notification = await storage.createNotification({
               userId: targetCompany.userId,
-              type: "NEW_MESSAGE",
+              type: "NEW_DM",
               payload: {
                 threadId,
                 fromCompanyId: firmId,
