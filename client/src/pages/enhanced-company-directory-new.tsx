@@ -774,7 +774,7 @@ export default function EnhancedCompanyDirectory() {
                             </div>
                             </div>
                           );
-                        })}}
+                        })}
                         <div ref={messagesEndRef} />
                       </div>
                     </ScrollArea>
