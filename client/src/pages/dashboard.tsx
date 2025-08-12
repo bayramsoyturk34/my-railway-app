@@ -66,18 +66,20 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Navigation cards with fixed routing
+  const getBaseNavCards = useCallback(() => [
+    { id: "timesheet", icon: Edit, label: "Puantaj Yaz", onClick: () => setShowTimesheetForm(true), iconColor: "text-blue-400" },
+    { id: "personnel", icon: Users, label: "Personeller", onClick: () => setLocation("/personnel"), iconColor: "text-orange-400" },
+    { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
+    { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
+    { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
+    { id: "company-directory", icon: MessageCircle, label: "PRO Firma Rehberi", onClick: () => setLocation("/enhanced-company-directory"), iconColor: "text-purple-400" },
+    { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
+  ], [setLocation]);
+
   // Navigation cards state for drag and drop  
   const [navCards, setNavCards] = useState(() => {
-    const baseNavCards = [
-      { id: "timesheet", icon: Edit, label: "Puantaj Yaz", onClick: () => setShowTimesheetForm(true), iconColor: "text-blue-400" },
-      { id: "personnel", icon: Users, label: "Personeller", onClick: () => setLocation("/personnel"), iconColor: "text-orange-400" },
-      { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
-      { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
-      { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
-      { id: "company-directory", icon: Building2, label: "PRO Firma Rehberi", onClick: () => setLocation("/company-directory"), iconColor: "text-yellow-400" },
-      { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
-    ];
-
+    const baseNavCards = getBaseNavCards();
     const adminCards = (user && 'isAdmin' in user && user.isAdmin) ? [
       { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" }
     ] : [];
@@ -87,15 +89,7 @@ export default function Dashboard() {
 
   // Update navigation cards when user admin status changes
   useEffect(() => {
-    const baseNavCards = [
-      { id: "timesheet", icon: Edit, label: "Puantaj Yaz", onClick: () => setShowTimesheetForm(true), iconColor: "text-blue-400" },
-      { id: "personnel", icon: Users, label: "Personeller", onClick: () => setLocation("/personnel"), iconColor: "text-orange-400" },
-      { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
-      { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
-      { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
-      { id: "company-directory", icon: Building2, label: "PRO Firma Rehberi", onClick: () => setLocation("/company-directory"), iconColor: "text-yellow-400" },
-      { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
-    ];
+    const baseNavCards = getBaseNavCards();
     
     if (user && 'isAdmin' in user && user.isAdmin) {
       const adminCard = { id: "admin", icon: Shield, label: "Admin Panel", onClick: () => setLocation("/admin"), iconColor: "text-red-400" };
@@ -103,7 +97,7 @@ export default function Dashboard() {
     } else {
       setNavCards(baseNavCards);
     }
-  }, [user && 'isAdmin' in user ? user.isAdmin : false]);
+  }, [user && 'isAdmin' in user ? user.isAdmin : false, getBaseNavCards]);
 
   const { data: summary } = useQuery<FinancialSummary>({
     queryKey: ["/api/financial-summary"],
