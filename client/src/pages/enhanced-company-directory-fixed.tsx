@@ -233,7 +233,7 @@ export default function EnhancedCompanyDirectory() {
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Mesaj
                     </Button>
-                    {myCompanies.some(myComp => myComp.id === company.id) && (
+                    {userCompanies?.some(myComp => myComp.id === company.id) && (
                       <div className="flex gap-1">
                         <Button
                           variant="ghost"
