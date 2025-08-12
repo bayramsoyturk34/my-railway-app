@@ -1217,6 +1217,27 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(contractorPayments).where(eq(contractorPayments.contractorId, contractorId));
   }
 
+  async getContractorPaymentsByUserId(userId: string): Promise<ContractorPayment[]> {
+    // Get projects belonging to this user first
+    const userProjects = await db.select().from(projects).where(eq(projects.userId, userId));
+    const projectIds = userProjects.map(p => p.id);
+    
+    if (projectIds.length === 0) return [];
+    
+    return await db.select().from(contractorPayments)
+      .where(inArray(contractorPayments.contractorId, projectIds));
+  }
+
+  async getContractorPaymentsByContractorIdAndUserId(contractorId: string, userId: string): Promise<ContractorPayment[]> {
+    // First verify that the project belongs to this user
+    const project = await db.select().from(projects)
+      .where(and(eq(projects.id, contractorId), eq(projects.userId, userId)));
+    
+    if (project.length === 0) return []; // Project doesn't belong to this user
+    
+    return await db.select().from(contractorPayments).where(eq(contractorPayments.contractorId, contractorId));
+  }
+
   async createContractorPayment(insertPayment: InsertContractorPayment): Promise<ContractorPayment> {
     const [result] = await db.insert(contractorPayments).values(insertPayment).returning();
     return result;

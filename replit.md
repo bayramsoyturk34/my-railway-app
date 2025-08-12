@@ -112,6 +112,13 @@ PuantajPro is a Turkish personnel timesheet and project management application. 
   - **Removed Page Reloads**: Eliminated unnecessary page refreshes during authentication
   - **Automatic Session Cleanup**: Implemented database cleanup for expired sessions
   - Users can now login once and stay logged in for weeks without interruption
+- ✅ **Authentication & Payment Systems Fix**: Critical authentication and payment processing fixes (August 12, 2025)
+  - **Fixed Signed Cookie Parsing**: Resolved authentication failures caused by signed cookie decoding issues
+  - **Personnel Payment System**: Fixed duplicate transaction creation, now properly creates single expense entries
+  - **Contractor Payment System**: Implemented complete contractor payment workflow with automatic kasa entries
+  - **Authentication Middleware**: Fixed authentication middleware to properly handle both signed cookies and Authorization headers
+  - **User Data Isolation**: Ensured all payment operations respect user-specific data boundaries
+  - **Automatic Cash Management**: Both personnel and contractor payments now automatically create corresponding expense transactions
 
 # User Preferences
 

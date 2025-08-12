@@ -996,19 +996,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Contractor Payments routes
-  app.get("/api/contractor-payments", async (req, res) => {
+  app.get("/api/contractor-payments", isAuthenticated, async (req: any, res) => {
     try {
-      const payments = await storage.getContractorPayments();
+      const userId = req.user.id;
+      const payments = await storage.getContractorPaymentsByUserId(userId);
       res.json(payments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch contractor payments" });
     }
   });
 
-  app.get("/api/contractor-payments/contractor/:contractorId", async (req, res) => {
+  app.get("/api/contractor-payments/contractor/:contractorId", isAuthenticated, async (req: any, res) => {
     try {
       const { contractorId } = req.params;
-      const payments = await storage.getContractorPaymentsByContractorId(contractorId);
+      const userId = req.user.id;
+      const payments = await storage.getContractorPaymentsByContractorIdAndUserId(contractorId, userId);
       res.json(payments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch contractor payments" });
@@ -1341,27 +1343,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Contractor Payments routes
-  app.get("/api/contractor-payments", async (req, res) => {
-    try {
-      const payments = await storage.getContractorPayments();
-      res.json(payments);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch contractor payments" });
-    }
-  });
+  // Duplicate contractor payments routes removed - using the authenticated version above
 
-  app.get("/api/contractor-payments/contractor/:contractorId", async (req, res) => {
-    try {
-      const { contractorId } = req.params;
-      const payments = await storage.getContractorPaymentsByContractorId(contractorId);
-      res.json(payments);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch contractor payments" });
-    }
-  });
-
-  app.post("/api/contractor-payments", async (req, res) => {
+  app.post("/api/contractor-payments-old", async (req, res) => {
     try {
       const processedBody = {
         ...req.body,

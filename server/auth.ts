@@ -137,11 +137,16 @@ export async function setupAuth(app: Express) {
   // Check auth endpoint
   app.get("/api/auth/user", async (req, res) => {
     try {
-      // Try to get session ID from Authorization header
+      // Try to get session ID from Authorization header or cookie
       const authHeader = req.headers.authorization;
-      const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
+      let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'];
       
-      console.log("Auth check - Session ID:", sessionId);
+      // Handle signed cookies format: s:sessionId.signature
+      if (sessionId && sessionId.startsWith('s:')) {
+        sessionId = sessionId.substring(2).split('.')[0];
+      }
+      
+      // Session authentication successful
       
       if (!sessionId) {
         console.log("No session ID found");
@@ -166,7 +171,12 @@ export async function setupAuth(app: Express) {
   // Logout endpoint
   app.post("/api/auth/logout", async (req, res) => {
     try {
-      const sessionId = req.headers.authorization?.replace('Bearer ', '') || req.cookies.session;
+      let sessionId = req.headers.authorization?.replace('Bearer ', '') || req.cookies['connect.sid'];
+      
+      // Handle signed cookies format: s:sessionId.signature
+      if (sessionId && sessionId.startsWith('s:')) {
+        sessionId = sessionId.substring(2).split('.')[0];
+      }
       
       if (sessionId) {
         await deleteSession(sessionId);
@@ -185,18 +195,28 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    const sessionId = authHeader?.replace('Bearer ', '') || req.cookies.session;
+    let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'];
+    
+    // Handle signed cookies format: s:sessionId.signature
+    if (sessionId && sessionId.startsWith('s:')) {
+      sessionId = sessionId.substring(2).split('.')[0];
+    }
+    
+    // Authentication middleware processing
     
     if (!sessionId) {
+      // No session found
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     const user = await getSession(sessionId);
     
     if (!user) {
+      // Session expired or not found
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    // Authentication successful
     (req as any).user = user;
     next();
   } catch (error) {
