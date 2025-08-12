@@ -1052,7 +1052,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/contractor-payments/:id", async (req, res) => {
+  app.put("/api/contractor-payments/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       const processedBody = {
@@ -1067,6 +1067,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(payment);
     } catch (error) {
       res.status(400).json({ message: "Invalid contractor payment data" });
+    }
+  });
+
+  app.delete("/api/contractor-payments/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      // Get the payment first to check ownership and get transaction details
+      const payment = await storage.getContractorPayment(id);
+      if (!payment) {
+        return res.status(404).json({ message: "Contractor payment not found" });
+      }
+      
+      // Check if the contractor belongs to this user (via project)
+      const project = await storage.getProject(payment.contractorId);
+      if (!project || project.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Delete the payment
+      const deleted = await storage.deleteContractorPayment(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Contractor payment not found" });
+      }
+      
+      // Find and delete the associated transaction
+      const transactions = await storage.getTransactionsByUserId(userId);
+      const relatedTransaction = transactions.find((t: any) => 
+        t.type === 'expense' && 
+        t.description.includes('Yüklenici Ödemesi') && 
+        parseFloat(t.amount) === parseFloat(payment.amount)
+      );
+      
+      if (relatedTransaction) {
+        await storage.deleteTransaction(relatedTransaction.id);
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete contractor payment error:", error);
+      res.status(500).json({ message: "Failed to delete contractor payment" });
     }
   });
 

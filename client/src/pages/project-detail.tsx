@@ -60,6 +60,29 @@ export default function ProjectDetailPage() {
     },
   });
 
+  // Delete contractor payment mutation
+  const deleteContractorPaymentMutation = useMutation({
+    mutationFn: async (paymentId: string) => {
+      await apiRequest(`/api/contractor-payments/${paymentId}`, "DELETE");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/contractor-payments/contractor/${projectId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/financial-summary"] });
+      toast({
+        title: "Başarılı",
+        description: "Ödeme kaydı silindi ve ilgili kasa hareketi kaldırıldı.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Ödeme kaydı silinemedi.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Helper functions
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('tr-TR');
@@ -309,11 +332,23 @@ export default function ProjectDetailPage() {
                       <div key={payment.id} className="bg-dark-primary p-4 rounded-lg border border-dark-accent">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="text-white font-medium">{formatCurrency(payment.amount)}</h4>
-                          <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">
-                            {payment.paymentMethod === 'cash' ? 'Nakit' :
-                             payment.paymentMethod === 'bank_transfer' ? 'Banka Havalesi' :
-                             payment.paymentMethod === 'check' ? 'Çek' : 'Diğer'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 px-2 text-xs border-red-500/20 hover:bg-red-500/20 text-red-400 hover:text-red-300"
+                              onClick={() => deleteContractorPaymentMutation.mutate(payment.id)}
+                              disabled={deleteContractorPaymentMutation.isPending}
+                              title="Ödeme kaydını sil"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                            <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">
+                              {payment.paymentMethod === 'cash' ? 'Nakit' :
+                               payment.paymentMethod === 'bank_transfer' ? 'Banka Havalesi' :
+                               payment.paymentMethod === 'check' ? 'Çek' : 'Diğer'}
+                            </span>
+                          </div>
                         </div>
                         {payment.description && (
                           <p className="text-gray-400 text-sm mb-2">{payment.description}</p>
