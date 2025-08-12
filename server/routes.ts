@@ -1596,9 +1596,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/threads", isAuthenticated, async (req, res) => {
+  // Use DirectThread system instead
+  app.get("/api/threads", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = (req as any).user.id;
+      const userId = req.user.id;
       const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
       
       if (userCompanies.length === 0) {
@@ -1606,27 +1607,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userCompanyId = userCompanies[0].id;
-      const conversations = await storage.getConversationsByCompanyId(userCompanyId);
+      const threads = await storage.getDirectThreadsByUserId(userId);
       
-      // Enrich with company details and message info
-      const enrichedConversations = await Promise.all(conversations.map(async (conv) => {
-        const otherCompanyId = conv.company1Id === userCompanyId ? conv.company2Id : conv.company1Id;
-        const otherCompany = await storage.getCompany(otherCompanyId);
-        const messages = await storage.getMessagesByConversation(conv.company1Id, conv.company2Id);
-        const unreadCount = messages.filter(m => !m.isRead && m.toCompanyId === userCompanyId).length;
+      // Enrich threads with company information
+      const enrichedThreads = await Promise.all(threads.map(async (thread) => {
+        // Get the other participant (not current user)
+        const participants = thread.participants || [];
+        const otherParticipant = participants.find(p => p.userId !== userId);
         
-        return {
-          ...conv,
-          otherCompany,
-          unreadCount,
-          lastMessage: messages[messages.length - 1] || null
-        };
+        if (otherParticipant) {
+          const company = await storage.getCompany(otherParticipant.companyId);
+          return {
+            ...thread,
+            participants: [{
+              ...otherParticipant,
+              company
+            }]
+          };
+        }
+        
+        return thread;
       }));
       
-      res.json(enrichedConversations);
+      console.log("DirectThreads found:", enrichedThreads.length);
+      res.json(enrichedThreads);
     } catch (error) {
-      console.error("Error fetching conversations:", error);
-      res.status(500).json({ error: "Failed to fetch conversations" });
+      console.error("Error fetching direct threads:", error);
+      res.status(500).json({ error: "Failed to fetch threads" });
     }
   });
 
@@ -2379,38 +2386,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const { targetCompanyId } = req.body;
+      console.log("Creating thread for userId:", userId, "targetCompanyId:", targetCompanyId);
+      
       const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
       
       if (!userCompanies.length) {
+        console.log("No company found for user:", userId);
         return res.status(400).json({ error: "No company found for user" });
       }
 
       const firmId = userCompanies[0].id;
+      console.log("User company ID:", firmId);
       
       // Check if thread already exists or create new one
       const thread = await storage.getOrCreateDirectThread(firmId, targetCompanyId);
+      console.log("Thread created/found:", thread);
+      
+      // Refresh threads after creation
+      queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
+      
       res.json(thread);
     } catch (error) {
       console.error("Thread creation error:", error);
       res.status(500).json({ error: "Failed to create thread" });
-    }
-  });
-
-  app.get("/api/threads", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
-      
-      if (!userCompanies.length) {
-        return res.status(400).json({ error: "No company found for user" });
-      }
-
-      const firmId = userCompanies[0].id;
-      const threads = await storage.getDirectThreads(firmId);
-      res.json(threads);
-    } catch (error) {
-      console.error("Threads fetch error:", error);
-      res.status(500).json({ error: "Failed to fetch threads" });
     }
   });
 

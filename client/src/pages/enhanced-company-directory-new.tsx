@@ -405,12 +405,19 @@ export default function EnhancedCompanyDirectory() {
 
   const handleStartConversation = async (company: CompanyDirectory) => {
     try {
+      console.log("Starting conversation with company:", company.companyName, company.id);
+      
       // First check if thread already exists or create new one
       const response = await apiRequest("/api/threads/create", "POST", {
         targetCompanyId: company.id,
       });
       
+      console.log("Thread creation response:", response);
+      
       if (response && response.id) {
+        // Refresh threads list to show new thread
+        queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
+        
         setActiveThread(response.id);
         setActiveTab("messages");
         toast({ 
@@ -738,10 +745,20 @@ export default function EnhancedCompanyDirectory() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback>F</AvatarFallback>
+                          <AvatarFallback>
+                            {(() => {
+                              const activeThreadData = threads.find(t => t.id === activeThread);
+                              return (activeThreadData?.participants?.[0]?.company?.companyName || "F").charAt(0).toUpperCase();
+                            })()}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <CardTitle className="text-lg">Firma Adı</CardTitle>
+                          <CardTitle className="text-lg">
+                            {(() => {
+                              const activeThreadData = threads.find(t => t.id === activeThread);
+                              return activeThreadData?.participants?.[0]?.company?.companyName || "Firma";
+                            })()}
+                          </CardTitle>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Circle className="h-2 w-2 fill-green-500 text-green-500" />
                             <span>Çevrimiçi</span>

@@ -205,6 +205,7 @@ export interface IStorage {
   // Direct Threads & Messages
   getOrCreateDirectThread(firm1Id: string, firm2Id: string): Promise<DirectThread>;
   getDirectThreads(firmId: string): Promise<DirectThread[]>;
+  getDirectThreadsByUserId(userId: string): Promise<DirectThread[]>;
   getDirectThreadMessages(threadId: string, offset?: number, limit?: number): Promise<DirectMessage[]>;
   createDirectMessage(message: InsertDirectMessage): Promise<DirectMessage>;
   markDirectMessageAsRead(messageId: string): Promise<boolean>;
@@ -1794,6 +1795,17 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(directThreads)
       .where(or(eq(directThreads.firm1Id, firmId), eq(directThreads.firm2Id, firmId)))
       .orderBy(desc(directThreads.lastMessageAt));
+  }
+
+  async getDirectThreadsByUserId(userId: string): Promise<DirectThread[]> {
+    // Get user's company first
+    const userCompanies = await this.getCompanyDirectoryByUserId(userId);
+    if (userCompanies.length === 0) {
+      return [];
+    }
+    
+    const userCompanyId = userCompanies[0].id;
+    return await this.getDirectThreads(userCompanyId);
   }
 
   async getDirectThreadMessages(threadId: string, offset = 0, limit = 50): Promise<DirectMessage[]> {
