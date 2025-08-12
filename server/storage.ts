@@ -1318,7 +1318,9 @@ export class DatabaseStorage implements IStorage {
   async createCompany(insertCompany: InsertCompanyDirectory, userId: string): Promise<CompanyDirectory> {
     const companyData = {
       ...insertCompany,
-      userId
+      userId,
+      isProVisible: true, // Yeni firmalar otomatik olarak PRO Firma Rehberi'nde görünür olsun
+      isActive: true
     };
     const [result] = await db.insert(companyDirectory).values(companyData).returning();
     return result;
