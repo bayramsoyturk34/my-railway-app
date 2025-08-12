@@ -107,6 +107,15 @@ export default function EnhancedCompanyDirectory() {
     },
   });
 
+  // Mark notification as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: (notificationId: string) =>
+      apiRequest(`/api/notifications/${notificationId}/read`, "PATCH"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    },
+  });
+
   // Send message handler
   const handleSendMessage = () => {
     if (!messageText.trim() || !activeThread) return;
@@ -432,11 +441,13 @@ export default function EnhancedCompanyDirectory() {
                         notification.isRead ? 'bg-muted/50' : 'bg-primary/10'
                       }`}
                       onClick={() => {
-                        if (notification.type === "NEW_DM") {
-                          setActiveThread(notification.relatedId);
+                        if (notification.type === "NEW_MESSAGE" && notification.payload?.toCompanyId) {
+                          setSelectedCompany(notification.payload.toCompanyId);
                           setActiveTab("messaging");
                           setShowNotifications(false);
                         }
+                        // Bildirimi okundu olarak işaretle
+                        markAsReadMutation.mutate(notification.id);
                       }}
                     >
                       <p className="font-medium text-sm">{notification.title}</p>

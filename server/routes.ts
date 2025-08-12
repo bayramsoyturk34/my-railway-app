@@ -2008,16 +2008,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const message = await storage.createMessage(messageData);
       
+      // Gönderen firmanın adını al
+      const fromCompany = userCompanies?.find(c => c.id === req.body.fromCompanyId);
+      
       // Alıcı için bildirim oluştur
       const notification = {
-        userId: userId, // Şimdilik aynı kullanıcı
-        type: "NEW_MESSAGE",
+        userId: userId,
+        type: "NEW_MESSAGE" as const,
+        title: "Yeni Mesaj",
+        content: `${fromCompany?.companyName || 'Bir firma'} size mesaj gönderdi`,
         payload: {
-          fromCompanyName: userCompanies?.[0]?.companyName,
-          messagePreview: req.body.body.substring(0, 50)
+          fromCompanyId: req.body.fromCompanyId,
+          toCompanyId: req.body.toCompanyId,
+          messageId: message.id,
+          fromCompanyName: fromCompany?.companyName
         }
       };
       
+      console.log("Creating notification:", notification);
       await storage.createNotification(notification);
       res.status(201).json(message);
     } catch (error) {
