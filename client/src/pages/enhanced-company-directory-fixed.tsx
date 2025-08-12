@@ -134,7 +134,12 @@ export default function EnhancedCompanyDirectory() {
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Firma Rehberi</h1>
+        <div className="flex items-center gap-4">
+          <a href="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors">
+            PuantajPro
+          </a>
+          <h1 className="text-3xl font-bold">Firma Rehberi</h1>
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
