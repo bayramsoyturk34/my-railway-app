@@ -55,6 +55,10 @@ export default function EnhancedCompanyDirectory() {
     refetchInterval: 3000,
   });
 
+  // Debug notifications
+  console.log("All notifications:", notifications);
+  console.log("Notifications count:", notifications.length);
+
   // Messages query for active thread
   const { data: messages = [] } = useQuery<DirectMessage[]>({
     queryKey: [`/api/messages/${activeThread}`],

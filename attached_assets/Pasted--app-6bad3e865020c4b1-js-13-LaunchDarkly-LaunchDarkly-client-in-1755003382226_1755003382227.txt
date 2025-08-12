@@ -1,0 +1,68 @@
+      /////////////////////
+      
+_app-6bad3e865020c4b1.js:13 [LaunchDarkly] LaunchDarkly client initialized
+PuantajTakip:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+52Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'battery'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+framework-3ea2b49328ab5055.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-3ea2b49328ab5055.js:1Understand this warning
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+stallwart.build.js:1 stallwart: failed ping 4
+stallwart.build.js:1 stallwart: failed ping 5
+stallwart.build.js:1 stallwart: session stalled
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html?initialPath=%2Fcompany-directory&id=%3Ar8o8%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+useAuth.ts:40 🔧 useAuth state: Object
+App.tsx:46 Router Debug: Object
+useAuth.ts:10 🔍 useAuth: Starting auth check...
+useAuth.ts:11 🔍 useAuth: Session ID: z644hr5iimn
+queryClient.ts:33 API Request: GET /api/auth/user undefined
+queryClient.ts:55 API Response: 200 OK
+queryClient.ts:65 ✅ Response OK, processing...
+queryClient.ts:76 ✅ JSON Response Success: Object
+useAuth.ts:20 ✅ useAuth: Auth successful: modacizimtasarim@gmail.com
+useAuth.ts:40 🔧 useAuth state: Object
+App.tsx:46 Router Debug: Object
+App.tsx:30 DashboardWrapper location: /company-directory
+App.tsx:34 Not rendering Dashboard, location is: /company-directory
