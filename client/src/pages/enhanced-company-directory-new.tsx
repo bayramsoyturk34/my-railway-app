@@ -860,6 +860,7 @@ export default function EnhancedCompanyDirectory() {
                             onKeyPress={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
+                                console.log("Enter key pressed!");
                                 handleSendMessage();
                                 }
                               }}
@@ -871,7 +872,10 @@ export default function EnhancedCompanyDirectory() {
                           )}
                         </div>
                         <Button 
-                          onClick={handleSendMessage}
+                          onClick={() => {
+                            console.log("Send button clicked!");
+                            handleSendMessage();
+                          }}
                           disabled={(!messageText.trim() && !uploadingImage) || sendMessageMutation.isPending || !activeThread}
                           size="sm"
                         >
