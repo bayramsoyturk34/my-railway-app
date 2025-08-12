@@ -217,44 +217,66 @@ export default function Dashboard() {
                               !notification.isRead ? 'bg-blue-600/10' : ''
                             }`}
                             onClick={() => {
+                              console.log("🔥 DASHBOARD NOTIFICATION CLICKED!", notification);
+                              console.log("🔥 Type:", notification.type);
+                              console.log("🔥 Payload:", notification.payload);
+                              
                               if (!notification.isRead) {
                                 markNotificationAsReadMutation.mutate(notification.id);
                               }
                               
-                              if (notification.type === 'NEW_DM' && notification.payload) {
+                              // Mesaj bildirimi ise company directory'ye yönlendir
+                              if ((notification.type === 'NEW_MESSAGE' || notification.type === 'NEW_DM') && notification.payload) {
                                 const payload = notification.payload as any;
-                                const threadId = payload.threadId;
+                                console.log("🔥 Found message notification, fromCompanyId:", payload?.fromCompanyId);
                                 
-                                if (threadId) {
-                                  setLocation(`/enhanced-company-directory?threadId=${threadId}`);
+                                if (payload?.fromCompanyId) {
+                                  // Company directory'ye yönlendir ve aktif thread'i set et
+                                  setLocation(`/company-directory?activeThread=${payload.fromCompanyId}`);
+                                  setShowNotifications(false);
+                                  
+                                  toast({
+                                    title: "Mesaja Yönlendiriliyor",
+                                    description: `${payload.fromCompanyName || 'Firma'} firmasından gelen mesaj`,
+                                  });
                                 } else {
-                                  setLocation("/enhanced-company-directory");
+                                  console.log("🔥 No fromCompanyId in payload, redirecting to company directory");
+                                  setLocation("/company-directory");
+                                  setShowNotifications(false);
                                 }
-                                
-                                setShowNotifications(false);
-                                toast({
-                                  title: "Mesaja Yönlendiriliyor",
-                                  description: `${payload.fromCompanyName} firmasından gelen mesaj`,
-                                });
+                              } else {
+                                console.log("🔥 Not a message notification, type:", notification.type);
                               }
                             }}
                           >
                             <div className="flex items-start gap-3">
                               <div className="flex-shrink-0">
-                                {notification.type === 'NEW_DM' ? (
+                                {(notification.type === 'NEW_MESSAGE' || notification.type === 'NEW_DM') ? (
                                   <MessageCircle className="h-5 w-5 text-blue-400" />
                                 ) : (
                                   <Bell className="h-5 w-5 text-blue-400" />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                {notification.type === 'NEW_DM' && notification.payload && (
+                                {(notification.type === 'NEW_MESSAGE' || notification.type === 'NEW_DM') && notification.payload ? (
                                   <>
                                     <div className="text-white font-medium">
-                                      {(notification.payload as any).fromCompanyName}
+                                      {(notification.payload as any).fromCompanyName || notification.title || 'Yeni Mesaj'}
                                     </div>
                                     <div className="text-gray-300 text-sm mt-1 truncate">
-                                      {(notification.payload as any).message}
+                                      {notification.content || (notification.payload as any).message || 'Mesaj içeriği'}
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="text-white font-medium">
+                                      {notification.title || 'Bildirim'}
+                                    </div>
+                                    <div className="text-gray-300 text-sm mt-1 truncate">
+                                      {notification.content || 'Bildirim içeriği'}
                                     </div>
                                     <div className="text-xs text-gray-500 mt-1">
                                       {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}

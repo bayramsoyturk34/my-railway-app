@@ -1,0 +1,110 @@
+
+> rest-express@1.0.0 dev
+1:13:38 PM [express] serving on port 5000s
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Auth successful for user: rsvh6mhgufc
+1:13:46 PM [express] GET /api/auth/user 304 in 407ms :: {"id":"rsvh6mhgufc","email":"info@istanbulhi…
+1:13:46 PM [express] GET /api/company-directory 304 in 176ms :: [{"id":"8b4ebfc8-0a7c-4311-a4b4-c332…
+1:13:46 PM [express] GET /api/company-directory/my-companies 200 in 391ms :: [{"id":"84d28281-40c5-4…
+1:13:46 PM [express] GET /api/notifications 304 in 393ms :: [{"id":"c4e0c21b-4402-44ee-8af3-8ccec463…
+1:13:53 PM [express] GET /api/notifications 304 in 182ms :: [{"id":"c4e0c21b-4402-44ee-8af3-8ccec463…
+1:13:56 PM [express] GET /api/notifications 304 in 183ms :: [{"id":"c4e0c21b-4402-44ee-8af3-8ccec463…
+1:13:59 PM [express] GET /api/notifications 304 in 182ms :: [{"id":"c4e0c21b-4402-44ee-8af3-8ccec463…
+Auth successful for user: rsvh6mhgufc
+1:14:04 PM [express] GET /api/auth/user 304 in 182ms :: {"id":"rsvh6mhgufc","email":"info@istanbulhi…
+1:14:05 PM [express] GET /api/analytics/dashboard 304 in 241ms :: {"monthlyRevenue":[{"month":"Ocak"…
+1:14:05 PM [express] GET /api/customers 304 in 369ms :: [{"id":"88e00ca7-26f6-4553-8562-4a358d7a55f0…
+1:14:05 PM [express] GET /api/notifications 304 in 370ms :: [{"id":"c4e0c21b-4402-44ee-8af3-8ccec463…
+1:14:05 PM [express] GET /api/personnel 304 in 379ms :: [{"id":"ad7fdb58-2057-4048-b5f8-94a9ef1f9338…
+All transactions: [
+  {
+    type: 'income',
+    amount: '4000.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: nakit'
+  },
+  {
+    type: 'expense',
+    amount: '550.00',
+    description: 'BAYRAM soytürk - Maaş Ödemesi (salary)'
+  },
+  {
+    type: 'expense',
+    amount: '3000.00',
+    description: 'BAYRAM soytürk - Yüklenici Ödemesi: gfkg'
+  }
+]
+Financial summary: {
+  totalIncome: 4000,
+  totalExpenses: 3550,
+  netBalance: 450,
+  customerTasks: { total: 6000, pending: 1, completed: 0 },
+  customerQuotes: {
+    total: 9000,
+    approved: 0,
+    pending: 9000,
+    approvedCount: 0,
+    pendingCount: 1
+  },
+  customerPayments: { total: 4000, thisMonth: 4000, count: 1 }
+}
+1:14:05 PM [express] GET /api/financial-summary 304 in 729ms :: {"totalIncome":4000,"totalExpenses":…
+1:14:10 PM [express] GET /api/notifications 304 in 179ms :: [{"id":"c4e0c21b-4402-44ee-8af3-8ccec463…
+1:14:14 PM [express] GET /api/company-directory 304 in 180ms :: [{"id":"8b4ebfc8-0a7c-4311-a4b4-c332…
+1:14:14 PM [express] GET /api/company-directory/my-companies 304 in 181ms :: [{"id":"84d28281-40c5-4…
+Fetching messages between 84d28281-40c5-4355-b4f1-1a53b95ddaf1 and 150dc89b-e83f-44d7-a6d3-413867a18c1c
+Found 17 messages
+1:14:18 PM [express] GET /api/messages/150dc89b-e83f-44d7-a6d3-413867a18c1c 200 in 242ms :: [{"id":"…
+Fetching messages between 84d28281-40c5-4355-b4f1-1a53b95ddaf1 and 150dc89b-e83f-44d7-a6d3-413867a18c1c
+Found 17 messages
+1:14:22 PM [express] GET /api/messages/150dc89b-e83f-44d7-a6d3-413867a18c1c 304 in 244ms :: [{"id":"…
+Fetching messages between 84d28281-40c5-4355-b4f1-1a53b95ddaf1 and 150dc89b-e83f-44d7-a6d3-413867a18c1c
+Found 17 messages
+1:14:25 PM [express] GET /api/messages/150dc89b-e83f-44d7-a6d3-413867a18c1c 304 in 240ms :: [{"id":"…
+Fetching messages between 84d28281-40c5-4355-b4f1-1a53b95ddaf1 and 150dc89b-e83f-44d7-a6d3-413867a18c1c
+Found 17 messages
+1:14:29 PM [express] GET /api/messages/150dc89b-e83f-44d7-a6d3-413867a18c1c 304 in 240ms :: [{"id":"…
+Creating message with data: {
+  fromCompanyId: '84d28281-40c5-4355-b4f1-1a53b95ddaf1',
+  toCompanyId: '150dc89b-e83f-44d7-a6d3-413867a18c1c',
+  message: 'adgsssssssf',
+  fromUserId: 'rsvh6mhgufc',
+  toUserId: 'rsvh6mhgufc'
+}
+Gönderen firma bilgisi: {
+  id: '84d28281-40c5-4355-b4f1-1a53b95ddaf1',
+  userId: 'rsvh6mhgufc',
+  companyName: 'mehmet  tek',
+  contactPerson: 'mehmet  tek',
+  phone: '',
+  email: 'info@istanbulhirdavatcisi.com',
+  address: '',
+  city: null,
+  industry: null,
+  website: '',
+  description: 'Otomatik oluşturulan firma profili',
+  bio: null,
+  logoUrl: null,
+  isActive: true,
+  isProVisible: true,
+  isVerified: false,
+  subscriptionStatus: 'FREE',
+  profileImage: null,
+  verifiedAt: null,
+  lastSeen: null,
+  createdAt: 2025-08-12T09:48:21.871Z
+}
+Alıcı firma bilgisi: {
+  id: '150dc89b-e83f-44d7-a6d3-413867a18c1c',
+  userId: 'eynffxrvr1e',
+  companyName: 'paprika ticaret',
+  contactPerson: 'BAYRAM soytürk',
+  phone: '',
+  email: 'modacizimtasarim@gmail.com',
+  address: 'altınşehir mah alev sk no 11/c',
+  city: 'ümraniye',
+  industry: 'gıda',
+  website: '',
+  description: '',
+  bio: '',
