@@ -709,50 +709,70 @@ export default function EnhancedCompanyDirectory() {
 
         <TabsContent value="messages" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
-            {/* Conversations List */}
+            {/* Conversation Selector */}
             <Card className="lg:col-span-1">
               <CardHeader>
                 <CardTitle>Konuşmalar</CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[500px]">
-                  {threads.map((thread) => (
-                    <div
-                      key={thread.id}
-                      className={`p-4 border-b cursor-pointer hover:bg-muted/50 ${
-                        activeThread === thread.id ? "bg-muted" : ""
-                        }`}
-                      onClick={() => {
-                        console.log("Thread selected:", thread.id);
-                        setActiveThread(thread.id);
-                        // Force refresh of messages when thread is selected
-                        queryClient.invalidateQueries({ queryKey: ["/api/threads", thread.id, "messages"] });
-                      }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback>
-                              {(thread.participants?.[0]?.company?.companyName || "F").charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+              <CardContent className="p-4">
+                {/* Dropdown Konuşma Seçici */}
+                <Select 
+                  value={activeThread || ""} 
+                  onValueChange={(value) => {
+                    console.log("Thread selected:", value);
+                    setActiveThread(value);
+                    queryClient.invalidateQueries({ queryKey: ["/api/threads", value, "messages"] });
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Konuşma seç..." />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {threads.length === 0 ? (
+                      <SelectItem value="" disabled>
+                        Henüz konuşma yok
+                      </SelectItem>
+                    ) : (
+                      threads.map((thread) => (
+                        <SelectItem key={thread.id} value={thread.id}>
+                          Thread {thread.id.slice(0, 8)}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+
+                {/* Seçilen Konuşmanın Detayları */}
+                {activeThread && (
+                  <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    {(() => {
+                      const selectedThread = threads.find(t => t.id === activeThread);
+                      return selectedThread ? (
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback>
+                                {selectedThread.id.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">
+                              Thread {selectedThread.id.slice(0, 8)}
+                            </p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              Aktif konuşma
+                            </p>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {selectedThread.lastMessageAt && formatLastSeen(selectedThread.lastMessageAt.toString())}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">
-                            {thread.participants?.[0]?.company?.companyName || "Firma"}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {thread.lastMessage?.body || "Mesaj yok"}
-                          </p>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {thread.lastMessageAt && formatLastSeen(thread.lastMessageAt.toString())}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </ScrollArea>
+                      ) : null;
+                    })()}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -767,7 +787,7 @@ export default function EnhancedCompanyDirectory() {
                           <AvatarFallback>
                             {(() => {
                               const activeThreadData = threads.find(t => t.id === activeThread);
-                              return (activeThreadData?.participants?.[0]?.company?.companyName || "F").charAt(0).toUpperCase();
+                              return activeThreadData?.id?.charAt(0).toUpperCase() || "T";
                             })()}
                           </AvatarFallback>
                         </Avatar>
@@ -775,7 +795,7 @@ export default function EnhancedCompanyDirectory() {
                           <CardTitle className="text-lg">
                             {(() => {
                               const activeThreadData = threads.find(t => t.id === activeThread);
-                              return activeThreadData?.participants?.[0]?.company?.companyName || "Firma";
+                              return `Thread ${activeThreadData?.id.slice(0, 8) || "Unknown"}`;
                             })()}
                           </CardTitle>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -837,13 +857,14 @@ export default function EnhancedCompanyDirectory() {
                                       minute: '2-digit'
                                       })}
                                   </span>
-                                  {isOutgoing && (
-                                    message.isRead ? (
+                                    {isOutgoing && (
+                                      message.isRead ? (
                                         <CheckCheck className="h-3 w-3 opacity-70" />
-                                    ) : (
+                                      ) : (
                                         <Check className="h-3 w-3 opacity-70" />
-                                    )
-                                  )}
+                                      )
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             );

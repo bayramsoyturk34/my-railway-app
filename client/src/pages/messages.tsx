@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, 
   MoreHorizontal, 
@@ -133,11 +134,32 @@ export default function Messages() {
       </div>
 
       <div className="flex h-[calc(100vh-80px)]">
-        {/* Sol Panel - Firma Listesi */}
+        {/* Sol Panel - Firma Seçici */}
         <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-          {/* Search */}
+          {/* Dropdown Firma Seçici */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="relative">
+            <h3 className="text-lg font-semibold mb-3">Sohbetler</h3>
+            <Select value={activeThread || ""} onValueChange={setActiveThread}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Firma seç..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {filteredCompanies.length === 0 ? (
+                  <SelectItem value="" disabled>
+                    Henüz firma eklenmemiş
+                  </SelectItem>
+                ) : (
+                  filteredCompanies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.companyName}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            
+            {/* Arama Kutusu */}
+            <div className="relative mt-3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Firma ara..."
@@ -148,46 +170,43 @@ export default function Messages() {
             </div>
           </div>
 
-          {/* Firmalar Listesi */}
-          <ScrollArea className="flex-1">
-            <div className="p-2">
-              {filteredCompanies.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Henüz firma yok</p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {filteredCompanies.map((company) => (
-                    <div
-                      key={company.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        activeThread === company.id 
-                          ? 'bg-primary/10 border border-primary/20' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
-                      onClick={() => setActiveThread(company.id)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>
-                            {company.companyName?.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{company.companyName}</p>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Circle className="h-2 w-2 fill-green-500 text-green-500" />
-                            <span>Çevrimiçi</span>
-                          </div>
-                        </div>
+          {/* Seçilen Firmanın Detayları */}
+          {activeThread && (
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              {(() => {
+                const selectedCompany = companies.find(c => c.id === activeThread);
+                return selectedCompany ? (
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback>
+                        {selectedCompany.companyName?.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold">{selectedCompany.companyName}</h3>
+                      <p className="text-sm text-muted-foreground">{selectedCompany.contactPerson}</p>
+                      <div className="flex items-center gap-1 text-sm text-green-600 mt-1">
+                        <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+                        <span>Çevrimiçi</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ) : null;
+              })()}
             </div>
-          </ScrollArea>
+          )}
+
+          {/* Boş Alan */}
+          <div className="flex-1 bg-gray-50 dark:bg-gray-900">
+            {!activeThread && (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-muted-foreground">
+                  <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                  <p className="text-sm">Mesajlaşmak için firma seçin</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Sağ Panel - Mesajlaşma Alanı */}
