@@ -143,7 +143,7 @@ export default function Messages() {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Firma seç..." />
               </SelectTrigger>
-              <SelectContent className="max-h-60 overflow-y-auto">
+              <SelectContent className="max-h-50 overflow-y-auto">
                 {filteredCompanies.length === 0 ? (
                   <SelectItem value="no-companies" disabled>
                     Henüz firma eklenmemiş
