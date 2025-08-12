@@ -716,45 +716,32 @@ export default function EnhancedCompanyDirectory() {
                 <CardTitle>Konuşmalar</CardTitle>
               </CardHeader>
               <CardContent className="p-4">
-                {/* Arama Kutusu */}
-                <div className="relative mb-3">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Konuşma ara..."
-                    value={threadSearchTerm}
-                    onChange={(e) => setThreadSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                {/* Çok Kompakt Thread Listesi */}
-                <div className="max-h-24 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md">
-                  {threads.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground text-center">
-                      {threadSearchTerm ? "Eşleşen konuşma bulunamadı" : "Henüz konuşma yok"}
-                    </div>
-                  ) : (
-                    threads
-                      .filter((thread) =>
-                        thread.id.toLowerCase().includes(threadSearchTerm.toLowerCase())
-                      )
-                      .map((thread) => (
-                        <div
-                          key={thread.id}
-                          onClick={() => {
-                            console.log("Thread selected:", thread.id);
-                            setActiveThread(thread.id);
-                            queryClient.invalidateQueries({ queryKey: ["/api/threads", thread.id, "messages"] });
-                          }}
-                          className={`px-2 py-1 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                            activeThread === thread.id ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-l-blue-500' : ''
-                          }`}
-                        >
-                          <div className="font-medium text-xs">Thread {thread.id.slice(0, 8)}</div>
-                        </div>
+                {/* Kompakt Açılır Menü */}
+                <Select 
+                  value={activeThread || ""} 
+                  onValueChange={(value) => {
+                    console.log("Thread selected:", value);
+                    setActiveThread(value);
+                    queryClient.invalidateQueries({ queryKey: ["/api/threads", value, "messages"] });
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Konuşma seç..." />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-40">
+                    {threads.length === 0 ? (
+                      <SelectItem value="no-threads" disabled>
+                        Henüz konuşma yok
+                      </SelectItem>
+                    ) : (
+                      threads.map((thread) => (
+                        <SelectItem key={thread.id} value={thread.id}>
+                          Thread {thread.id.slice(0, 8)}
+                        </SelectItem>
                       ))
-                  )}
-                </div>
+                    )}
+                  </SelectContent>
+                </Select>
 
                 {/* Seçilen Konuşmanın Detayları */}
                 {activeThread && (
