@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Home, FileText, Download, Plus, BarChart, Calendar, DollarSign } from "lucide-react";
+import { Home, FileText, Download, Plus, BarChart, Calendar, DollarSign, RefreshCw } from "lucide-react";
 import Header from "@/components/layout/header";
 import AdvancedFilters, { type FilterOptions } from "@/components/filters/advanced-filters";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,46 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+interface FinancialSummary {
+  totalIncome: number;
+  totalExpenses: number;
+  netBalance: number;
+  customerPayments: {
+    total: number;
+    thisMonth: number;
+    count: number;
+  };
+  customerTasks: {
+    total: number;
+    pending: number;
+    completed: number;
+  };
+}
+
+interface DashboardData {
+  monthlyRevenue: Array<{
+    month: string;
+    amount: number;
+  }>;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  company?: string;
+  email?: string;
+  status: string;
+}
+
+interface Timesheet {
+  id: string;
+  personnelName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  notes: string;
+}
 
 interface ReportTemplate {
   id: string;
@@ -68,29 +108,32 @@ export default function ReportsPage() {
   const { toast } = useToast();
 
   // Fetch data for reports
-  const { data: customers = [] } = useQuery({
+  const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
   });
 
-  const { data: transactions = [] } = useQuery({
+  const { data: transactions = [], isLoading: transactionsLoading } = useQuery({
     queryKey: ["/api/transactions"],
   });
 
-  const { data: personnel = [] } = useQuery({
+  const { data: personnel = [], isLoading: personnelLoading } = useQuery({
     queryKey: ["/api/personnel"],
   });
 
-  const { data: timesheets = [] } = useQuery({
+  const { data: timesheets = [], isLoading: timesheetsLoading } = useQuery<Timesheet[]>({
     queryKey: ["/api/timesheets"],
   });
 
-  const { data: financialSummary } = useQuery({
+  const { data: financialSummary, isLoading: financialLoading } = useQuery<FinancialSummary>({
     queryKey: ["/api/financial-summary"],
   });
 
-  const { data: dashboardData } = useQuery({
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery<DashboardData>({
     queryKey: ["/api/analytics/dashboard"],
   });
+
+  const isLoadingData = customersLoading || transactionsLoading || personnelLoading || 
+                       timesheetsLoading || financialLoading || dashboardLoading;
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -342,10 +385,37 @@ export default function ReportsPage() {
           <h1 className="text-2xl font-bold">Rapor Merkezi</h1>
         </div>
 
-        <AdvancedFilters
-          onFilterChange={handleFilterChange}
-          onExport={handleExport}
-        />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex-1">
+            <AdvancedFilters
+              onFilterChange={handleFilterChange}
+              onExport={handleExport}
+            />
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-4 border-dark-accent text-gray-400 hover:bg-dark-accent"
+            onClick={() => window.location.reload()}
+            disabled={isLoadingData}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {isLoadingData ? "Yükleniyor..." : "Yenile"}
+          </Button>
+        </div>
+
+        {/* Loading State */}
+        {isLoadingData && (
+          <Card className="bg-dark-secondary border-dark-accent mb-6">
+            <CardContent className="py-8 text-center">
+              <div className="flex items-center justify-center gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                <p className="text-gray-400">Rapor verileri yükleniyor...</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Report Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 mt-6">
