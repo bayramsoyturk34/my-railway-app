@@ -178,6 +178,25 @@ export default function EnhancedCompanyDirectory() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeThread]);
 
+  // URL parameter handling for direct thread navigation
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const threadId = urlParams.get('threadId');
+    
+    if (threadId) {
+      console.log("Opening thread from URL:", threadId);
+      setActiveThread(threadId);
+      setActiveTab("messages");
+      
+      // Clear URL parameter after handling
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Force refresh
+      queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/threads", threadId, "messages"] });
+    }
+  }, [queryClient]);
+
   // Draft auto-save
   useEffect(() => {
     if (activeThread && draftText) {
@@ -221,9 +240,14 @@ export default function EnhancedCompanyDirectory() {
   // Messages for active thread
   const { data: messages = [], refetch: refetchMessages } = useQuery<DirectMessage[]>({
     queryKey: ["/api/threads", activeThread, "messages"],
-    queryFn: () => apiRequest(`/api/threads/${activeThread}/messages`, "GET"),
+    queryFn: async () => {
+      if (!activeThread) return [];
+      const response = await apiRequest(`/api/threads/${activeThread}/messages`, "GET");
+      console.log("Messages loaded for thread:", activeThread, response);
+      return response;
+    },
     enabled: !!activeThread,
-    refetchInterval: 2000,
+    refetchInterval: 3000,
     staleTime: 0,
     gcTime: 0,
   });
@@ -412,6 +436,25 @@ export default function EnhancedCompanyDirectory() {
     if (hours < 24) return `${hours} saat önce`;
     const days = Math.floor(hours / 24);
     return `${days} gün önce`;
+  };
+
+  // Handle notification click to open specific thread
+  const handleNotificationClick = (notification: any) => {
+    console.log("Notification clicked:", notification);
+    
+    if (notification.threadId) {
+      setActiveThread(notification.threadId);
+      setActiveTab("messages");
+      
+      // Force refresh of threads and messages
+      queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/threads", notification.threadId, "messages"] });
+      
+      toast({
+        title: "Mesaja Yönlendirildi",
+        description: "Konuşma sayfasına geçtiniz",
+      });
+    }
   };
 
   return (
@@ -653,19 +696,28 @@ export default function EnhancedCompanyDirectory() {
                       className={`p-4 border-b cursor-pointer hover:bg-muted/50 ${
                         activeThread === thread.id ? "bg-muted" : ""
                         }`}
-                      onClick={() => setActiveThread(thread.id)}
+                      onClick={() => {
+                        console.log("Thread selected:", thread.id);
+                        setActiveThread(thread.id);
+                        // Force refresh of messages when thread is selected
+                        queryClient.invalidateQueries({ queryKey: ["/api/threads", thread.id, "messages"] });
+                      }}
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative">
                           <Avatar className="h-10 w-10">
-                            <AvatarFallback>F</AvatarFallback>
+                            <AvatarFallback>
+                              {(thread.participants?.[0]?.company?.companyName || "F").charAt(0).toUpperCase()}
+                            </AvatarFallback>
                           </Avatar>
                           <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">Firma Adı</p>
+                          <p className="font-medium truncate">
+                            {thread.participants?.[0]?.company?.companyName || "Firma"}
+                          </p>
                           <p className="text-sm text-muted-foreground truncate">
-                            Son mesaj önizlemesi...
+                            {thread.lastMessage?.body || "Mesaj yok"}
                           </p>
                         </div>
                         <div className="text-xs text-muted-foreground">

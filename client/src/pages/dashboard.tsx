@@ -221,7 +221,14 @@ export default function Dashboard() {
                               
                               if (notification.type === 'NEW_DM' && notification.payload) {
                                 const payload = notification.payload as any;
-                                setLocation("/company-directory");
+                                const threadId = payload.threadId;
+                                
+                                if (threadId) {
+                                  setLocation(`/enhanced-company-directory?threadId=${threadId}`);
+                                } else {
+                                  setLocation("/enhanced-company-directory");
+                                }
+                                
                                 setShowNotifications(false);
                                 toast({
                                   title: "Mesaja Yönlendiriliyor",
