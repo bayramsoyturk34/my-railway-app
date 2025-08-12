@@ -139,7 +139,23 @@ export default function Messages() {
           {/* Dropdown Firma Seçici */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-3">Sohbetler</h3>
-            <Select value={activeThread || ""} onValueChange={setActiveThread}>
+            
+            {/* Arama Kutusu */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Firma ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <Select 
+              value={activeThread || ""} 
+              onValueChange={setActiveThread}
+              key={`select-${searchTerm}`}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Firma seç..." />
               </SelectTrigger>
@@ -162,17 +178,6 @@ export default function Messages() {
                 )}
               </SelectContent>
             </Select>
-            
-            {/* Arama Kutusu */}
-            <div className="relative mt-3">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Firma ara..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
           </div>
 
           {/* Seçilen Firmanın Detayları */}
