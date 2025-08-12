@@ -69,18 +69,22 @@ export default function Messages() {
 
   // Mesaj gönderme
   const sendMessageMutation = useMutation({
-    mutationFn: (data: { content: string; toCompanyId: string }) =>
-      apiRequest(`/api/threads/${data.toCompanyId}/messages`, "POST", {
+    mutationFn: async (data: { content: string; toCompanyId: string }) => {
+      // Önce basit mesaj endpoint'ini kullan - bu otomatik thread oluşturur
+      return apiRequest("/api/messages", "POST", {
+        receiverFirmId: data.toCompanyId,
         body: data.content,
-      }),
+      });
+    },
     onSuccess: () => {
       setMessageText("");
       queryClient.invalidateQueries({ queryKey: [`/api/messages/${activeThread}`] });
       scrollToBottom();
     },
     onError: (error) => {
+      console.error("Message send error:", error);
       toast({
-        title: "Hata",
+        title: "Hata", 
         description: "Mesaj gönderilemedi",
         variant: "destructive",
       });
