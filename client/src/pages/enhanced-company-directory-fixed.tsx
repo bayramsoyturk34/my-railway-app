@@ -442,7 +442,7 @@ export default function EnhancedCompanyDirectory() {
                       }`}
                       onClick={() => {
                         if (notification.type === "NEW_MESSAGE" && notification.payload?.toCompanyId) {
-                          setSelectedCompany(notification.payload.toCompanyId);
+                          setActiveThread(notification.payload.toCompanyId);
                           setActiveTab("messaging");
                           setShowNotifications(false);
                         }

@@ -2008,25 +2008,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const message = await storage.createMessage(messageData);
       
-      // Gönderen firmanın adını al  
-      const fromCompany = userCompanies?.[0]; // Kullanıcının kendi firması
+      // Alıcı firmanın sahibini bul - tüm firmalar arasından ara
+      const allCompanies = await storage.getCompanyDirectory();
+      const receiverCompany = allCompanies.find(c => c.id === req.body.receiverFirmId);
+      if (receiverCompany && receiverCompany.userId !== userId) {
+        // Gönderen firmanın adını al  
+        const fromCompany = userCompanies?.[0]; // Kullanıcının kendi firması
+        
+        // Alıcı için bildirim oluştur
+        const notification = {
+          userId: receiverCompany.userId, // Alıcı firmanın sahibi
+          type: "NEW_MESSAGE" as const,
+          title: "Yeni Mesaj",
+          content: `${fromCompany?.companyName || 'Bir firma'} size mesaj gönderdi`,
+          payload: {
+            fromCompanyId: fromCompanyId,
+            toCompanyId: req.body.receiverFirmId,
+            messageId: message.id,
+            fromCompanyName: fromCompany?.companyName
+          }
+        };
+        
+        console.log("Creating notification for receiver:", notification);
+        await storage.createNotification(notification);
+      }
       
-      // Alıcı için bildirim oluştur
-      const notification = {
-        userId: userId,
-        type: "NEW_MESSAGE" as const,
-        title: "Yeni Mesaj",
-        content: `${fromCompany?.companyName || 'Bir firma'} size mesaj gönderdi`,
-        payload: {
-          fromCompanyId: fromCompanyId,
-          toCompanyId: req.body.receiverFirmId,
-          messageId: message.id,
-          fromCompanyName: fromCompany?.companyName
-        }
-      };
-      
-      console.log("Creating notification:", notification);
-      await storage.createNotification(notification);
       res.status(201).json(message);
     } catch (error) {
       console.error("Error creating message:", error);
