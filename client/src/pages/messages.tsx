@@ -71,8 +71,7 @@ export default function Messages() {
   const sendMessageMutation = useMutation({
     mutationFn: (data: { content: string; toCompanyId: string }) =>
       apiRequest(`/api/threads/${data.toCompanyId}/messages`, "POST", {
-        content: data.content,
-        toCompanyId: data.toCompanyId,
+        body: data.content,
       }),
     onSuccess: () => {
       setMessageText("");
