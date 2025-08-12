@@ -33,6 +33,7 @@ export default function EnhancedCompanyDirectory() {
   const [activeTab, setActiveTab] = useState("directory");
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -140,6 +141,17 @@ export default function EnhancedCompanyDirectory() {
     },
   });
 
+  const markNotificationAsReadMutation = useMutation({
+    mutationFn: (notificationId: string) =>
+      apiRequest(`/api/notifications/${notificationId}/read`, "PATCH"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    },
+    onError: () => {
+      console.error("Failed to mark notification as read");
+    },
+  });
+
   const onSubmit = (data: InsertCompanyDirectory) => {
     createCompanyMutation.mutate(data);
   };
@@ -231,10 +243,113 @@ export default function EnhancedCompanyDirectory() {
         </div>
         <div className="flex items-center gap-3">
           {notifications.filter(n => !n.isRead).length > 0 && (
-            <Button variant="outline" size="sm" className="border-blue-500 text-blue-400">
-              <Bell className="h-4 w-4 mr-2" />
-              {notifications.filter(n => !n.isRead).length} Bildirim
-            </Button>
+            <div className="relative">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-blue-500 text-blue-400 hover:bg-blue-600/10"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <Bell className="h-4 w-4 mr-2" />
+                {notifications.filter(n => !n.isRead).length} Bildirim
+              </Button>
+              
+              {showNotifications && (
+                <div className="absolute top-full right-0 mt-2 w-80 bg-dark-secondary border border-dark-accent rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                  <div className="p-4 border-b border-dark-accent">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-white font-semibold">Bildirimler</h3>
+                      <div className="flex items-center gap-2">
+                        {notifications.filter(n => !n.isRead).length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              // Mark all notifications as read
+                              notifications.filter(n => !n.isRead).forEach(n => {
+                                markNotificationAsReadMutation.mutate(n.id);
+                              });
+                            }}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            Tümünü okundu işaretle
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowNotifications(false)}
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-gray-400">
+                        Henüz bildirim yok
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <div 
+                          key={notification.id} 
+                          className={`p-4 border-b border-dark-accent/50 hover:bg-dark-primary/50 cursor-pointer ${
+                            !notification.isRead ? 'bg-blue-600/10' : ''
+                          }`}
+                          onClick={() => {
+                            // Mark notification as read
+                            if (!notification.isRead) {
+                              markNotificationAsReadMutation.mutate(notification.id);
+                            }
+                            
+                            if (notification.type === 'NEW_DM' && notification.payload) {
+                              // Mesaj konuşmasına git
+                              const payload = notification.payload as any;
+                              setActiveTab("messages");
+                              setShowNotifications(false);
+                              toast({
+                                title: "Mesaja Yönlendiriliyor",
+                                description: `${payload.fromCompanyName} firmasından gelen mesaj`,
+                              });
+                            }
+                          }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0">
+                              {notification.type === 'NEW_DM' ? (
+                                <MessageCircle className="h-5 w-5 text-blue-400" />
+                              ) : (
+                                <Bell className="h-5 w-5 text-blue-400" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              {notification.type === 'NEW_DM' && notification.payload && (
+                                <>
+                                  <div className="text-white font-medium">
+                                    {(notification.payload as any).fromCompanyName}
+                                  </div>
+                                  <div className="text-gray-300 text-sm mt-1 truncate">
+                                    {(notification.payload as any).message}
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {new Date(notification.createdAt).toLocaleString('tr-TR')}
+                                  </div>
+                                </>
+                              )}
+                              {!notification.isRead && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
           <Button
             onClick={() => setShowForm(true)}
