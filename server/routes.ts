@@ -1987,13 +1987,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fromCompanyId = userCompanies?.[0]?.id || "";
       
       // Thread bulma veya oluşturma
-      let thread = await storage.getDirectThreadByParticipants(fromCompanyId, req.body.receiverFirmId);
-      if (!thread) {
-        thread = await storage.createDirectThread({
-          firm1Id: fromCompanyId,
-          firm2Id: req.body.receiverFirmId
-        });
-      }
+      const thread = await storage.getOrCreateDirectThread(fromCompanyId, req.body.receiverFirmId);
       
       // Mesaj oluşturma
       const messageData = {
