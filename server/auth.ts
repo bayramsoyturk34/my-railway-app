@@ -81,6 +81,30 @@ export async function setupAuth(app: Express) {
 
       const user = await storage.upsertUser(newUser);
       
+      // Auto-create company profile for new user
+      try {
+        const defaultCompany = {
+          companyName: `${firstName} ${lastName}`,
+          contactPerson: `${firstName} ${lastName}`,
+          email,
+          phone: "",
+          address: "",
+          description: "Otomatik oluşturulan firma profili",
+          sector: "",
+          website: "",
+          hasPROAccess: false,
+          isVerified: false,
+          isBlocked: false,
+          isActive: true
+        };
+        
+        await storage.createCompany(defaultCompany, user.id);
+        console.log("Auto-created company profile for new user:", user.id);
+      } catch (error) {
+        console.error("Error auto-creating company profile during registration:", error);
+        // Don't fail registration if company creation fails
+      }
+      
       // Generate database session
       const sessionId = await createSession(user.id);
       
@@ -110,6 +134,32 @@ export async function setupAuth(app: Express) {
           profileImageUrl: null,
         };
         user = await storage.upsertUser(demoUser);
+        
+        // Auto-create company profile for demo user if not exists
+        try {
+          const userCompanies = await storage.getCompanyDirectoryByUserId(user.id);
+          if (userCompanies.length === 0) {
+            const demoCompany = {
+              companyName: "Demo Firma",
+              contactPerson: "Demo User",
+              email: "demo@puantajpro.com",
+              phone: "0555 123 4567",
+              address: "Demo Adres",
+              description: "Demo kullanıcı firma profili",
+              sector: "Teknoloji",
+              website: "https://demo.com",
+              hasPROAccess: true,
+              isVerified: true,
+              isBlocked: false,
+              isActive: true
+            };
+            
+            await storage.createCompany(demoCompany, user.id);
+            console.log("Auto-created demo company profile");
+          }
+        } catch (error) {
+          console.error("Error auto-creating demo company profile:", error);
+        }
       } else {
         // Regular user login
         if (!email || !password) {
@@ -158,6 +208,34 @@ export async function setupAuth(app: Express) {
       if (!user) {
         console.log("Session not found or expired");
         return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Auto-create company profile if user doesn't have one
+      try {
+        const userCompanies = await storage.getCompanyDirectoryByUserId(user.id);
+        if (userCompanies.length === 0) {
+          // Create default company profile for user
+          const defaultCompany = {
+            companyName: `${user.firstName} ${user.lastName}`,
+            contactPerson: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            phone: "",
+            address: "",
+            description: "Otomatik oluşturulan firma profili",
+            sector: "",
+            website: "",
+            hasPROAccess: false,
+            isVerified: false,
+            isBlocked: false,
+            isActive: true
+          };
+          
+          await storage.createCompany(defaultCompany, user.id);
+          console.log("Auto-created company profile for user:", user.id);
+        }
+      } catch (error) {
+        console.error("Error auto-creating company profile:", error);
+        // Don't fail authentication if company creation fails
       }
 
       console.log("Auth successful for user:", user.id);
