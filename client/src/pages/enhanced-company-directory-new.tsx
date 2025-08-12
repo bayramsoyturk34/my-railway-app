@@ -710,72 +710,7 @@ export default function EnhancedCompanyDirectory() {
 
         <TabsContent value="messages" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
-            {/* Conversation Selector */}
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle>Konuşmalar</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                {/* Kompakt Açılır Menü */}
-                <Select 
-                  value={activeThread || ""} 
-                  onValueChange={(value) => {
-                    console.log("Thread selected:", value);
-                    setActiveThread(value);
-                    queryClient.invalidateQueries({ queryKey: ["/api/threads", value, "messages"] });
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Konuşma seç..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-40">
-                    {threads.length === 0 ? (
-                      <SelectItem value="no-threads" disabled>
-                        Henüz konuşma yok
-                      </SelectItem>
-                    ) : (
-                      threads.map((thread) => (
-                        <SelectItem key={thread.id} value={thread.id}>
-                          Thread {thread.id.slice(0, 8)}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
 
-                {/* Seçilen Konuşmanın Detayları */}
-                {activeThread && (
-                  <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                    {(() => {
-                      const selectedThread = threads.find(t => t.id === activeThread);
-                      return selectedThread ? (
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <Avatar className="h-10 w-10">
-                              <AvatarFallback>
-                                {selectedThread.id.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">
-                              Thread {selectedThread.id.slice(0, 8)}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              Aktif konuşma
-                            </p>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {selectedThread.lastMessageAt && formatLastSeen(selectedThread.lastMessageAt.toString())}
-                            </div>
-                          </div>
-                        </div>
-                      ) : null;
-                    })()}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
             {/* Chat Area */}
             <Card className="lg:col-span-2">
