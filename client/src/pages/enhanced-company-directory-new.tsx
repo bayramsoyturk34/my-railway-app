@@ -729,7 +729,7 @@ export default function EnhancedCompanyDirectory() {
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {threads.length === 0 ? (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="no-threads" disabled>
                         Henüz konuşma yok
                       </SelectItem>
                     ) : (

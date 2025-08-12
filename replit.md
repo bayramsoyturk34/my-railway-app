@@ -59,6 +59,7 @@ Preferred communication style: Simple, everyday language.
 - Integrated Personnel and Contractor Payment Systems with automatic cash management.
 - Enhanced Messaging Notification System with direct routing.
 - Turkish character support throughout the application, including exports.
+- Compact Dropdown UI for messaging - converted long conversation lists to space-efficient dropdown menus in both Messages page and Enhanced Company Directory.
 
 # External Dependencies
 

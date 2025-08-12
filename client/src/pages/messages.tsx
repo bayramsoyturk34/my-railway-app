@@ -145,7 +145,7 @@ export default function Messages() {
               </SelectTrigger>
               <SelectContent className="max-h-60">
                 {filteredCompanies.length === 0 ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="no-companies" disabled>
                     Henüz firma eklenmemiş
                   </SelectItem>
                 ) : (
