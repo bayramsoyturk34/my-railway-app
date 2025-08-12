@@ -441,8 +441,8 @@ export default function EnhancedCompanyDirectory() {
                         notification.isRead ? 'bg-muted/50' : 'bg-primary/10'
                       }`}
                       onClick={() => {
-                        if (notification.type === "NEW_MESSAGE" && notification.payload?.toCompanyId) {
-                          setActiveThread(notification.payload.toCompanyId);
+                        if (notification.type === "NEW_MESSAGE" && notification.payload?.fromCompanyId) {
+                          setActiveThread(notification.payload.fromCompanyId);
                           setActiveTab("messaging");
                           setShowNotifications(false);
                         }
@@ -451,7 +451,7 @@ export default function EnhancedCompanyDirectory() {
                       }}
                     >
                       <p className="font-medium text-sm">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground">{notification.message}</p>
+                      <p className="text-xs text-muted-foreground">{notification.content}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {notification.createdAt ? new Date(notification.createdAt).toLocaleTimeString('tr-TR') : ''}
                       </p>
