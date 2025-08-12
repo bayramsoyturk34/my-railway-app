@@ -57,7 +57,7 @@ export async function setupAuth(app: Express) {
   // Register endpoint
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { email, password, firstName, lastName } = req.body;
+      const { email, password, firstName, lastName, companyName, phone, city, industry } = req.body;
       
       if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ message: "Tüm alanlar gereklidir" });
@@ -84,13 +84,15 @@ export async function setupAuth(app: Express) {
       // Auto-create company profile for new user
       try {
         const defaultCompany = {
-          companyName: `${firstName} ${lastName}`,
+          companyName: companyName || `${firstName} ${lastName}`,
           contactPerson: `${firstName} ${lastName}`,
           email,
-          phone: "",
+          phone: phone || "",
           address: "",
-          description: "Otomatik oluşturulan firma profili",
-          sector: "",
+          city: city || "",
+          industry: industry || "",
+          description: "Kayıt sırasında oluşturulan firma profili",
+          sector: industry || "",
           website: "",
           hasPROAccess: false,
           isVerified: false,

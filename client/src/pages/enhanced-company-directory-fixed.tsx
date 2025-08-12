@@ -163,10 +163,6 @@ export default function EnhancedCompanyDirectory() {
               </Badge>
             )}
           </Button>
-          <Button onClick={() => setShowDirectoryForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Firma Ekle
-          </Button>
         </div>
       </div>
 

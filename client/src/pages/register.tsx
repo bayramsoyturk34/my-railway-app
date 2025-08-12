@@ -16,6 +16,10 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    companyName: "",
+    phone: "",
+    city: "",
+    industry: "",
   });
 
   const registerMutation = useMutation({
@@ -29,6 +33,10 @@ export default function Register() {
         lastName: data.lastName,
         email: data.email,
         password: data.password,
+        companyName: data.companyName,
+        phone: data.phone,
+        city: data.city,
+        industry: data.industry,
       });
     },
     onSuccess: async (data) => {
@@ -150,6 +158,64 @@ export default function Register() {
                 className="bg-gray-700 border-gray-600 text-white"
                 placeholder="Şifrenizi tekrar girin"
               />
+            </div>
+            
+            {/* Firma Bilgileri Bölümü */}
+            <div className="pt-4 border-t border-gray-600">
+              <h3 className="text-lg font-semibold text-gray-300 mb-4">Firma Bilgileri</h3>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyName" className="text-gray-300">Firma Adı</Label>
+                  <Input
+                    id="companyName"
+                    type="text"
+                    value={formData.companyName}
+                    onChange={(e) => handleInputChange("companyName", e.target.value)}
+                    required
+                    className="bg-gray-700 border-gray-600 text-white"
+                    placeholder="Firma adınız"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-gray-300">Telefon</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                      placeholder="0555 123 45 67"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-gray-300">Şehir</Label>
+                    <Input
+                      id="city"
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                      placeholder="İstanbul"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="industry" className="text-gray-300">Sektör</Label>
+                  <Input
+                    id="industry"
+                    type="text"
+                    value={formData.industry}
+                    onChange={(e) => handleInputChange("industry", e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white"
+                    placeholder="İnşaat, Teknoloji, Gıda vs."
+                  />
+                </div>
+              </div>
             </div>
             
             <Button
