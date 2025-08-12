@@ -47,8 +47,7 @@ export default function ProjectsPage() {
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
-      const response = await apiRequest("/api/projects", "POST", data);
-      return response.json();
+      return await apiRequest("/api/projects", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -71,8 +70,7 @@ export default function ProjectsPage() {
 
   const updateProjectMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertProject> }) => {
-      const response = await apiRequest(`/api/projects/${id}`, "PUT", data);
-      return response.json();
+      return await apiRequest(`/api/projects/${id}`, "PUT", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
