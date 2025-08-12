@@ -219,13 +219,13 @@ export default function EnhancedCompanyDirectory() {
   });
 
   // Messages for active thread
-  const { data: messages = [] } = useQuery<DirectMessage[]>({
+  const { data: messages = [], refetch: refetchMessages } = useQuery<DirectMessage[]>({
     queryKey: ["/api/threads", activeThread, "messages"],
     queryFn: () => apiRequest(`/api/threads/${activeThread}/messages`, "GET"),
     enabled: !!activeThread,
     refetchInterval: 2000,
-    staleTime: 0, // Always refetch
-    cacheTime: 0, // Don't cache
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Invites query
@@ -652,7 +652,7 @@ export default function EnhancedCompanyDirectory() {
                       key={thread.id}
                       className={`p-4 border-b cursor-pointer hover:bg-muted/50 ${
                         activeThread === thread.id ? "bg-muted" : ""
-                      }`}
+                        }`}
                       onClick={() => setActiveThread(thread.id)}
                     >
                       <div className="flex items-center gap-3">
@@ -723,58 +723,36 @@ export default function EnhancedCompanyDirectory() {
                   <CardContent className="p-4">
                     <ScrollArea className="h-[350px] mb-4">
                       <div className="space-y-4">
-                        {messages.map((message) => {
-                          console.log("Message:", message); // Debug log
-                          return (
+                        {messages.length === 0 ? (
+                          <div className="text-center text-muted-foreground py-8">
+                            <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>Henüz mesaj yok. İlk mesajı gönderin!</p>
+                          </div>
+                        ) : (
+                          messages.map((message) => (
                             <div
                               key={message.id}
-                              className={`flex ${
-                                message.messageType === "auto_reply" 
-                                  ? "justify-start" 
-                                  : "justify-end"
-                              }`}
+                              className="flex justify-end"
                             >
-                            <div
-                              className={`max-w-[70%] rounded-lg p-3 ${
-                                message.messageType === "auto_reply"
-                                  ? "bg-muted text-muted-foreground"
-                                  : "bg-primary text-primary-foreground"
-                              }`}
-                            >
-                              {message.attachmentType === "image" ? (
-                                <div className="space-y-2">
-                                  <img
-                                    src={message.attachmentUrl}
-                                    alt="Shared image"
-                                    className="rounded-lg max-w-full h-auto"
-                                  />
-                                  {message.body && <p>{message.body}</p>}
-                                </div>
-                              ) : (
+                              <div className="max-w-[70%] rounded-lg p-3 bg-primary text-primary-foreground">
                                 <p>{message.body}</p>
-                              )}
-                              {message.messageType === "auto_reply" && (
-                                <Badge variant="secondary" className="mt-2">
-                                  Otomatik Yanıt
-                                </Badge>
-                              )}
-                              <div className="flex items-center gap-1 mt-1">
-                                <span className="text-xs opacity-70">
+                                <div className="flex items-center gap-1 mt-1">
+                                  <span className="text-xs opacity-70">
                                   {new Date(message.createdAt).toLocaleTimeString('tr-TR', {
                                     hour: '2-digit',
                                     minute: '2-digit'
-                                  })}
+                                    })}
                                 </span>
                                 {message.isRead ? (
-                                  <CheckCheck className="h-3 w-3 opacity-70" />
+                                    <CheckCheck className="h-3 w-3 opacity-70" />
                                 ) : (
-                                  <Check className="h-3 w-3 opacity-70" />
+                                    <Check className="h-3 w-3 opacity-70" />
                                 )}
                               </div>
                             </div>
                             </div>
-                          );
-                        })}
+                          ))
+                        )}
                         <div ref={messagesEndRef} />
                       </div>
                     </ScrollArea>
@@ -796,7 +774,7 @@ export default function EnhancedCompanyDirectory() {
                             onChange={(e) => {
                               setMessageText(e.target.value);
                               setDraftText(e.target.value);
-                            }}
+                              }}
                             placeholder={activeThread ? "Mesajınızı yazın ve Enter'a basın..." : "Önce bir sohbet seçin..."}
                             className="pr-10"
                             disabled={!activeThread}
@@ -804,8 +782,8 @@ export default function EnhancedCompanyDirectory() {
                               if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
                                 handleSendMessage();
-                              }
-                            }}
+                                }
+                              }}
                           />
                           {messageText && (
                             <Badge className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-1" variant="secondary">
