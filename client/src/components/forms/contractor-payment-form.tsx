@@ -39,13 +39,7 @@ export default function ContractorPaymentForm({ contractorId, open, onOpenChange
 
   const createPaymentMutation = useMutation({
     mutationFn: async (data: InsertContractorPayment) => {
-      const response = await fetch("/api/contractor-payments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Failed to create payment");
-      return response.json();
+      return await apiRequest("/api/contractor-payments", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/contractor-payments"] });
