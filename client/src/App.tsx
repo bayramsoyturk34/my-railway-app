@@ -97,6 +97,9 @@ function Router() {
           <Route path="/customers/:customerName">
             <CustomerDetail />
           </Route>
+          <Route path="/company-directory">
+            <EnhancedCompanyDirectory />
+          </Route>
           <Route path="/enhanced-company-directory">
             <EnhancedCompanyDirectory />
           </Route>
