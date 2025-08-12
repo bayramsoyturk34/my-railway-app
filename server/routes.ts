@@ -2426,9 +2426,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/threads/:threadId/messages", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      console.log("Creating message for userId:", userId);
+      
       const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
       
       if (!userCompanies.length) {
+        console.log("No company found for user:", userId);
         return res.status(400).json({ error: "No company found for user" });
       }
 
@@ -2436,8 +2439,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { threadId } = req.params;
       const { body, attachmentUrl, attachmentType } = req.body;
       
+      console.log("Message data:", { threadId, firmId, body, attachmentUrl, attachmentType });
+      
       // Get thread by ID directly
       const currentThread = await storage.getDirectThreadById(threadId);
+      console.log("Found thread:", currentThread);
       
       if (!currentThread) {
         console.log("Thread not found with ID:", threadId);
@@ -2451,6 +2457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const receiverFirmId = currentThread.firm1Id === firmId ? currentThread.firm2Id : currentThread.firm1Id;
+      console.log("Receiver firmId:", receiverFirmId);
       
       const message = await storage.createDirectMessage({
         threadId,
@@ -2461,6 +2468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         attachmentType: attachmentType || "text"
       });
       
+      console.log("Message created:", message);
       res.json(message);
     } catch (error) {
       console.error("Message creation error:", error);
