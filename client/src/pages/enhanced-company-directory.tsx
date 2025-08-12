@@ -532,50 +532,7 @@ export default function EnhancedCompanyDirectory() {
 
         <TabsContent value="messages" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-            {/* Conversations List */}
-            <div className="lg:col-span-1">
-              <Card className="bg-dark-secondary border-dark-accent h-full">
-                <CardHeader className="pb-3">
-                  <h3 className="text-lg font-semibold text-white">Konuşmalar</h3>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <ScrollArea className="h-[500px]">
-                    {conversations.length === 0 ? (
-                      <div className="p-4 text-center text-gray-400">
-                        <MessageCircle className="h-8 w-8 mx-auto mb-2" />
-                        <p>Henüz konuşma yok</p>
-                      </div>
-                    ) : (
-                      conversations.map((conversation: any) => (
-                        <div
-                          key={conversation.id}
-                          onClick={() => setActiveConversation(conversation.id)}
-                          className={`p-4 border-b border-dark-accent cursor-pointer hover:bg-dark-primary transition-colors ${
-                            activeConversation === conversation.id ? "bg-dark-primary" : ""
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-medium text-white">
-                                {conversation.otherCompany?.companyName}
-                              </h4>
-                              <p className="text-sm text-gray-400 truncate">
-                                {conversation.lastMessage?.message || "Henüz mesaj yok"}
-                              </p>
-                            </div>
-                            {conversation.unreadCount > 0 && (
-                              <Badge className="bg-blue-600 text-white">
-                                {conversation.unreadCount}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            </div>
+
 
             {/* Chat Area */}
             <div className="lg:col-span-2">
