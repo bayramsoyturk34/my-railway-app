@@ -56,8 +56,11 @@ export default function EnhancedCompanyDirectory() {
   });
 
   // Debug notifications
-  console.log("All notifications:", notifications);
-  console.log("Notifications count:", notifications.length);
+  useEffect(() => {
+    console.log("🔔 All notifications:", notifications);
+    console.log("🔔 Notifications count:", notifications.length);
+    console.log("🔔 First notification:", notifications[0]);
+  }, [notifications]);
 
   // Messages query for active thread
   const { data: messages = [] } = useQuery<DirectMessage[]>({
@@ -441,20 +444,25 @@ export default function EnhancedCompanyDirectory() {
                         notification.isRead ? 'bg-muted/50' : 'bg-primary/10 border-primary/20'
                       }`}
                       onClick={(e) => {
-                        console.log("Notification clicked:", notification);
-                        console.log("Notification type:", notification.type);
-                        console.log("Notification payload:", notification.payload);
+                        console.log("🔥 NOTIFICATION CLICKED!", notification);
+                        console.log("🔥 Type:", notification.type);
+                        console.log("🔥 Payload:", notification.payload);
                         
                         // Mesaj bildirimi ise mesajlaşma tabını aç
                         if (notification.type === "NEW_DM") {
                           const payload = notification.payload as any;
-                          console.log("Payload fromCompanyId:", payload?.fromCompanyId);
+                          console.log("🔥 Found NEW_DM notification");
+                          console.log("🔥 FromCompanyId:", payload?.fromCompanyId);
                           if (payload?.fromCompanyId) {
-                            console.log("Setting active thread to:", payload.fromCompanyId);
+                            console.log("🔥 Switching to messaging tab with thread:", payload.fromCompanyId);
                             setActiveThread(payload.fromCompanyId);
                             setActiveTab("messaging");
                             setShowNotifications(false);
+                          } else {
+                            console.log("🔥 No fromCompanyId found in payload");
                           }
+                        } else {
+                          console.log("🔥 Not a NEW_DM notification, type is:", notification.type);
                         }
                         
                         // Bildirimi okundu olarak işaretle
