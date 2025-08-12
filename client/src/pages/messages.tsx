@@ -140,66 +140,44 @@ export default function Messages() {
           {/* Dropdown Firma Seçici */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-3">Sohbetler</h3>
+            <Select 
+              value={activeThread || ""} 
+              onValueChange={setActiveThread}
+              key={`select-${searchTerm}`}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Firma seç..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-40 overflow-y-auto">
+                {filteredCompanies.length === 0 ? (
+                  <SelectItem value="no-companies" disabled>
+                    {searchTerm ? "Eşleşen firma bulunamadı" : "Henüz firma eklenmemiş"}
+                  </SelectItem>
+                ) : (
+                  filteredCompanies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.companyName}
+                      {company.industry && (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          - {company.industry}
+                        </span>
+                      )}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
             
-            {/* AJAX Arama Kutusu */}
-            <div className="relative mb-3">
+            {/* Arama Kutusu */}
+            <div className="relative mt-3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Firma ara..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowSearchResults(e.target.value.length > 0);
-                }}
-                onFocus={() => searchTerm.length > 0 && setShowSearchResults(true)}
-                onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
-              
-              {/* AJAX Arama Sonuçları */}
-              {showSearchResults && searchTerm.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
-                  {filteredCompanies.length === 0 ? (
-                    <div className="p-3 text-sm text-muted-foreground">
-                      Eşleşen firma bulunamadı
-                    </div>
-                  ) : (
-                    filteredCompanies.map((company) => (
-                      <div
-                        key={company.id}
-                        onClick={() => {
-                          setActiveThread(company.id);
-                          setShowSearchResults(false);
-                          setSearchTerm("");
-                        }}
-                        className="p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                      >
-                        <div className="font-medium text-sm">{company.companyName}</div>
-                        {company.industry && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {company.industry}
-                          </div>
-                        )}
-                        {company.contactPerson && (
-                          <div className="text-xs text-muted-foreground">
-                            {company.contactPerson}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
             </div>
-
-            {/* Seçili Firma Göstergesi */}
-            {activeThread && (
-              <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-                <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  Aktif Sohbet: {companies.find(c => c.id === activeThread)?.companyName}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Seçilen Firmanın Detayları */}
