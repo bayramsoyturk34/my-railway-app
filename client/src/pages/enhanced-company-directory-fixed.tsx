@@ -296,7 +296,7 @@ export default function EnhancedCompanyDirectory() {
                 <CardTitle>Sohbetler</CardTitle>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[500px]">
+                <ScrollArea className="h-[80px]">
                   <div className="space-y-2">
                     {companies.map((company) => (
                       <Button

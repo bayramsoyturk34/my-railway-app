@@ -153,8 +153,8 @@ export default function Messages() {
               />
             </div>
 
-            {/* Çok Kısa Firma Listesi */}
-            <div className="max-h-20 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md">
+            {/* Mini Firma Listesi */}
+            <div className="max-h-12 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md">
               {filteredCompanies.length === 0 ? (
                 <div className="p-2 text-sm text-muted-foreground text-center">
                   {searchTerm ? "Eşleşen firma bulunamadı" : "Henüz firma eklenmemiş"}
