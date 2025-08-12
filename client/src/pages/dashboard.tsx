@@ -73,6 +73,7 @@ export default function Dashboard() {
     { id: "projects", icon: Home, label: "Verilen Projeler", onClick: () => setLocation("/projects"), iconColor: "text-pink-400" },
     { id: "finances", icon: Wallet, label: "Kasa", onClick: () => setLocation("/finances"), iconColor: "text-teal-400" },
     { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
+    { id: "messages", icon: MessageCircle, label: "Mesajlar", onClick: () => setLocation("/messages"), iconColor: "text-purple-400" },
     { id: "company-directory", icon: MessageCircle, label: "PRO Firma Rehberi", onClick: () => setLocation("/enhanced-company-directory"), iconColor: "text-purple-400" },
     { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
   ], [setLocation]);

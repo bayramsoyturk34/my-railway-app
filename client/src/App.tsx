@@ -20,6 +20,7 @@ import Customers from "@/pages/customers";
 import CustomerDetail from "@/pages/customer-detail";
 import CompanyDirectory from "@/pages/company-directory";
 import EnhancedCompanyDirectory from "@/pages/enhanced-company-directory-fixed";
+import Messages from "@/pages/messages";
 import Reports from "@/pages/reports";
 import AdminDashboard from "@/pages/admin-dashboard";
 
@@ -98,6 +99,9 @@ function Router() {
           </Route>
           <Route path="/enhanced-company-directory">
             <EnhancedCompanyDirectory />
+          </Route>
+          <Route path="/messages">
+            <Messages />
           </Route>
           <Route path="/reports">
             <Reports />

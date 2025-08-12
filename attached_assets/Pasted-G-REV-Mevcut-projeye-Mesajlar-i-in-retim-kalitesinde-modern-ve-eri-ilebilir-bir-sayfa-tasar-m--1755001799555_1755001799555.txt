@@ -1,0 +1,129 @@
+GÖREV: Mevcut projeye “Mesajlar” için üretim kalitesinde, modern ve erişilebilir bir sayfa tasarımı ve bileşen seti ekle. Teknoloji: React + TypeScript + Vite, TailwindCSS, shadcn/ui, TanStack Query, Zustand. SSE ile anlık olaylar. Tasarım hem koyu (dark) hem açık tema desteklesin.
+
+# HEDEF SAYFA
+ROTA: /app/messages
+YAPI:
+- Sol Sütun (ThreadList): arama + filtre, thread kartları, unread rozetleri, son mesaj önizleme ve küçük resim thumbları, online badge.
+- Orta Alan (ChatView): 
+  - Sticky Header: karşı firmanın adı, verified/PRO rozetleri, online/son görülme, 3-nokta menü (engelle, sessize al, şikayet).
+  - Mesaj Akışı: gün ayırıcıları, zaman damgası, okundu ✓✓, teslim ✓, balon hizalama (benim/karşı), resim önizleme (lightbox), uzun mesajlarda “devamını gör”.
+  - Scroll-To-Bottom FAB (yeni mesaj gelince görünür), “X yeni mesaj” bildirimi.
+  - Yazıyor göstergesi (typing indicator, SSE ya da timer tabanlı taklit).
+- Sağ Panel (InfoPanel – aç/kapa): karşı firmanın mini profili (logo, sektör, şehir, son görülme), hızlı kısayollar (davet gönder, projeye ekle vb.).
+
+- Alt Giriş Çubuğu (MessageInput): 
+  - Otomatik yükseklik (autosize textarea), karakter sayacı, Ctrl+Enter=Gönder, Shift+Enter=Satır, ESC=tazele.
+  - Dosya ekle (resim), sürükle-bırak, clipboard’tan yapıştır, yükleme ilerlemesi.
+  - Taslak kaydetme (debounced /drafts/upsert), emoji ve hızlı yanıt menüsü (auto-responder öneri butonu).
+
+# UI BİLEŞENLERİ
+1) <ThreadList />
+   - Props: threads, activeThreadId, onSelect.
+   - Üst: <Input> arama, filtre (okunmamış, son 7g, yalnız PRO).
+   - Satır: avatar/logo, ad, online dot, son mesaj preview (metin veya [fotoğraf]), unread badge.
+   - Skeleton ve boş durum (henüz sohbet yok).
+
+2) <ChatHeader />
+   - Firma adı (tailwind: text-2xl font-semibold), alt satır: • Çevrimiçi (yeşil dot) / Son görülme: “5 dk önce”.
+   - Actions: “Engelle”, “Sessize Al”, “Şikayet Et” (DropdownMenu).
+
+3) <MessageList />
+   - Sonsuz kaydırma (yukarı kaydırdıkça eski mesaj çek).
+   - Gün ayırıcıları (örn. “Bugün”, “Dün”, “12 Haziran 2025”).
+   - Mesaj balonu:
+     * Benim mesajım: sağ, mavi degrade; karşı taraf: sol, nötr/charcoal.
+     * İçerik türleri: metin, resim (thumb + modal lightbox).
+     * Kısa meta satırı: “14:36 ✓✓” (READ=çift mavi, DELIVERED=çift gri, SENT=tek gri).
+     * Menü (sağ tık veya 3 nokta): kopyala, bildir (şikayet), sil (opsiyon), link kopyala.
+   - “X yeni mesaj” barı (Sticky, tıklayınca en alta iner).
+
+4) <MessageInput />
+   - <Textarea autosize maxRows=6> + butonlar: [Emoji] [Resim Ekle] [Gönder].
+   - Drag&Drop bölgede highlight; upload progres bar (%).
+   - Taslak kaydı: 500ms debounce ile /drafts/upsert.
+   - Boşsa gönder butonu disabled; resim eklendiyse body boş olabilir.
+
+5) <InfoPanel />
+   - Firma kartı: logo/avatar, ad, verified/pro badge, sektör, şehir, notlar.
+   - Hızlı aksiyonlar: Davet Linki oluştur (modal), Müşteri kartına bağla (ops), Engelle/Sessize/Şikayet kısayolları.
+
+6) Lightbox/Modal
+   - shadcn/ui Dialog ile image preview, ok tuşlarıyla gez, ESC kapat.
+
+# TASARIM DETAYLARI (Tailwind)
+- Konteyner: grid grid-cols-[320px_1fr_360px] gap-4 h-[calc(100vh-80px)] p-4 md:grid-cols-[280px_1fr] md:[&>aside:last-child]{hidden}
+- Sol panel: bg-muted/40 rounded-2xl p-2 overflow-y-auto
+- Orta panel: bg-background rounded-2xl border overflow-hidden flex flex-col
+- Sağ panel: bg-muted/30 rounded-2xl p-4 overflow-y-auto (md’de gizle, lg’de göster)
+- Balonlar:
+  - Benim: bg-blue-500 text-white rounded-2xl rounded-br-sm shadow-md
+  - Diğer: bg-muted text-foreground rounded-2xl rounded-bl-sm shadow
+  - İç boşluk: px-4 py-3; max-w-[72%]; md:max-w-[80%]
+- Zaman/okundu: text-xs opacity-70 mt-1 flex items-center gap-1
+- Sticky header: px-4 py-3 border-b backdrop-blur supports-[backdrop-filter]:bg-background/70 sticky top-0 z-10
+- Scroll to bottom FAB: fixed bottom-6 right-6 md:right-4 rounded-full shadow-lg
+
+# DURUM YÖNETİMİ & VERİ
+- TanStack Query: 
+  - useThreads(queryKey: ['threads']) – GET /api/threads
+  - useMessages(threadId) – GET /api/threads/:id (sayfalama/cursor)
+  - useSendMessage – POST /api/threads/:id/messages (optimistic update)
+  - useUploadImage – POST /api/upload-image
+  - useDraft(threadId)/useUpsertDraft – GET/POST /drafts
+- Zustand store: UI durumları (aktifThreadId, isInfoOpen, showLightbox, selectedImage, unreadCounters).
+- SSE: tek bağlantı /api/events; NEW_DM, DM_DELIVERED, DM_READ, PRESENCE_UPDATE eventlerini ilgili query’leri invalidate veya cache patch ederek yansıt.
+- Okundu/Teslim:
+  - Thread açıldığında görünürdeki karşı taraf mesajlarını DELIVERED say: GET /api/threads/:id yanıtında.
+  - “Viewport içine giren mesaj id” için POST /api/messages/:id/read (IntersectionObserver ile tetikle).
+
+# ERİŞİLEBİLİRLİK
+- Tüm butonlara aria-label.
+- Klavye: Ctrl+Enter gönder; Shift+Enter satır; ESC inputa odak.
+- Renkler kontrast AA; focus ring’ler belirgin.
+
+# BİLEŞEN DOSYALARI (öneri)
+- apps/web/src/pages/messages/index.tsx  (Sayfa düzeni, üç sütun grid)
+- apps/web/src/components/messages/ThreadList.tsx
+- apps/web/src/components/messages/ChatHeader.tsx
+- apps/web/src/components/messages/MessageList.tsx
+- apps/web/src/components/messages/MessageBubble.tsx
+- apps/web/src/components/messages/MessageInput.tsx
+- apps/web/src/components/messages/InfoPanel.tsx
+- apps/web/src/components/ui/ScrollToBottomFab.tsx
+- apps/web/src/hooks/useSSE.ts  (tek SSE bağlantısı + event router)
+- apps/web/src/utils/time.ts (zaman “5 dk önce”)
+- apps/web/src/utils/readReceipt.ts (icon mantığı)
+
+# ÖRNEKLER (KISA KOD PARÇALARI)
+## MessageBubble (okundu ikonları)
+/*
+delivery: 'SENT'|'DELIVERED'|'READ'
+*/
+function ReadIcon({delivery}:{delivery:string}) {
+  if (delivery==='READ') return <span title="Görüldü">✓✓</span>;
+  if (delivery==='DELIVERED') return <span title="Teslim">✓✓</span>;
+  return <span title="Gönderildi">✓</span>;
+}
+
+## Scroll-to-bottom görünürlüğü
+// isAtBottom state: scrollHeight - (scrollTop + clientHeight) < 24
+// yeni mesaj veya NEW_DM geldiğinde ve isAtBottom=false => FAB göster
+
+## Drag&Drop Yükleme
+// drop event -> files -> accept image only -> mutate upload -> sonra sendMessage({attachmentUrl})
+
+# TEST ÖLÇÜTLERİ (ACCEPTANCE)
+- [ ] 1200px ve 360px ekranlarda layout akıcı
+- [ ] 200+ mesajda performans sorunsuz, sanal listeleme (auto) veya chunk yükleme
+- [ ] SSE ile yeni mesaj anlık düşüyor; isAtBottom=false iken FAB görünüyor
+- [ ] Resim yükleme ilerlemesi ve lightbox çalışıyor
+- [ ] Taslak kaydı sayfadan çıkıp dönünce geri doluyor
+- [ ] Okundu/teslim ikonları doğru güncelleniyor
+- [ ] Kontrast/erişilebilirlik (tab ile ulaşılabilir)
+- [ ] Türkçe tarih/“şimdi-önce” biçimleme (dayjs veya date-fns/locale-tr)
+
+# BONUS
+- Koyu/açık tema toggle
+- Thread aramada highlight
+- “Mesaj gönderilemedi” durumunda retry butonu
+- i18n altyapısı (tr varsayılan)
