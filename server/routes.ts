@@ -1484,6 +1484,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/company-directory/my-companies", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const myCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      res.json(myCompanies);
+    } catch (error) {
+      console.error("Error fetching my companies:", error);
+      res.status(500).json({ error: "Failed to fetch my companies" });
+    }
+  });
+
   // Enhanced PRO Company Directory routes
   app.get("/api/directory/firms", async (req, res) => {
     try {

@@ -18,12 +18,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { CompanyDirectoryEntry, InsertCompanyDirectoryEntry, DirectMessage, NotificationEntry, FirmInvite, ConversationEntry } from "@shared/schema";
+import type { CompanyDirectory, InsertCompanyDirectory, DirectMessage, Notification, FirmInvite, Conversation } from "@shared/schema";
 
 export default function EnhancedCompanyDirectory() {
   const [activeTab, setActiveTab] = useState("directory");
   const [showDirectoryForm, setShowDirectoryForm] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<CompanyDirectoryEntry | null>(null);
+  const [editingEntry, setEditingEntry] = useState<CompanyDirectory | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSector, setSelectedSector] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
@@ -36,21 +36,21 @@ export default function EnhancedCompanyDirectory() {
   const { toast } = useToast();
 
   // Companies query
-  const { data: companies = [] } = useQuery<CompanyDirectoryEntry[]>({
-    queryKey: ["/api/directory"],
-    queryFn: () => apiRequest("/api/directory", "GET"),
+  const { data: companies = [] } = useQuery<CompanyDirectory[]>({
+    queryKey: ["/api/company-directory"],
+    queryFn: () => apiRequest("/api/company-directory", "GET"),
   });
 
   // Get current user's companies
   const { data: userCompanies } = useQuery({
-    queryKey: ["/api/directory/my-companies"],
-    queryFn: () => apiRequest("/api/directory/my-companies", "GET"),
+    queryKey: ["/api/company-directory/my-companies"],
+    queryFn: () => apiRequest("/api/company-directory/my-companies", "GET"),
   });
   
   const currentUserFirmId = userCompanies?.[0]?.id;
 
   // Notifications query
-  const { data: notifications = [] } = useQuery<NotificationEntry[]>({
+  const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
     refetchInterval: 3000,
   });
@@ -66,10 +66,10 @@ export default function EnhancedCompanyDirectory() {
 
   // Company mutations
   const createCompanyMutation = useMutation({
-    mutationFn: (entry: InsertCompanyDirectoryEntry) =>
-      apiRequest("/api/directory", "POST", entry),
+    mutationFn: (entry: InsertCompanyDirectory) =>
+      apiRequest("/api/company-directory", "POST", entry),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/directory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/company-directory"] });
       setShowDirectoryForm(false);
       setEditingEntry(null);
       toast({ title: "Başarılı", description: "Firma bilgileri kaydedildi." });
@@ -77,10 +77,10 @@ export default function EnhancedCompanyDirectory() {
   });
 
   const updateCompanyMutation = useMutation({
-    mutationFn: ({ id, ...entry }: { id: string } & Partial<InsertCompanyDirectoryEntry>) =>
-      apiRequest(`/api/directory/${id}`, "PATCH", entry),
+    mutationFn: ({ id, ...entry }: { id: string } & Partial<InsertCompanyDirectory>) =>
+      apiRequest(`/api/company-directory/${id}`, "PATCH", entry),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/directory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/company-directory"] });
       setShowDirectoryForm(false);
       setEditingEntry(null);
       toast({ title: "Başarılı", description: "Firma bilgileri güncellendi." });
@@ -88,9 +88,9 @@ export default function EnhancedCompanyDirectory() {
   });
 
   const deleteCompanyMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/directory/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest(`/api/company-directory/${id}`, "DELETE"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/directory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/company-directory"] });
       toast({ title: "Başarılı", description: "Firma silindi." });
     },
   });
@@ -118,11 +118,11 @@ export default function EnhancedCompanyDirectory() {
   };
 
   // Filter companies
-  const filteredCompanies = companies.filter(company => {
+  const filteredCompanies = (Array.isArray(companies) ? companies : []).filter(company => {
     const matchesSearch = company.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.contactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.city.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSector = selectedSector === "" || company.sector === selectedSector;
+                         company.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (company.city || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSector = selectedSector === "" || selectedSector === "all" || company.industry === selectedSector;
     return matchesSearch && matchesSector;
   });
 
@@ -178,7 +178,7 @@ export default function EnhancedCompanyDirectory() {
                 <SelectValue placeholder="Sektör filtrele" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tüm Sektörler</SelectItem>
+                <SelectItem value="all">Tüm Sektörler</SelectItem>
                 <SelectItem value="İnşaat">İnşaat</SelectItem>
                 <SelectItem value="Teknoloji">Teknoloji</SelectItem>
                 <SelectItem value="Gıda">Gıda</SelectItem>
@@ -196,22 +196,22 @@ export default function EnhancedCompanyDirectory() {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-lg">{company.companyName}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{company.sector}</p>
+                      <p className="text-sm text-muted-foreground">{company.industry || "Sektör belirtilmemiş"}</p>
                     </div>
-                    <Badge variant={company.isPro ? "default" : "secondary"}>
-                      {company.isPro ? "PRO" : "Basic"}
+                    <Badge variant={company.subscriptionStatus === "PRO" ? "default" : "secondary"}>
+                      {company.subscriptionStatus === "PRO" ? "PRO" : "Basic"}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <p className="font-medium">{company.contactName}</p>
-                    <p className="text-sm text-muted-foreground">{company.phone}</p>
-                    <p className="text-sm text-muted-foreground">{company.email}</p>
+                    <p className="font-medium">{company.contactPerson}</p>
+                    {company.phone && <p className="text-sm text-muted-foreground">{company.phone}</p>}
+                    {company.email && <p className="text-sm text-muted-foreground">{company.email}</p>}
                   </div>
                   <div>
-                    <p className="text-sm">{company.address}</p>
-                    <p className="text-sm text-muted-foreground">{company.city}</p>
+                    {company.address && <p className="text-sm">{company.address}</p>}
+                    {company.city && <p className="text-sm text-muted-foreground">{company.city}</p>}
                   </div>
                   {company.description && (
                     <p className="text-sm text-muted-foreground">{company.description}</p>
@@ -277,7 +277,7 @@ export default function EnhancedCompanyDirectory() {
                         </Avatar>
                         <div className="text-left">
                           <p className="font-medium">{company.companyName}</p>
-                          <p className="text-xs text-muted-foreground">{company.contactName}</p>
+                          <p className="text-xs text-muted-foreground">{company.contactPerson}</p>
                         </div>
                       </Button>
                     ))}
@@ -435,7 +435,7 @@ export default function EnhancedCompanyDirectory() {
                       <p className="font-medium text-sm">{notification.title}</p>
                       <p className="text-xs text-muted-foreground">{notification.message}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(notification.createdAt).toLocaleTimeString('tr-TR')}
+                        {notification.createdAt ? new Date(notification.createdAt).toLocaleTimeString('tr-TR') : ''}
                       </p>
                     </div>
                   ))}
@@ -479,20 +479,19 @@ function CompanyForm({
   onSubmit,
   onCancel,
 }: {
-  entry?: CompanyDirectoryEntry | null;
-  onSubmit: (data: InsertCompanyDirectoryEntry) => void;
+  entry?: CompanyDirectory | null;
+  onSubmit: (data: InsertCompanyDirectory) => void;
   onCancel: () => void;
 }) {
-  const [formData, setFormData] = useState<InsertCompanyDirectoryEntry>({
+  const [formData, setFormData] = useState<InsertCompanyDirectory>({
     companyName: entry?.companyName || "",
-    contactName: entry?.contactName || "",
+    contactPerson: entry?.contactPerson || "",
     phone: entry?.phone || "",
     email: entry?.email || "",
     address: entry?.address || "",
     city: entry?.city || "",
-    sector: entry?.sector || "",
+    industry: entry?.industry || "",
     description: entry?.description || "",
-    isPro: entry?.isPro || false,
   });
 
   return (
@@ -514,11 +513,11 @@ function CompanyForm({
           />
         </div>
         <div>
-          <Label htmlFor="contactName">İletişim Kişisi *</Label>
+          <Label htmlFor="contactPerson">İletişim Kişisi *</Label>
           <Input
-            id="contactName"
-            value={formData.contactName}
-            onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+            id="contactPerson"
+            value={formData.contactPerson}
+            onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
             required
           />
         </div>
@@ -565,8 +564,8 @@ function CompanyForm({
           />
         </div>
         <div>
-          <Label htmlFor="sector">Sektör</Label>
-          <Select value={formData.sector} onValueChange={(value) => setFormData({ ...formData, sector: value })}>
+          <Label htmlFor="industry">Sektör</Label>
+          <Select value={formData.industry} onValueChange={(value) => setFormData({ ...formData, industry: value })}>
             <SelectTrigger>
               <SelectValue placeholder="Sektör seçin" />
             </SelectTrigger>
@@ -586,19 +585,10 @@ function CompanyForm({
         <Label htmlFor="description">Açıklama</Label>
         <Textarea
           id="description"
-          value={formData.description}
+          value={formData.description || ""}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           rows={3}
         />
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="isPro"
-          checked={formData.isPro}
-          onCheckedChange={(checked) => setFormData({ ...formData, isPro: checked })}
-        />
-        <Label htmlFor="isPro">PRO Üyelik</Label>
       </div>
 
       <div className="flex justify-end space-x-2">
