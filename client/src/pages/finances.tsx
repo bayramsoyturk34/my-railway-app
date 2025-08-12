@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, Wallet, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
+import { Home, Plus, Wallet, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
 import { type Transaction } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -112,7 +112,7 @@ export default function FinancesPage() {
             className="text-white hover:bg-dark-accent"
             onClick={() => setLocation("/")}
           >
-            <ArrowLeft className="h-6 w-6" />
+            <Home className="h-6 w-6" />
           </Button>
           <h1 className="text-2xl font-bold">Kasa Yönetimi</h1>
         </div>

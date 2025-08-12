@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, User, Edit, Trash2, Building2, Phone, Mail, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
+import { Home, Plus, User, Edit, Trash2, Building2, Phone, Mail, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
 import { type Customer, type CustomerTask, type CustomerPayment } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -115,7 +115,7 @@ export default function CustomersPage() {
             onClick={() => setLocation("/")}
             className="text-gray-400 hover:text-white hover:bg-dark-accent"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <Home className="h-5 w-5" />
           </Button>
           <h1 className="text-3xl font-bold">Müşteriler</h1>
         </div>

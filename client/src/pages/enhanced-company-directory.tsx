@@ -14,13 +14,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLocation } from "wouter";
 import { insertCompanyDirectorySchema, type CompanyDirectory, type InsertCompanyDirectory, type Notification } from "@shared/schema";
 import { 
   Building2, Phone, Mail, Globe, MapPin, MessageCircle, Plus, Search, Users, Send, X, 
-  Star, Shield, Filter, Bell, Block, VolumeX, Flag, CheckCircle, Crown, Verified 
+  Star, Shield, Filter, Bell, Block, VolumeX, Flag, CheckCircle, Crown, Verified, Home 
 } from "lucide-react";
 
 export default function EnhancedCompanyDirectory() {
+  const [, setLocation] = useLocation();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [cityFilter, setCityFilter] = useState("");
@@ -209,12 +211,23 @@ export default function EnhancedCompanyDirectory() {
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Crown className="h-8 w-8 text-yellow-500" />
-            PRO Firma Rehberi
-          </h1>
-          <p className="text-gray-400 mt-2">Doğrulanmış firmalarla profesyonel iletişim kurun</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation("/")}
+            className="text-gray-400 hover:text-white hover:bg-dark-accent"
+            title="Anasayfa'ya dön"
+          >
+            <Home className="h-6 w-6" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <Crown className="h-8 w-8 text-yellow-500" />
+              PRO Firma Rehberi
+            </h1>
+            <p className="text-gray-400 mt-2">Doğrulanmış firmalarla profesyonel iletişim kurun</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {notifications.filter(n => !n.isRead).length > 0 && (

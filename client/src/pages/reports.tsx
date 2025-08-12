@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, FileText, Download, Plus, BarChart, Calendar, DollarSign } from "lucide-react";
+import { Home, FileText, Download, Plus, BarChart, Calendar, DollarSign } from "lucide-react";
 import Header from "@/components/layout/header";
 import AdvancedFilters, { type FilterOptions } from "@/components/filters/advanced-filters";
 import { Button } from "@/components/ui/button";
@@ -337,7 +337,7 @@ export default function ReportsPage() {
             onClick={() => setLocation("/")}
             className="text-gray-400 hover:text-white"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <Home className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold">Rapor Merkezi</h1>
         </div>

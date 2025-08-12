@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, User, Edit, Trash2, ChevronRight } from "lucide-react";
+import { Home, Plus, User, Edit, Trash2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import PersonnelForm from "@/components/forms/personnel-form";
@@ -57,7 +57,7 @@ export default function PersonnelPage() {
             className="text-gray-400 hover:text-white hover:bg-dark-accent"
             onClick={() => setLocation("/")}
           >
-            <ArrowLeft className="h-6 w-6" />
+            <Home className="h-6 w-6" />
           </Button>
           <h1 className="text-2xl font-bold">Personel Yönetimi</h1>
         </div>
@@ -90,7 +90,7 @@ export default function PersonnelPage() {
           className="text-gray-400 hover:text-white hover:bg-dark-accent"
           onClick={() => setLocation("/")}
         >
-          <ArrowLeft className="h-6 w-6" />
+          <Home className="h-6 w-6" />
         </Button>
         <h1 className="text-2xl font-bold">Personel Yönetimi</h1>
       </div>

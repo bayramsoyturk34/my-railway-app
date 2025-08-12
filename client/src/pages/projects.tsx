@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, Building, Trash2, Edit } from "lucide-react";
+import { Home, Plus, Building, Trash2, Edit } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema, type InsertProject, type Project, type Customer } from "@shared/schema";
@@ -203,7 +203,7 @@ export default function ProjectsPage() {
             className="text-white hover:bg-dark-accent"
             onClick={() => setLocation("/")}
           >
-            <ArrowLeft className="h-6 w-6" />
+            <Home className="h-6 w-6" />
           </Button>
           <h1 className="text-2xl font-bold">Verilen Projeler</h1>
         </div>
