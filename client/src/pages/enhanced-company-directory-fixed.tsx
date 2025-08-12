@@ -437,10 +437,16 @@ export default function EnhancedCompanyDirectory() {
                         notification.isRead ? 'bg-muted/50' : 'bg-primary/10 border-primary/20'
                       }`}
                       onClick={(e) => {
+                        console.log("Notification clicked:", notification);
+                        console.log("Notification type:", notification.type);
+                        console.log("Notification payload:", notification.payload);
+                        
                         // Mesaj bildirimi ise mesajlaşma tabını aç
-                        if (notification.type === "NEW_MESSAGE") {
+                        if (notification.type === "NEW_DM") {
                           const payload = notification.payload as any;
+                          console.log("Payload fromCompanyId:", payload?.fromCompanyId);
                           if (payload?.fromCompanyId) {
+                            console.log("Setting active thread to:", payload.fromCompanyId);
                             setActiveThread(payload.fromCompanyId);
                             setActiveTab("messaging");
                             setShowNotifications(false);
@@ -454,8 +460,12 @@ export default function EnhancedCompanyDirectory() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="font-medium text-sm">{(notification as any).title || 'Bildirim'}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{(notification as any).content || 'Yeni bildirim'}</p>
+                          <p className="font-medium text-sm">
+                            {(notification.payload as any)?.title || (notification as any).title || 'Bildirim'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {(notification.payload as any)?.message || (notification as any).content || 'Yeni bildirim'}
+                          </p>
                           <p className="text-xs text-muted-foreground mt-2">
                             {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
                           </p>
