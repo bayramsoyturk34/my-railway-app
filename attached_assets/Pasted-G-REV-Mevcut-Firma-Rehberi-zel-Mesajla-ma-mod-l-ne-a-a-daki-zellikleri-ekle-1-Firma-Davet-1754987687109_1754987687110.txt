@@ -1,0 +1,210 @@
+GÖREV: Mevcut “Firma Rehberi & Özel Mesajlaşma” modülüne aşağıdaki özellikleri ekle:
+1) Firma Davet Linki
+2) Çevrimiçi/Çevrimdışı (Presence) + “son görülme”
+3) Mesaj Taslakları & Otomatik Yanıt
+4) Resim Gönderme (ek olarak küçük önizleme)
+
+Tüm kodlar Node+TS (Express, Prisma), React+TS (Vite, TanStack Query, shadcn/ui), SSE (ve opsiyonel WebSocket bayrağı) ile mevcut yapıya entegre olsun. Tip güvenliği, input doğrulama (zod/celebrate), RBAC, rate-limit, audit log ve seed ekle.
+
+# 0) ENV GENİŞLETME
+# (Replit Secrets’a eklenecek)
+INVITE_TOKEN_SECRET="change_me_invite"
+INVITE_EXPIRY_HOURS=72
+PRESENCE_TTL_SECONDS=120         # heartbeat yoksa offline say
+PRESENCE_BACKEND="memory"        # memory | redis
+REDIS_URL=""                     # varsa presence & rate için kullan
+MAX_IMAGE_MB=8
+ALLOWED_IMAGE_MIME="image/png,image/jpeg,image/webp"
+THUMBNAIL_MAX_WIDTH=512
+WEBSOCKET_ENABLE=false           # true yaparsan WS kullan
+SSE_ENABLE=true
+
+# 1) VERİTABANI (Prisma – ek modeller)
+model FirmInvite {
+  id            String   @id @default(cuid())
+  firmId        String
+  email         String
+  role          String   // ADMIN | USER
+  tokenHash     String   // signed token hash
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  createdByUserId String
+  createdAt     DateTime @default(now())
+
+  firm          Firm     @relation(fields: [firmId], references: [id])
+}
+
+model PresenceLog {
+  id         String   @id @default(cuid())
+  firmId     String
+  userId     String
+  lastHeartbeatAt DateTime @default(now())
+  clientInfo String? // userAgent/ip (opsiyonel)
+  updatedAt  DateTime @updatedAt
+  @@index([firmId, userId])
+}
+
+model MessageDraft {
+  id        String   @id @default(cuid())
+  threadId  String
+  authorFirmId String
+  body      String   // boş string olabilir
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  @@unique([threadId, authorFirmId])
+}
+
+model AutoResponder {
+  id          String   @id @default(cuid())
+  firmId      String
+  enabled     Boolean  @default(false)
+  mode        AutoResponderMode @default(KEYWORD) // KEYWORD | ALWAYS | OFFHOURS
+  keywords    String[] // mode=KEYWORD için
+  offHoursTZ  String?  // "Europe/Istanbul"
+  offHours    Json?    // { days:[1..7], start:"18:00", end:"09:00" }
+  cooldownSec Int      @default(600)  // aynı gönderene tekrar cevap aralığı
+  messageBody String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  firm        Firm @relation(fields: [firmId], references: [id])
+}
+
+enum AutoResponderMode { KEYWORD ALWAYS OFFHOURS }
+
+# Not: DirectThread/DirectMessage/Notification daha önce eklendi. DirectMessage.attachmentUrl zaten vardı; resim gönderimine uyumlu devam edeceğiz.
+
+# 2) DAVET LİNKİ – İŞ KURALI
+- Yalnız firmadaki ADMIN kullanıcı “davet oluştur”abilir: email + role seçer.
+- Sunucu, payload(email, firmId, role, exp) ile token üretir (INVITE_TOKEN_SECRET ile imzala), DB’ye tokenHash kaydedilir.
+- E-posta (ENV varsa) veya kopyalanabilir bağlantı verilir: /invite/accept?token=...
+- Kabul akışı:
+  * Token doğrulanır, süre geçmemişse: kullanıcı kayıt/login ekranına prefill yapılır.
+  * Kabulde user oluşturulur veya mevcut user firmaya eklenir, role atanır.
+  * Invite.acceptedAt set edilir. Token tek kullanımlık.
+- AuditLog: INVITE_CREATED, INVITE_ACCEPTED.
+
+# 3) PRESENCE (ÇEVRİMİÇİ/SON GÖRÜLME)
+- Frontend, login sonrası her 30 sn’de bir: POST /presence/heartbeat.
+- Backend, PresenceLog.lastHeartbeatAt günceller.
+- “Online” sayma kuralı: now - lastHeartbeatAt <= PRESENCE_TTL_SECONDS -> ONLINE; aksi OFFLINE, son görülme=lastHeartbeatAt.
+- Redis varsa Presence anahtarı: presence:{userId} = timestamp. Yoksa DB.
+- SSE/WS ile PRESENCE_UPDATE event’i yayınla (userId, firmId, online:boolean, lastSeen).
+
+# 4) TASLAKLAR & OTOMATİK YANIT
+- Taslak: Kullanıcı yazarken /drafts/upsert {threadId, body}; sohbet alanını kapatmadan geri gelince otomatik yüklenir.
+- Otomatik Yanıt:
+  * Kurallar firmaya özeldir. Yeni mesaj alındığında evaluate:
+    - mode=ALWAYS -> her yeni gönderene, cooldown içinde değilse yanıtla.
+    - mode=KEYWORD -> body içinde keywords’den biri varsa yanıtla.
+    - mode=OFFHOURS -> offHours aralığı içindeyse yanıtla (offHoursTZ dikkate al).
+  * Auto-reply mesajı DirectMessage olarak aynı threade “firmanın tarafı”ndan düşer.
+  * Aynı gönderene cooldownSec içinde tekrar otomatik yanıt verilmez (cache/Redis).
+  * AuditLog: AUTOREPLY_SENT.
+
+# 5) RESİM GÖNDERME
+- Mesaj gönderiminde resim eki destekle:
+  * POST /upload-image -> {url, width, height, mime} (max MAX_IMAGE_MB, MIME whitelist ALLOWED_IMAGE_MIME).
+  * İstersen sunucuda küçük bir thumbnail üret (sharp ile) ve thumbUrl dön (THUMBNAIL_MAX_WIDTH).
+  * Mesaj gönderirken body opsiyonel olabilir; sadece görsel de olur (attachmentUrl + attachmentType="image").
+  * Önizleme kartı: Mesaj balonunda resim tıklanabilir lightbox.
+
+# 6) API – YENİ/GENİŞLETİLMİŞ UÇLAR
+BASE: /api
+// Davet
+POST   /invites                     { email, role } -> { inviteUrl }
+GET    /invites                     // firmadaki bekleyen/accepted davetler (ADMIN)
+POST   /invites/accept              { token, password? } -> login + firmaya ekle
+
+// Presence
+POST   /presence/heartbeat          // { clientInfo? } -> 200; SSE ile PRESENCE_UPDATE publish
+GET    /presence/:userId            // { online:bool, lastSeen:ISO } RBAC: sadece aynı firmadan görünür
+
+// Drafts
+GET    /drafts/:threadId            // { body } (yoksa "")
+POST   /drafts/upsert               { threadId, body }
+
+// Auto Responder
+GET    /autoresponder               // firmaya özel ayarları getir (ADMIN)
+POST   /autoresponder               { enabled, mode, keywords?, offHoursTZ?, offHours?, cooldownSec?, messageBody }
+PATCH  /autoresponder               { ...alanlar }
+
+// Mesajlaşma (genişletme)
+POST   /upload-image                // returns { url, thumbUrl?, width, height, mime }
+POST   /threads/:id/messages        { body?, attachmentUrl?, attachmentType?="image" }
+// okundu/gönderildi kuralı eskisiyle aynı
+
+# 7) REALTIME EVENT’LER (SSE/WS)
+- NEW_DM          { threadId, messageId, preview, senderFirmId }
+- DM_DELIVERED    { threadId, messageId }
+- DM_READ         { threadId, messageId }
+- PRESENCE_UPDATE { userId, firmId, online, lastSeen }
+- DRAFT_SAVED     { threadId, authorFirmId } (opsiyonel – eşzamanlı düzenleme feedback)
+- INVITE_CREATED  { inviteId, email, role }
+- INVITE_ACCEPTED { inviteId, userId }
+- AUTOREPLY_SENT  { threadId, messageId }
+- IMAGE_UPLOADED  { url, thumbUrl? }
+
+# 8) FRONTEND – EKRAN AKTARIMLARI
+## /app/directory
+- Firma kartlarında: rozetler (PRO, VERIFIED), “son görülme” (ADMIN görünür, public değil—opsiyon).
+- Mesaj gönder butonu -> thread açar.
+
+## /app/messages
+- Sol sütun: thread listesi (+ online badge). Unread badge, küçük thumb önizlemeleri.
+- Orta alan:
+  - Taslak otomatik yüklenir (GET /drafts/:threadId). Yazarken debounced POST /drafts/upsert.
+  - Resim ekle butonu: input accept=“image/*”; yükle -> upload-image -> mesaj gönder.
+  - Otomatik yanıt mesajları özel bir stil (bot badge).
+- Sağ panel: karşı firma mini profil; “son görülme”; engelle/sessize al/şikayet.
+- Üst bar: “Davet et” (modal):
+  - email+role gir -> POST /invites -> link kopyalama.
+  - Davet listesi (bekleyen/kabul edilen) tablo.
+
+# 9) GÜVENLİK, RL, DOĞRULAMA
+- Davet token: HMAC (INVITE_TOKEN_SECRET); DB’de hash sakla (zincirleme saldırılara karşı).
+- Token tek kullanımlık, exp kontrolü, kabulde revoke.
+- Presence: firmalar arası gizlilik – yalnızca aynı firmadaki kullanıcılar birbirinin online’ını ve lastSeen’ini görsün. Directory’de global online gösterme **yok**, yalnızca mesajlaşma ekranında göster.
+- Upload-image: boyut ve mime doğrulaması; EXIF temizleme; dosya adı random; path traversal önle.
+- Rate limit:
+  * /upload-image: 20/dk kullanıcı başı
+  * /invites: 10/saat firma başı
+  * /presence/heartbeat: 120/dk kullanıcı başı (sessizce ignore)
+  * /threads/:id/messages: 30/dk burst=5
+- Moderasyon: görsel filtre (sadece image/png, image/jpeg, image/webp). Metin kelime filtresi opsiyonel.
+- AuditLog: INVITE_CREATED/ACCEPTED, IMAGE_UPLOADED, AUTOREPLY_SENT, PRESENCE_HEARTBEAT.
+
+# 10) HESAPLAMA/UTILS
+- lastSeen hesaplama: clientTimeOffset’e gerek yok; sunucu zamanı esas alın.
+- offHours kontrolü: offHoursTZ (örn “Europe/Istanbul”) ile zoned time hesapla; gün ve saat aralığını kontrol et.
+- cooldown cache: key=autorp:{firmId}:{otherFirmId} -> expires=cooldownSec (Redis varsa oraya, yoksa in-memory Map + TTL).
+
+# 11) TEST SENARYOLARI
+- Davet: ADMIN invite oluşturur -> linkten kabul -> kullanıcı firmaya katılır, rol atanır.
+- Presence: heartbeat gelince online olur; TTL bitince offline; SSE’de PRESENCE_UPDATE alınır.
+- Taslak: yaz, sayfadan çık-dön -> taslak yüklenir; silmek için boş body ile upsert.
+- Otomatik Yanıt:
+  * ALWAYS: her yeni thread mesajında 1 kez döner; cooldown içinde tekrar dönmez.
+  * KEYWORD: “fiyat, teklif, anlaşma” kelimelerinde tetiklenir.
+  * OFFHOURS: mesai dışı saatlerde tetiklenir.
+- Resim: 9MB jpeg -> 413; 6MB webp -> kabul. Mesajda thumb gözükür.
+- Gizlilik: farklı firmadan presence GET -> 403.
+- RL: aşımda 429; tekrar ihlalde geçici mesaj yasağı.
+
+# 12) UI/UX
+- shadcn/ui: Dialog (Davet), Badge (online/offline, bot), Avatar, Tooltip, Skeleton.
+- Mesaj balonları: text, image, auto-reply marker.
+- Lightbox (basit modal) ile büyük resim görüntüleme.
+- “Son görülme: 5 dk önce” formatlayıcı util.
+- Erişilebilirlik: klavye kısayolu (Ctrl+I resim ekle, Ctrl+Enter gönder), screen-reader label’ları.
+
+# 13) DOKÜMANTASYON
+- README’ye yeni bölümler: Davet iş akışı, Presence mimarisi (SSE/Redis fallback), Taslak senkronu, Auto-responder kuralları, Görsel yükleme sınırları.
+- Mermaid şemalar: Invite sequence, AutoReply decision, Presence heartbeat.
+
+# 14) SEED
+- Bir firmaya 2 davet (ADMIN/USER) – süresi gelecekte.
+- AutoResponder enabled=KEYWORD, keywords=["fiyat","teklif","ücret"], cooldownSec=900, messageBody="Merhaba! Mesajınızı aldık, en kısa sürede dönüş yapacağız."
+- Birkaç PresenceLog dummy kaydı (lastHeartbeatAt=now-30s ve now-10m).
+
+GEREKSİNİM: Mevcut kod düzenini bozma; yeni migration oluştur; tipleri export et; tüm yeni endpointler için zod şemaları; hata mesajları TR; SSE olayları tek kaynaktan publish edilsin; env yoksa özellik uygun şekilde “kısıtlı mod”da çalışsın.

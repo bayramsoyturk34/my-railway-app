@@ -21,9 +21,17 @@ import {
   type CompanyMute, type InsertCompanyMute,
   type AbuseReport, type InsertAbuseReport,
   type User, type UpsertUser,
+  type FirmInvite, type InsertFirmInvite,
+  type PresenceLog, type InsertPresenceLog,
+  type MessageDraft, type InsertMessageDraft,
+  type AutoResponder, type InsertAutoResponder,
+  type DirectThread, type InsertDirectThread,
+  type DirectMessage, type InsertDirectMessage,
+  type ImageUpload, type InsertImageUpload,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
-  companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users
+  companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users,
+  firmInvites, presenceLogs, messageDrafts, autoResponders, directThreads, directMessages, imageUploads, autoReplyLogs
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
@@ -171,6 +179,38 @@ export interface IStorage {
   getConversations(): Promise<Conversation[]>;
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   updateConversation(id: string, conversation: Partial<InsertConversation>): Promise<Conversation | undefined>;
+
+  // Firm Invites
+  createFirmInvite(invite: InsertFirmInvite & { tokenHash: string }): Promise<FirmInvite>;
+  getFirmInvitesByToken(tokenHash: string): Promise<FirmInvite | undefined>;
+  getFirmInvitesByFirm(firmId: string): Promise<FirmInvite[]>;
+  acceptFirmInvite(id: string): Promise<boolean>;
+
+  // Presence
+  updatePresence(presenceLog: InsertPresenceLog): Promise<PresenceLog>;
+  getPresenceByFirmAndUser(firmId: string, userId: string): Promise<PresenceLog | undefined>;
+  getPresenceByFirm(firmId: string): Promise<PresenceLog[]>;
+  
+  // Message Drafts
+  getDraft(threadId: string, authorFirmId: string): Promise<MessageDraft | undefined>;
+  upsertDraft(draft: InsertMessageDraft): Promise<MessageDraft>;
+  deleteDraft(threadId: string, authorFirmId: string): Promise<boolean>;
+
+  // Auto Responders
+  getAutoResponder(firmId: string): Promise<AutoResponder | undefined>;
+  upsertAutoResponder(responder: InsertAutoResponder): Promise<AutoResponder>;
+  getAutoReplyLog(responderFirmId: string, targetFirmId: string): Promise<Date | undefined>;
+  setAutoReplyLog(responderFirmId: string, targetFirmId: string, messageId: string): Promise<void>;
+
+  // Direct Threads & Messages
+  getOrCreateDirectThread(firm1Id: string, firm2Id: string): Promise<DirectThread>;
+  getDirectThreads(firmId: string): Promise<DirectThread[]>;
+  getDirectThreadMessages(threadId: string, offset?: number, limit?: number): Promise<DirectMessage[]>;
+  createDirectMessage(message: InsertDirectMessage): Promise<DirectMessage>;
+  markDirectMessageAsRead(messageId: string): Promise<boolean>;
+  
+  // Image Uploads
+  createImageUpload(upload: InsertImageUpload): Promise<ImageUpload>;
 }
 
 export class MemStorage implements IStorage {
@@ -1582,6 +1622,237 @@ export class DatabaseStorage implements IStorage {
   // Admin methods
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users).orderBy(users.createdAt);
+  }
+
+  // Firm Invites
+  async createFirmInvite(invite: InsertFirmInvite & { tokenHash: string }): Promise<FirmInvite> {
+    const [result] = await db.insert(firmInvites).values(invite).returning();
+    return result;
+  }
+
+  async getFirmInvitesByToken(tokenHash: string): Promise<FirmInvite | undefined> {
+    const [result] = await db.select().from(firmInvites)
+      .where(eq(firmInvites.tokenHash, tokenHash));
+    return result;
+  }
+
+  async getFirmInvitesByFirm(firmId: string): Promise<FirmInvite[]> {
+    return await db.select().from(firmInvites)
+      .where(eq(firmInvites.firmId, firmId))
+      .orderBy(desc(firmInvites.createdAt));
+  }
+
+  async acceptFirmInvite(id: string): Promise<boolean> {
+    const result = await db.update(firmInvites)
+      .set({ acceptedAt: new Date() })
+      .where(eq(firmInvites.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Presence
+  async updatePresence(presenceLog: InsertPresenceLog): Promise<PresenceLog> {
+    const [existing] = await db.select().from(presenceLogs)
+      .where(and(
+        eq(presenceLogs.firmId, presenceLog.firmId),
+        eq(presenceLogs.userId, presenceLog.userId)
+      ));
+
+    if (existing) {
+      const [result] = await db.update(presenceLogs)
+        .set({ 
+          lastHeartbeatAt: new Date(),
+          clientInfo: presenceLog.clientInfo,
+          updatedAt: new Date()
+        })
+        .where(eq(presenceLogs.id, existing.id))
+        .returning();
+      return result;
+    } else {
+      const [result] = await db.insert(presenceLogs).values(presenceLog).returning();
+      return result;
+    }
+  }
+
+  async getPresenceByFirmAndUser(firmId: string, userId: string): Promise<PresenceLog | undefined> {
+    const [result] = await db.select().from(presenceLogs)
+      .where(and(
+        eq(presenceLogs.firmId, firmId),
+        eq(presenceLogs.userId, userId)
+      ));
+    return result;
+  }
+
+  async getPresenceByFirm(firmId: string): Promise<PresenceLog[]> {
+    return await db.select().from(presenceLogs)
+      .where(eq(presenceLogs.firmId, firmId));
+  }
+
+  // Message Drafts
+  async getDraft(threadId: string, authorFirmId: string): Promise<MessageDraft | undefined> {
+    const [result] = await db.select().from(messageDrafts)
+      .where(and(
+        eq(messageDrafts.threadId, threadId),
+        eq(messageDrafts.authorFirmId, authorFirmId)
+      ));
+    return result;
+  }
+
+  async upsertDraft(draft: InsertMessageDraft): Promise<MessageDraft> {
+    const [existing] = await db.select().from(messageDrafts)
+      .where(and(
+        eq(messageDrafts.threadId, draft.threadId),
+        eq(messageDrafts.authorFirmId, draft.authorFirmId)
+      ));
+
+    if (existing) {
+      const [result] = await db.update(messageDrafts)
+        .set({ body: draft.body, updatedAt: new Date() })
+        .where(eq(messageDrafts.id, existing.id))
+        .returning();
+      return result;
+    } else {
+      const [result] = await db.insert(messageDrafts).values(draft).returning();
+      return result;
+    }
+  }
+
+  async deleteDraft(threadId: string, authorFirmId: string): Promise<boolean> {
+    const result = await db.delete(messageDrafts)
+      .where(and(
+        eq(messageDrafts.threadId, threadId),
+        eq(messageDrafts.authorFirmId, authorFirmId)
+      ));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Auto Responders
+  async getAutoResponder(firmId: string): Promise<AutoResponder | undefined> {
+    const [result] = await db.select().from(autoResponders)
+      .where(eq(autoResponders.firmId, firmId));
+    return result;
+  }
+
+  async upsertAutoResponder(responder: InsertAutoResponder): Promise<AutoResponder> {
+    const [existing] = await db.select().from(autoResponders)
+      .where(eq(autoResponders.firmId, responder.firmId));
+
+    if (existing) {
+      const [result] = await db.update(autoResponders)
+        .set({ ...responder, updatedAt: new Date() })
+        .where(eq(autoResponders.id, existing.id))
+        .returning();
+      return result;
+    } else {
+      const [result] = await db.insert(autoResponders).values(responder).returning();
+      return result;
+    }
+  }
+
+  async getAutoReplyLog(responderFirmId: string, targetFirmId: string): Promise<Date | undefined> {
+    const [result] = await db.select().from(autoReplyLogs)
+      .where(and(
+        eq(autoReplyLogs.responderFirmId, responderFirmId),
+        eq(autoReplyLogs.targetFirmId, targetFirmId)
+      ))
+      .orderBy(desc(autoReplyLogs.lastReplyAt))
+      .limit(1);
+    return result?.lastReplyAt;
+  }
+
+  async setAutoReplyLog(responderFirmId: string, targetFirmId: string, messageId: string): Promise<void> {
+    await db.insert(autoReplyLogs).values({
+      responderFirmId,
+      targetFirmId,
+      messageId,
+      lastReplyAt: new Date()
+    }).onConflictDoUpdate({
+      target: [autoReplyLogs.responderFirmId, autoReplyLogs.targetFirmId],
+      set: {
+        lastReplyAt: new Date(),
+        messageId
+      }
+    });
+  }
+
+  // Direct Threads & Messages
+  async getOrCreateDirectThread(firm1Id: string, firm2Id: string): Promise<DirectThread> {
+    const [firstId, secondId] = [firm1Id, firm2Id].sort();
+    
+    let [thread] = await db.select().from(directThreads)
+      .where(and(eq(directThreads.firm1Id, firstId), eq(directThreads.firm2Id, secondId)));
+
+    if (!thread) {
+      [thread] = await db.insert(directThreads)
+        .values({ firm1Id: firstId, firm2Id: secondId })
+        .returning();
+    }
+
+    return thread;
+  }
+
+  async getDirectThreads(firmId: string): Promise<DirectThread[]> {
+    return await db.select().from(directThreads)
+      .where(or(eq(directThreads.firm1Id, firmId), eq(directThreads.firm2Id, firmId)))
+      .orderBy(desc(directThreads.lastMessageAt));
+  }
+
+  async getDirectThreadMessages(threadId: string, offset = 0, limit = 50): Promise<DirectMessage[]> {
+    return await db.select().from(directMessages)
+      .where(eq(directMessages.threadId, threadId))
+      .orderBy(desc(directMessages.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async createDirectMessage(message: InsertDirectMessage): Promise<DirectMessage> {
+    const [result] = await db.insert(directMessages).values(message).returning();
+    
+    // Update thread's last message timestamp
+    await db.update(directThreads)
+      .set({ lastMessageAt: new Date() })
+      .where(eq(directThreads.id, message.threadId));
+
+    return result;
+  }
+
+  async markDirectMessageAsRead(messageId: string): Promise<boolean> {
+    const result = await db.update(directMessages)
+      .set({ isRead: true, readAt: new Date() })
+      .where(eq(directMessages.id, messageId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Image Uploads
+  async createImageUpload(upload: InsertImageUpload): Promise<ImageUpload> {
+    const [result] = await db.insert(imageUploads).values(upload).returning();
+    return result;
+  }
+
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    demoUsers: number;
+    todayRegistrations: number;
+  }> {
+    const allUsers = await db.select().from(users);
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const totalUsers = allUsers.length;
+    const demoUsers = allUsers.filter(user => user.email.includes('demo')).length;
+    const todayRegistrations = allUsers.filter(user => 
+      new Date(user.createdAt) >= todayStart
+    ).length;
+    
+    // For now, assume all users are active (we don't track last login in current schema)
+    const activeUsers = totalUsers;
+
+    return {
+      totalUsers,
+      activeUsers,
+      demoUsers,
+      todayRegistrations
+    };
   }
 
   async getAdminStats(): Promise<{

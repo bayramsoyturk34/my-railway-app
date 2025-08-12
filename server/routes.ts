@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { z } from "zod";
+import crypto from "crypto";
+import multer from "multer";
 import { 
   insertPersonnelSchema, 
   insertProjectSchema, 
@@ -26,7 +28,14 @@ import {
   insertNotificationSchema,
   insertCompanyBlockSchema,
   insertCompanyMuteSchema,
-  insertAbuseReportSchema
+  insertAbuseReportSchema,
+  insertFirmInviteSchema,
+  insertPresenceLogSchema,
+  insertMessageDraftSchema,
+  insertAutoResponderSchema,
+  insertDirectThreadSchema,
+  insertDirectMessageSchema,
+  insertImageUploadSchema
 } from "@shared/schema";
 
 // Helper function to update quote total
@@ -2051,6 +2060,378 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Admin users error:", error);
       res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Enhanced Messaging & Firm Invites
+  
+  // Set up multer for image uploads
+  const upload = multer({
+    limits: { fileSize: 8 * 1024 * 1024 }, // 8MB limit
+    fileFilter: (req, file, cb) => {
+      const allowedMimes = ['image/png', 'image/jpeg', 'image/webp'];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only PNG, JPEG, and WebP images allowed'));
+      }
+    }
+  });
+
+  // Image upload endpoint
+  app.post("/api/upload-image", isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file provided" });
+      }
+
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id; // Use first company
+      const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${req.file.mimetype.split('/')[1]}`;
+      
+      // In production, you'd save to cloud storage. For now, we'll use a local path simulation
+      const url = `/uploads/${filename}`;
+      
+      const imageUpload = await storage.createImageUpload({
+        userId,
+        firmId,
+        filename,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        fileSize: req.file.size,
+        url,
+        width: 800, // Mock values - in production use sharp to get actual dimensions
+        height: 600
+      });
+
+      res.json({
+        url: imageUpload.url,
+        width: imageUpload.width,
+        height: imageUpload.height,
+        mime: imageUpload.mimeType
+      });
+    } catch (error) {
+      console.error("Image upload error:", error);
+      res.status(500).json({ error: "Failed to upload image" });
+    }
+  });
+
+  // Firm Invites
+  app.post("/api/invites", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const { email, role } = req.body;
+      
+      // Generate invite token
+      const payload = { email, firmId, role, exp: Date.now() + (72 * 60 * 60 * 1000) }; // 72 hours
+      const token = Buffer.from(JSON.stringify(payload)).toString('base64');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      
+      const invite = await storage.createFirmInvite({
+        firmId,
+        email,
+        role,
+        tokenHash,
+        expiresAt: new Date(Date.now() + (72 * 60 * 60 * 1000)),
+        createdByUserId: userId
+      });
+
+      const inviteUrl = `${req.protocol}://${req.get('host')}/invite/accept?token=${token}`;
+      
+      res.json({ inviteUrl, invite });
+    } catch (error) {
+      console.error("Invite creation error:", error);
+      res.status(500).json({ error: "Failed to create invite" });
+    }
+  });
+
+  app.get("/api/invites", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const invites = await storage.getFirmInvitesByFirm(firmId);
+      res.json(invites);
+    } catch (error) {
+      console.error("Invites fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch invites" });
+    }
+  });
+
+  app.post("/api/invites/accept", async (req, res) => {
+    try {
+      const { token } = req.body;
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      
+      const invite = await storage.getFirmInvitesByToken(tokenHash);
+      if (!invite || invite.acceptedAt || new Date() > invite.expiresAt) {
+        return res.status(400).json({ error: "Invalid or expired invite" });
+      }
+
+      // Decode token to get invite details
+      const payload = JSON.parse(Buffer.from(token, 'base64').toString());
+      
+      await storage.acceptFirmInvite(invite.id);
+      res.json({ success: true, message: "Invite accepted successfully" });
+    } catch (error) {
+      console.error("Invite accept error:", error);
+      res.status(500).json({ error: "Failed to accept invite" });
+    }
+  });
+
+  // Presence endpoints
+  app.post("/api/presence/heartbeat", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const clientInfo = req.body.clientInfo || req.get('User-Agent');
+      
+      await storage.updatePresence({
+        firmId,
+        userId,
+        clientInfo
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Presence heartbeat error:", error);
+      res.status(500).json({ error: "Failed to update presence" });
+    }
+  });
+
+  app.get("/api/presence/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const targetUserId = req.params.userId;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const presence = await storage.getPresenceByFirmAndUser(firmId, targetUserId);
+      
+      if (!presence) {
+        return res.json({ online: false, lastSeen: null });
+      }
+
+      const now = new Date();
+      const presenceTTL = 2 * 60 * 1000; // 2 minutes
+      const isOnline = (now.getTime() - presence.lastHeartbeatAt.getTime()) <= presenceTTL;
+      
+      res.json({
+        online: isOnline,
+        lastSeen: presence.lastHeartbeatAt.toISOString()
+      });
+    } catch (error) {
+      console.error("Presence fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch presence" });
+    }
+  });
+
+  // Message Drafts
+  app.get("/api/drafts/:threadId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const draft = await storage.getDraft(req.params.threadId, firmId);
+      
+      res.json({ body: draft?.body || "" });
+    } catch (error) {
+      console.error("Draft fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch draft" });
+    }
+  });
+
+  app.post("/api/drafts/upsert", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const { threadId, body } = req.body;
+      
+      if (body === "") {
+        // Delete draft if body is empty
+        await storage.deleteDraft(threadId, firmId);
+        res.json({ success: true, action: "deleted" });
+      } else {
+        const draft = await storage.upsertDraft({
+          threadId,
+          authorFirmId: firmId,
+          body
+        });
+        res.json({ success: true, action: "saved", draft });
+      }
+    } catch (error) {
+      console.error("Draft upsert error:", error);
+      res.status(500).json({ error: "Failed to save draft" });
+    }
+  });
+
+  // Auto Responder
+  app.get("/api/autoresponder", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const responder = await storage.getAutoResponder(firmId);
+      
+      res.json(responder || {
+        enabled: false,
+        mode: "KEYWORD",
+        keywords: [],
+        cooldownSec: 600,
+        messageBody: "Merhaba! Mesajınızı aldık, en kısa sürede dönüş yapacağız."
+      });
+    } catch (error) {
+      console.error("Auto responder fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch auto responder" });
+    }
+  });
+
+  app.post("/api/autoresponder", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const responder = await storage.upsertAutoResponder({
+        firmId,
+        ...req.body
+      });
+      
+      res.json(responder);
+    } catch (error) {
+      console.error("Auto responder save error:", error);
+      res.status(500).json({ error: "Failed to save auto responder" });
+    }
+  });
+
+  // Direct Threads & Messages
+  app.get("/api/threads", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const threads = await storage.getDirectThreads(firmId);
+      res.json(threads);
+    } catch (error) {
+      console.error("Threads fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch threads" });
+    }
+  });
+
+  app.get("/api/threads/:threadId/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const { threadId } = req.params;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const limit = parseInt(req.query.limit as string) || 50;
+      
+      const messages = await storage.getDirectThreadMessages(threadId, offset, limit);
+      res.json(messages);
+    } catch (error) {
+      console.error("Thread messages fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/threads/:threadId/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      const { threadId } = req.params;
+      const { body, attachmentUrl, attachmentType } = req.body;
+      
+      // Get thread to determine receiver
+      const thread = await storage.getOrCreateDirectThread(firmId, firmId); // This needs proper logic
+      const receiverFirmId = thread.firm1Id === firmId ? thread.firm2Id : thread.firm1Id;
+      
+      const message = await storage.createDirectMessage({
+        threadId,
+        senderFirmId: firmId,
+        receiverFirmId,
+        body,
+        attachmentUrl,
+        attachmentType: attachmentType || "text"
+      });
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Message creation error:", error);
+      res.status(500).json({ error: "Failed to create message" });
+    }
+  });
+
+  app.patch("/api/messages/:messageId/read", isAuthenticated, async (req: any, res) => {
+    try {
+      const { messageId } = req.params;
+      const success = await storage.markDirectMessageAsRead(messageId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Mark message read error:", error);
+      res.status(500).json({ error: "Failed to mark message as read" });
     }
   });
 

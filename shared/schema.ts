@@ -523,6 +523,184 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+// Firm Invite System
+export const firmInvites = pgTable("firm_invites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  firmId: varchar("firm_id").notNull(),
+  email: text("email").notNull(),
+  role: text("role").notNull(), // "ADMIN" | "USER"
+  tokenHash: text("token_hash").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  acceptedAt: timestamp("accepted_at"),
+  createdByUserId: varchar("created_by_user_id").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Presence Logs
+export const presenceLogs = pgTable("presence_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  firmId: varchar("firm_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  lastHeartbeatAt: timestamp("last_heartbeat_at").default(sql`now()`),
+  clientInfo: text("client_info"), // User agent/IP
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`),
+}, (table) => [
+  index("idx_presence_firm_user").on(table.firmId, table.userId)
+]);
+
+// Message Drafts
+export const messageDrafts = pgTable("message_drafts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  threadId: varchar("thread_id").notNull(),
+  authorFirmId: varchar("author_firm_id").notNull(),
+  body: text("body").notNull().default(""),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`),
+}, (table) => [
+  index("idx_draft_thread_author").on(table.threadId, table.authorFirmId)
+]);
+
+// Auto Responder
+export const autoResponders = pgTable("auto_responders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  firmId: varchar("firm_id").notNull(),
+  enabled: boolean("enabled").default(false),
+  mode: text("mode").notNull().default("KEYWORD"), // "KEYWORD" | "ALWAYS" | "OFFHOURS"
+  keywords: jsonb("keywords"), // string[]
+  offHoursTZ: text("off_hours_tz"), // "Europe/Istanbul"
+  offHours: jsonb("off_hours"), // { days: number[], start: string, end: string }
+  cooldownSec: integer("cooldown_sec").default(600),
+  messageBody: text("message_body").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Auto Reply Logs (to track cooldowns)
+export const autoReplyLogs = pgTable("auto_reply_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  responderFirmId: varchar("responder_firm_id").notNull(),
+  targetFirmId: varchar("target_firm_id").notNull(),
+  lastReplyAt: timestamp("last_reply_at").default(sql`now()`),
+  messageId: varchar("message_id"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+}, (table) => [
+  index("idx_auto_reply_firms").on(table.responderFirmId, table.targetFirmId)
+]);
+
+// Enhanced Messages with image support
+export const directThreads = pgTable("direct_threads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  firm1Id: varchar("firm1_id").notNull(),
+  firm2Id: varchar("firm2_id").notNull(),
+  lastMessageAt: timestamp("last_message_at"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+}, (table) => [
+  index("idx_thread_firms").on(table.firm1Id, table.firm2Id)
+]);
+
+export const directMessages = pgTable("direct_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  threadId: varchar("thread_id").notNull(),
+  senderFirmId: varchar("sender_firm_id").notNull(),
+  receiverFirmId: varchar("receiver_firm_id").notNull(),
+  body: text("body"),
+  attachmentUrl: text("attachment_url"),
+  attachmentType: text("attachment_type"), // "image" | "file"
+  attachmentThumbUrl: text("attachment_thumb_url"), // thumbnail for images
+  messageType: text("message_type").default("user"), // "user" | "auto_reply"
+  isRead: boolean("is_read").default(false),
+  deliveredAt: timestamp("delivered_at"),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+}, (table) => [
+  index("idx_message_thread").on(table.threadId),
+  index("idx_message_receiver").on(table.receiverFirmId)
+]);
+
+// Image Upload Logs
+export const imageUploads = pgTable("image_uploads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  firmId: varchar("firm_id").notNull(),
+  filename: text("filename").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  url: text("url").notNull(),
+  thumbUrl: text("thumb_url"),
+  width: integer("width"),
+  height: integer("height"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Insert schemas for new tables
+export const insertFirmInviteSchema = createInsertSchema(firmInvites).omit({
+  id: true,
+  tokenHash: true,
+  createdAt: true,
+});
+
+export const insertPresenceLogSchema = createInsertSchema(presenceLogs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMessageDraftSchema = createInsertSchema(messageDrafts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAutoResponderSchema = createInsertSchema(autoResponders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDirectThreadSchema = createInsertSchema(directThreads).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDirectMessageSchema = createInsertSchema(directMessages).omit({
+  id: true,
+  createdAt: true,
+  deliveredAt: true,
+  readAt: true,
+});
+
+export const insertImageUploadSchema = createInsertSchema(imageUploads).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types
+export type FirmInvite = typeof firmInvites.$inferSelect;
+export type InsertFirmInvite = z.infer<typeof insertFirmInviteSchema>;
+
+export type PresenceLog = typeof presenceLogs.$inferSelect;
+export type InsertPresenceLog = z.infer<typeof insertPresenceLogSchema>;
+
+export type MessageDraft = typeof messageDrafts.$inferSelect;
+export type InsertMessageDraft = z.infer<typeof insertMessageDraftSchema>;
+
+export type AutoResponder = typeof autoResponders.$inferSelect;
+export type InsertAutoResponder = z.infer<typeof insertAutoResponderSchema>;
+
+export type DirectThread = typeof directThreads.$inferSelect;
+export type InsertDirectThread = z.infer<typeof insertDirectThreadSchema>;
+
+export type DirectMessage = typeof directMessages.$inferSelect;
+export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
+
+export type ImageUpload = typeof imageUploads.$inferSelect;
+export type InsertImageUpload = z.infer<typeof insertImageUploadSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type CompanyDirectory = typeof companyDirectory.$inferSelect;
+
 export const insertCompanyBlockSchema = createInsertSchema(companyBlocks).omit({
   id: true,
   createdAt: true,
