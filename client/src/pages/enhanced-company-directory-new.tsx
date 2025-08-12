@@ -224,6 +224,8 @@ export default function EnhancedCompanyDirectory() {
     queryFn: () => apiRequest(`/api/threads/${activeThread}/messages`, "GET"),
     enabled: !!activeThread,
     refetchInterval: 2000,
+    staleTime: 0, // Always refetch
+    cacheTime: 0, // Don't cache
   });
 
   // Invites query
@@ -721,15 +723,17 @@ export default function EnhancedCompanyDirectory() {
                   <CardContent className="p-4">
                     <ScrollArea className="h-[350px] mb-4">
                       <div className="space-y-4">
-                        {messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={`flex ${
-                              message.messageType === "auto_reply" 
-                                ? "justify-start" 
-                                : "justify-end"
-                            }`}
-                          >
+                        {messages.map((message) => {
+                          console.log("Message:", message); // Debug log
+                          return (
+                            <div
+                              key={message.id}
+                              className={`flex ${
+                                message.messageType === "auto_reply" 
+                                  ? "justify-start" 
+                                  : "justify-end"
+                              }`}
+                            >
                             <div
                               className={`max-w-[70%] rounded-lg p-3 ${
                                 message.messageType === "auto_reply"
@@ -768,8 +772,9 @@ export default function EnhancedCompanyDirectory() {
                                 )}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })}}
                         <div ref={messagesEndRef} />
                       </div>
                     </ScrollArea>
