@@ -1986,13 +1986,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
       const fromCompanyId = userCompanies?.[0]?.id || "";
       
-      // Frontend'den gelen veri: { receiverFirmId, body }
+      // Thread bulma veya oluşturma
+      let thread = await storage.getDirectThreadByParticipants(fromCompanyId, req.body.receiverFirmId);
+      if (!thread) {
+        thread = await storage.createDirectThread({
+          firm1Id: fromCompanyId,
+          firm2Id: req.body.receiverFirmId
+        });
+      }
+      
+      // Mesaj oluşturma
       const messageData = {
-        fromCompanyId: fromCompanyId,
-        toCompanyId: req.body.receiverFirmId,
-        message: req.body.body,
-        fromUserId: userId,
-        toUserId: userId // Şimdilik aynı kullanıcı
+        threadId: thread.id,
+        body: req.body.body,
+        senderFirmId: fromCompanyId,
+        receiverFirmId: req.body.receiverFirmId,
+        senderId: userId
       };
       
       console.log("Creating message with data:", messageData);
