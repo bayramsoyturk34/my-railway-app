@@ -38,6 +38,7 @@ import {
   UserPlus,
   Settings,
   Bell,
+  ArrowLeft,
   BellOff,
   Flag,
   Ban,
@@ -358,9 +359,12 @@ export default function EnhancedCompanyDirectory() {
 
   // Event handlers
   const handleSendMessage = () => {
-    if (!messageText.trim() && !uploadingImage) return;
+    if ((!messageText.trim() && !uploadingImage) || !activeThread) return;
     
-    sendMessageMutation.mutate({ body: messageText });
+    sendMessageMutation.mutate({ 
+      body: messageText.trim(),
+      attachmentType: "text" 
+    });
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -375,12 +379,21 @@ export default function EnhancedCompanyDirectory() {
 
   const handleStartConversation = async (company: CompanyDirectory) => {
     try {
+      // First check if thread already exists or create new one
       const response = await apiRequest("/api/threads/create", "POST", {
         targetCompanyId: company.id,
       });
-      setActiveThread(response.id);
-      setActiveTab("messages");
+      
+      if (response && response.id) {
+        setActiveThread(response.id);
+        setActiveTab("messages");
+        toast({ 
+          title: "Sohbet Başlatıldı", 
+          description: `${company.companyName} ile mesajlaşma başladı`,
+        });
+      }
     } catch (error) {
+      console.error("Conversation start error:", error);
       toast({ title: "Hata", description: "Mesajlaşma başlatılamadı", variant: "destructive" });
     }
   };
@@ -402,9 +415,19 @@ export default function EnhancedCompanyDirectory() {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">PRO Firma Rehberi</h1>
-          <p className="text-muted-foreground">Gelişmiş mesajlaşma ve iş ağı sistemi</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => window.location.href = "/"}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Anasayfa
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">PRO Firma Rehberi</h1>
+            <p className="text-muted-foreground">Gelişmiş mesajlaşma ve iş ağı sistemi</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
@@ -693,36 +716,57 @@ export default function EnhancedCompanyDirectory() {
                     </ScrollArea>
 
                     {/* Message Input */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploadingImage}
-                      >
-                        <ImageIcon className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        value={messageText}
-                        onChange={(e) => {
-                          setMessageText(e.target.value);
-                          setDraftText(e.target.value);
-                        }}
-                        placeholder="Mesajınızı yazın..."
-                        className="flex-1"
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSendMessage();
-                          }
-                        }}
-                      />
-                      <Button 
-                        onClick={handleSendMessage}
-                        disabled={(!messageText.trim() && !uploadingImage) || sendMessageMutation.isPending}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
+                    <div className="border-t bg-muted/10 p-3">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploadingImage || !activeThread}
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                        </Button>
+                        <div className="flex-1 relative">
+                          <Input
+                            value={messageText}
+                            onChange={(e) => {
+                              setMessageText(e.target.value);
+                              setDraftText(e.target.value);
+                            }}
+                            placeholder={activeThread ? "Mesajınızı yazın ve Enter'a basın..." : "Önce bir sohbet seçin..."}
+                            className="pr-10"
+                            disabled={!activeThread}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage();
+                              }
+                            }}
+                          />
+                          {messageText && (
+                            <Badge className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-1" variant="secondary">
+                              {messageText.length}
+                            </Badge>
+                          )}
+                        </div>
+                        <Button 
+                          onClick={handleSendMessage}
+                          disabled={(!messageText.trim() && !uploadingImage) || sendMessageMutation.isPending || !activeThread}
+                          size="sm"
+                        >
+                          {sendMessageMutation.isPending ? (
+                            <Clock className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {activeThread && (
+                        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                          <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+                          <span>Mesajlarınız gerçek zamanlı olarak güncelleniyor</span>
+                        </div>
+                      )}
                     </div>
                     
                     <input

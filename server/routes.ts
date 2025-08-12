@@ -2375,6 +2375,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Direct Threads & Messages
+  app.post("/api/threads/create", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { targetCompanyId } = req.body;
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      
+      if (!userCompanies.length) {
+        return res.status(400).json({ error: "No company found for user" });
+      }
+
+      const firmId = userCompanies[0].id;
+      
+      // Check if thread already exists or create new one
+      const thread = await storage.getOrCreateDirectThread(firmId, targetCompanyId);
+      res.json(thread);
+    } catch (error) {
+      console.error("Thread creation error:", error);
+      res.status(500).json({ error: "Failed to create thread" });
+    }
+  });
+
   app.get("/api/threads", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
@@ -2421,8 +2442,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { body, attachmentUrl, attachmentType } = req.body;
       
       // Get thread to determine receiver
-      const thread = await storage.getOrCreateDirectThread(firmId, firmId); // This needs proper logic
-      const receiverFirmId = thread.firm1Id === firmId ? thread.firm2Id : thread.firm1Id;
+      const threads = await storage.getDirectThreads(firmId);
+      const currentThread = threads.find(t => t.id === threadId);
+      
+      if (!currentThread) {
+        return res.status(404).json({ error: "Thread not found" });
+      }
+      
+      const receiverFirmId = currentThread.firm1Id === firmId ? currentThread.firm2Id : currentThread.firm1Id;
       
       const message = await storage.createDirectMessage({
         threadId,
