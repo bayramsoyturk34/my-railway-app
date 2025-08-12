@@ -434,30 +434,30 @@ export default function EnhancedCompanyDirectory() {
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {notifications.map((notification) => (
+                  {notifications.map((notification) => {
+                    console.log("Bildirim render:", notification);
+                    return (
                     <div
                       key={notification.id}
                       className={`p-3 rounded border cursor-pointer hover:bg-muted/30 ${
                         notification.isRead ? 'bg-muted/50' : 'bg-primary/10'
                       }`}
+                      onMouseEnter={() => console.log("Mouse enter bildirim")}
                       onClick={(e) => {
-                        console.log("🔔 Bildirim tıklandı:", notification);
-                        console.log("🔔 Payload:", notification.payload);
-                        console.log("🔔 Type:", notification.type);
-                        console.log("🔔 FromCompanyId:", notification.payload?.fromCompanyId);
+                        console.log("TIKLANDIIII");
+                        alert("Bildirim tıklandı!");
+                        console.log("Notification:", notification);
+                        console.log("Payload:", notification.payload);
                         
                         if (notification.type === "NEW_MESSAGE" && notification.payload?.fromCompanyId) {
-                          console.log("📨 Mesaj thread açılıyor:", notification.payload.fromCompanyId);
+                          console.log("Mesaj thread açılıyor:", notification.payload.fromCompanyId);
                           setActiveThread(notification.payload.fromCompanyId);
                           setActiveTab("messaging");
                           setShowNotifications(false);
-                        } else {
-                          console.log("❌ Bildirim koşulları sağlanmadı");
                         }
                         
                         // Bildirimi okundu olarak işaretle
                         markAsReadMutation.mutate(notification.id);
-                        e.stopPropagation();
                       }}
                     >
                       <p className="font-medium text-sm">{notification.title}</p>
@@ -465,11 +465,14 @@ export default function EnhancedCompanyDirectory() {
                       <p className="text-xs text-muted-foreground mt-1">
                         {notification.createdAt ? new Date(notification.createdAt).toLocaleTimeString('tr-TR') : ''}
                       </p>
-                      <p className="text-xs text-blue-500 mt-1">
-                        DEBUG: {JSON.stringify(notification.payload)}
-                      </p>
+                      <div className="text-xs text-blue-500 mt-1 border p-1">
+                        <strong>DEBUG:</strong><br/>
+                        Type: {notification.type}<br/>
+                        Payload: {JSON.stringify(notification.payload, null, 2)}
+                      </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               )}
             </ScrollArea>
