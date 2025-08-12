@@ -1965,12 +1965,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/messages/:company1Id/:company2Id", isAuthenticated, async (req, res) => {
+  app.get("/api/messages/:companyId", isAuthenticated, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      console.log(`Fetching messages between ${req.params.company1Id} and ${req.params.company2Id}`);
-      const messages = await storage.getMessagesByConversationAndUser(req.params.company1Id, req.params.company2Id, userId);
+      const targetCompanyId = req.params.companyId;
+      
+      // Kullanıcının firmalarını al
+      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      const userCompanyId = userCompanies?.[0]?.id || "";
+      
+      console.log(`Fetching messages between ${userCompanyId} and ${targetCompanyId}`);
+      
+      // İki firma arasındaki mesajları getir
+      const messages = await storage.getMessagesByConversation(userCompanyId, targetCompanyId);
       console.log(`Found ${messages.length} messages`);
+      
       res.json(messages);
     } catch (error) {
       console.error("Error fetching conversation messages:", error);

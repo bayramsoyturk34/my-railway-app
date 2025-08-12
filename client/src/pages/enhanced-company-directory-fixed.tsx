@@ -57,7 +57,7 @@ export default function EnhancedCompanyDirectory() {
 
   // Messages query for active thread
   const { data: messages = [] } = useQuery<DirectMessage[]>({
-    queryKey: ["/api/messages", activeThread],
+    queryKey: [`/api/messages/${activeThread}`],
     refetchInterval: 3000,
     enabled: !!activeThread,
     staleTime: 0,
@@ -100,7 +100,7 @@ export default function EnhancedCompanyDirectory() {
     mutationFn: (message: { receiverFirmId: string; body: string }) =>
       apiRequest("/api/messages", "POST", message),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeThread] });
+      queryClient.invalidateQueries({ queryKey: [`/api/messages/${activeThread}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       setMessageText("");
       setDraftText("");
