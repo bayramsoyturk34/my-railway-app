@@ -146,42 +146,78 @@ export default function ReportsPage() {
     });
   };
 
+  // Helper function to normalize Turkish characters for PDF
+  const normalizeTurkishText = (text: string): string => {
+    const turkishMap: { [key: string]: string } = {
+      'ç': 'c',
+      'ğ': 'g', 
+      'ı': 'i',
+      'ö': 'o',
+      'ş': 's',
+      'ü': 'u',
+      'Ç': 'C',
+      'Ğ': 'G',
+      'İ': 'I',
+      'Ö': 'O',
+      'Ş': 'S',
+      'Ü': 'U'
+    };
+    
+    return text.replace(/[çğıöşüÇĞİÖŞÜ]/g, (match) => turkishMap[match] || match);
+  };
+
   const generateReportPDF = (templateId: string) => {
     try {
-      const doc = new jsPDF();
-      doc.setFont("times", "normal");
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      // Use helvetica for better character support
+      doc.setFont("helvetica", "normal");
       
       const currentDate = new Date().toLocaleDateString('tr-TR');
       
       switch (templateId) {
         case "financial-summary":
           doc.setFontSize(16);
-          doc.text("Finansal Özet Raporu", 20, 20);
+          doc.text(normalizeTurkishText("Finansal Ozet Raporu"), 20, 20);
           doc.setFontSize(10);
-          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          doc.text(normalizeTurkishText(`Tarih: ${currentDate}`), 20, 30);
           
           if (financialSummary) {
             const financialData = [
-              ['Toplam Gelir', `₺${financialSummary.totalIncome?.toLocaleString('tr-TR') || 0}`],
-              ['Toplam Gider', `₺${financialSummary.totalExpenses?.toLocaleString('tr-TR') || 0}`],
-              ['Net Kar', `₺${financialSummary.netBalance?.toLocaleString('tr-TR') || 0}`],
-              ['Müşteri Ödemeleri', `₺${financialSummary.customerPayments?.total?.toLocaleString('tr-TR') || 0}`],
-              ['Bekleyen İşler', `₺${financialSummary.customerTasks?.total?.toLocaleString('tr-TR') || 0}`]
+              [normalizeTurkishText('Toplam Gelir'), `TL${financialSummary.totalIncome?.toLocaleString('tr-TR') || 0}`],
+              [normalizeTurkishText('Toplam Gider'), `TL${financialSummary.totalExpenses?.toLocaleString('tr-TR') || 0}`],
+              [normalizeTurkishText('Net Kar'), `TL${financialSummary.netBalance?.toLocaleString('tr-TR') || 0}`],
+              [normalizeTurkishText('Musteri Odemeleri'), `TL${financialSummary.customerPayments?.total?.toLocaleString('tr-TR') || 0}`],
+              [normalizeTurkishText('Bekleyen Isler'), `TL${financialSummary.customerTasks?.total?.toLocaleString('tr-TR') || 0}`]
             ];
             
             autoTable(doc, {
-              head: [['Kategori', 'Tutar']],
+              head: [[normalizeTurkishText('Kategori'), normalizeTurkishText('Tutar')]],
               body: financialData,
               startY: 40,
+              styles: {
+                font: 'helvetica',
+                fontSize: 10,
+              },
+              headStyles: {
+                fillColor: [41, 128, 185],
+                textColor: 255,
+                font: 'helvetica',
+                fontSize: 12,
+              }
             });
           }
           break;
           
         case "monthly-revenue":
           doc.setFontSize(16);
-          doc.text("Aylık Gelir Raporu", 20, 20);
+          doc.text(normalizeTurkishText("Aylik Gelir Raporu"), 20, 20);
           doc.setFontSize(10);
-          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          doc.text(normalizeTurkishText(`Tarih: ${currentDate}`), 20, 30);
           
           if (dashboardData?.monthlyRevenue) {
             const revenueData = dashboardData.monthlyRevenue.map((item: any) => [
@@ -190,18 +226,28 @@ export default function ReportsPage() {
             ]);
             
             autoTable(doc, {
-              head: [['Ay', 'Gelir']],
-              body: revenueData,
+              head: [[normalizeTurkishText('Ay'), normalizeTurkishText('Gelir')]],
+              body: revenueData.map(row => [normalizeTurkishText(row[0]), row[1]]),
               startY: 40,
+              styles: {
+                font: 'helvetica',
+                fontSize: 10,
+              },
+              headStyles: {
+                fillColor: [41, 128, 185],
+                textColor: 255,
+                font: 'helvetica',
+                fontSize: 12,
+              }
             });
           }
           break;
           
         case "timesheet-summary":
           doc.setFontSize(16);
-          doc.text("Puantaj Özet Raporu", 20, 20);
+          doc.text(normalizeTurkishText("Puantaj Ozet Raporu"), 20, 20);
           doc.setFontSize(10);
-          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          doc.text(normalizeTurkishText(`Tarih: ${currentDate}`), 20, 30);
           
           if (timesheets.length > 0) {
             const timesheetData = timesheets.map((item: any) => [
@@ -213,19 +259,34 @@ export default function ReportsPage() {
             ]);
             
             autoTable(doc, {
-              head: [['Personel', 'Tarih', 'Başlangıç', 'Bitiş', 'Notlar']],
-              body: timesheetData,
+              head: [[
+                normalizeTurkishText('Personel'), 
+                normalizeTurkishText('Tarih'), 
+                normalizeTurkishText('Baslangic'), 
+                normalizeTurkishText('Bitis'), 
+                normalizeTurkishText('Notlar')
+              ]],
+              body: timesheetData.map(row => row.map(cell => normalizeTurkishText(cell))),
               startY: 40,
-              styles: { fontSize: 8 }
+              styles: {
+                font: 'helvetica',
+                fontSize: 8,
+              },
+              headStyles: {
+                fillColor: [142, 68, 173],
+                textColor: 255,
+                font: 'helvetica',
+                fontSize: 10,
+              }
             });
           }
           break;
           
         case "project-performance":
           doc.setFontSize(16);
-          doc.text("Proje Performans Raporu", 20, 20);
+          doc.text(normalizeTurkishText("Proje Performans Raporu"), 20, 20);
           doc.setFontSize(10);
-          doc.text(`Tarih: ${currentDate}`, 20, 30);
+          doc.text(normalizeTurkishText(`Tarih: ${currentDate}`), 20, 30);
           
           if (customers.length > 0) {
             const projectData = customers.map((customer: any) => [
@@ -236,9 +297,29 @@ export default function ReportsPage() {
             ]);
             
             autoTable(doc, {
-              head: [['Müşteri', 'Şirket', 'Durum', 'E-posta']],
-              body: projectData,
+              head: [[
+                normalizeTurkishText('Musteri'), 
+                normalizeTurkishText('Sirket'), 
+                normalizeTurkishText('Durum'), 
+                'E-posta'
+              ]],
+              body: projectData.map(row => [
+                normalizeTurkishText(row[0]),
+                normalizeTurkishText(row[1]),
+                normalizeTurkishText(row[2]),
+                row[3]
+              ]),
               startY: 40,
+              styles: {
+                font: 'helvetica',
+                fontSize: 10,
+              },
+              headStyles: {
+                fillColor: [230, 126, 34],
+                textColor: 255,
+                font: 'helvetica',
+                fontSize: 12,
+              }
             });
           }
           break;
