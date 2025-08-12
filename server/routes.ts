@@ -1510,6 +1510,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/directory/my-companies", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const myCompanies = await storage.getCompanyDirectoryByUserId(userId);
+      res.json(myCompanies);
+    } catch (error) {
+      console.error("Error fetching user companies:", error);
+      res.status(500).json({ error: "Failed to fetch user companies" });
+    }
+  });
+
   app.get("/api/company-directory/:id", isAuthenticated, async (req, res) => {
     try {
       const company = await storage.getCompany(req.params.id);

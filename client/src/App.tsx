@@ -19,7 +19,7 @@ import Finances from "@/pages/finances";
 import Customers from "@/pages/customers";
 import CustomerDetail from "@/pages/customer-detail";
 import CompanyDirectory from "@/pages/company-directory";
-import EnhancedCompanyDirectory from "@/pages/enhanced-company-directory-new";
+import EnhancedCompanyDirectory from "@/pages/enhanced-company-directory-fixed";
 import Reports from "@/pages/reports";
 import AdminDashboard from "@/pages/admin-dashboard";
 
