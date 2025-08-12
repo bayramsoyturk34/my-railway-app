@@ -1981,14 +1981,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isAuthenticated, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const { insertMessageSchema } = await import("@shared/schema");
+      
+      // Kullanıcının firmalarını al
+      const userCompanies = await storage.getCompanyDirectoryByUser(userId);
+      const fromCompanyId = userCompanies?.[0]?.id || "";
+      
+      // Frontend'den gelen veri: { receiverFirmId, body }
       const messageData = {
-        ...req.body,
-        fromUserId: userId, // Mesajı gönderen kullanıcı
-        toUserId: req.body.toUserId || userId // Hedef kullanıcı
+        fromCompanyId: fromCompanyId,
+        toCompanyId: req.body.receiverFirmId,
+        message: req.body.body,
+        fromUserId: userId,
+        toUserId: userId // Şimdilik aynı kullanıcı
       };
-      const validatedData = insertMessageSchema.parse(messageData);
-      const message = await storage.createMessage(validatedData);
+      
+      console.log("Creating message with data:", messageData);
+      
+      const message = await storage.createDirectMessage(messageData);
       res.status(201).json(message);
     } catch (error) {
       console.error("Error creating message:", error);
