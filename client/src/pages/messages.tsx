@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation, Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,6 @@ export default function Messages() {
   const [activeThread, setActiveThread] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showSearchResults, setShowSearchResults] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -116,11 +115,17 @@ export default function Messages() {
     }
   }, [searchTerm, activeThread, companies]);
 
-  // Search filtreleme
-  const filteredCompanies = companies.filter(company =>
-    company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.industry?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Search filtreleme - useMemo ile optimize et
+  const filteredCompanies = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return companies;
+    }
+    return companies.filter(company =>
+      company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [companies, searchTerm]);
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !activeThread) return;
@@ -155,9 +160,9 @@ export default function Messages() {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-3">Sohbetler</h3>
             <Select 
-              value={activeThread || ""} 
+              value={activeThread && filteredCompanies.some(c => c.id === activeThread) ? activeThread : ""} 
               onValueChange={setActiveThread}
-              key={`select-${searchTerm}`}
+              key={`select-${searchTerm}-${filteredCompanies.length}`}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Firma seç..." />
