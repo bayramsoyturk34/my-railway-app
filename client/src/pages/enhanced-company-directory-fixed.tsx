@@ -55,6 +55,22 @@ export default function EnhancedCompanyDirectory() {
     refetchInterval: 3000,
   });
 
+  // URL parametrelerini kontrol et ve aktif thread'i ayarla
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeThreadParam = urlParams.get('activeThread');
+    
+    if (activeThreadParam) {
+      console.log("🔥 URL'den activeThread parametresi bulundu:", activeThreadParam);
+      setActiveThread(activeThreadParam);
+      setActiveTab("messaging");
+      
+      // URL'yi temizle (parametre kaldır)
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
+
   // Debug notifications
   useEffect(() => {
     console.log("🔔 All notifications:", notifications);
