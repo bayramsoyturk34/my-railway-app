@@ -1626,13 +1626,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req as any).user.id;
       const conversationId = req.params.id;
       
-      // Get conversation details
-      const conversation = await storage.getConversation(conversationId, conversationId); // This needs to be updated
+      // Get conversation by ID
+      const conversation = await storage.getConversationById(conversationId);
       if (!conversation) {
         return res.status(404).json({ error: "Conversation not found" });
       }
 
-      const messages = await storage.getMessagesByConversation(conversation.company1Id, conversation.company2Id);
+      // Get messages for this conversation
+      const messages = await storage.getMessagesByConversationId(conversationId);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -1659,7 +1660,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userCompanyId = userCompanies[0].id;
 
       // Get conversation to find target company
-      const conversation = await storage.getConversation(conversationId, conversationId); // This needs updating
+      const conversation = await storage.getConversationById(conversationId);
       if (!conversation) {
         return res.status(404).json({ error: "Conversation not found" });
       }
