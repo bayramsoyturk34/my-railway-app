@@ -156,20 +156,21 @@ export default function Dashboard() {
           </div>
           
           <div className="flex items-center gap-4">
-            {/* Notifications */}
-            {notifications.filter(n => !n.isRead).length > 0 && (
-              <div className="relative">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="text-white hover:bg-dark-accent relative"
-                  onClick={() => setShowNotifications(!showNotifications)}
-                >
-                  <Bell className="h-5 w-5" />
+            {/* Notifications - Always visible */}
+            <div className="relative">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-white hover:bg-dark-accent relative"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <Bell className="h-5 w-5" />
+                {notifications.filter(n => !n.isRead).length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {notifications.filter(n => !n.isRead).length}
                   </span>
-                </Button>
+                )}
+              </Button>
                 
                 {showNotifications && (
                   <div className="absolute top-full right-0 mt-2 w-80 bg-dark-secondary border border-dark-accent rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
@@ -255,7 +256,7 @@ export default function Dashboard() {
                                       {(notification.payload as any).message}
                                     </div>
                                     <div className="text-xs text-gray-500 mt-1">
-                                      {new Date(notification.createdAt).toLocaleString('tr-TR')}
+                                      {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
                                     </div>
                                   </>
                                 )}
@@ -271,7 +272,6 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-            )}
 
             {/* User info */}
             {user && (
