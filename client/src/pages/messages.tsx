@@ -101,31 +101,13 @@ export default function Messages() {
     scrollToBottom();
   }, [messages]);
 
-  // Search terimi değiştiğinde activeThread'i temizle eğer filtrede yoksa
-  useEffect(() => {
-    if (activeThread && searchTerm && companies.length > 0) {
-      const filtered = companies.filter(company =>
-        company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        company.industry?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      const isActiveThreadInFiltered = filtered.some(c => c.id === activeThread);
-      if (!isActiveThreadInFiltered) {
-        setActiveThread(null);
-      }
-    }
-  }, [searchTerm, activeThread, companies]);
-
-  // Search filtreleme - useMemo ile optimize et
-  const filteredCompanies = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return companies;
-    }
-    return companies.filter(company =>
-      company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [companies, searchTerm]);
+  // Basit filtreleme
+  const filteredCompanies = companies.filter(company => {
+    if (!searchTerm.trim()) return true;
+    const search = searchTerm.toLowerCase();
+    return company.companyName?.toLowerCase().includes(search) ||
+           company.industry?.toLowerCase().includes(search);
+  });
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !activeThread) return;
@@ -160,9 +142,8 @@ export default function Messages() {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-3">Sohbetler</h3>
             <Select 
-              value={activeThread && filteredCompanies.some(c => c.id === activeThread) ? activeThread : ""} 
+              value={activeThread || ""} 
               onValueChange={setActiveThread}
-              key={`select-${searchTerm}-${filteredCompanies.length}`}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Firma seç..." />
