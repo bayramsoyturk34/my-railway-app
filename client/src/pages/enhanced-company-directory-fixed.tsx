@@ -441,7 +441,10 @@ export default function EnhancedCompanyDirectory() {
                         notification.isRead ? 'bg-muted/50' : 'bg-primary/10'
                       }`}
                       onClick={() => {
+                        console.log("Bildirim tıklandı:", notification);
+                        console.log("Payload:", notification.payload);
                         if (notification.type === "NEW_MESSAGE" && notification.payload?.fromCompanyId) {
+                          console.log("Mesaj thread açılıyor:", notification.payload.fromCompanyId);
                           setActiveThread(notification.payload.fromCompanyId);
                           setActiveTab("messaging");
                           setShowNotifications(false);

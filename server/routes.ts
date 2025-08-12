@@ -2014,18 +2014,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (receiverCompany && receiverCompany.userId !== userId) {
         // Gönderen firmanın adını al  
         const fromCompany = userCompanies?.[0]; // Kullanıcının kendi firması
+        console.log("Gönderen firma bilgisi:", fromCompany);
+        console.log("Alıcı firma bilgisi:", receiverCompany);
         
         // Alıcı için bildirim oluştur
         const notification = {
           userId: receiverCompany.userId, // Alıcı firmanın sahibi
           type: "NEW_MESSAGE" as const,
           title: "Yeni Mesaj",
-          content: `${fromCompany?.companyName || 'Bir firma'} size mesaj gönderdi`,
+          content: `${fromCompany?.companyName || 'Bilinmeyen Firma'} size mesaj gönderdi`,
           payload: {
             fromCompanyId: fromCompanyId,
             toCompanyId: req.body.receiverFirmId,
             messageId: message.id,
-            fromCompanyName: fromCompany?.companyName
+            fromCompanyName: fromCompany?.companyName || 'Bilinmeyen Firma'
           }
         };
         
