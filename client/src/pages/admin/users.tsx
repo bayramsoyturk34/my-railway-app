@@ -269,144 +269,177 @@ export default function AdminUsers() {
           
           {hasAdminAccess && (
             <div className="flex items-center gap-3">
-              <Select onValueChange={(format: 'csv' | 'pdf') => {
-                try {
-                  if (!users || users.length === 0) {
-                    toast({
-                      title: "Hata",
-                      description: "Dışa aktarılacak kullanıcı bulunamadı.",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-green-600 text-green-400 hover:bg-green-600/10"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Dışa Aktar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-dark-primary border-dark-accent">
+                  <DropdownMenuItem 
+                    className="text-white hover:bg-dark-accent cursor-pointer"
+                    onClick={() => {
+                      try {
+                        if (!users || users.length === 0) {
+                          toast({
+                            title: "Hata",
+                            description: "Dışa aktarılacak kullanıcı bulunamadı.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
 
-                  const exportData = (users as any[]).map(u => ({
-                    Email: u.email,
-                    "Ad Soyad": `${u.firstName || ''} ${u.lastName || ''}`.trim(),
-                    Rol: u.role === 'SUPER_ADMIN' ? 'Süper Admin' : u.role === 'ADMIN' ? 'Admin' : 'Kullanıcı',
-                    Durum: u.status === 'SUSPENDED' ? 'Askıya Alındı' : 'Aktif',
-                    "Kayıt Tarihi": new Date(u.createdAt).toLocaleDateString('tr-TR'),
-                    "Son Güncelleme": new Date(u.updatedAt).toLocaleDateString('tr-TR')
-                  }));
+                        const exportData = (users as any[]).map(u => ({
+                          Email: u.email,
+                          "Ad Soyad": `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+                          Rol: u.role === 'SUPER_ADMIN' ? 'Süper Admin' : u.role === 'ADMIN' ? 'Admin' : 'Kullanıcı',
+                          Durum: u.status === 'SUSPENDED' ? 'Askıya Alındı' : 'Aktif',
+                          "Kayıt Tarihi": new Date(u.createdAt).toLocaleDateString('tr-TR'),
+                          "Son Güncelleme": new Date(u.updatedAt).toLocaleDateString('tr-TR')
+                        }));
 
-                  if (format === 'csv') {
-                    // Excel/CSV Export
-                    const headers = Object.keys(exportData[0]);
-                    const csvContent = [
-                      headers.join(','),
-                      ...exportData.map(row => 
-                        Object.values(row).map(value => {
-                          const str = value === null || value === undefined ? '' : String(value);
-                          return str.includes(',') ? `"${str}"` : str;
-                        }).join(',')
-                      )
-                    ].join('\n');
+                        // Excel/CSV Export
+                        const headers = Object.keys(exportData[0]);
+                        const csvContent = [
+                          headers.join(','),
+                          ...exportData.map(row => 
+                            Object.values(row).map(value => {
+                              const str = value === null || value === undefined ? '' : String(value);
+                              return str.includes(',') ? `"${str}"` : str;
+                            }).join(',')
+                          )
+                        ].join('\n');
 
-                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement('a');
-                    const url = URL.createObjectURL(blob);
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', `kullanicilar_${new Date().toISOString().split('T')[0]}.csv`);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
+                        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `kullanicilar_${new Date().toISOString().split('T')[0]}.csv`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
 
-                    toast({
-                      title: "Başarılı",
-                      description: `${users.length} kullanıcı Excel formatında dışa aktarıldı.`,
-                    });
-                  } else if (format === 'pdf') {
-                    // PDF Export
-                    const { jsPDF } = require('jspdf');
-                    require('jspdf-autotable');
-                    
-                    const doc = new jsPDF({
-                      orientation: 'landscape',
-                      unit: 'mm',
-                      format: 'a4'
-                    });
-
-                    // Title
-                    doc.setFontSize(16);
-                    doc.text('Kullanıcı Listesi', 20, 20);
-                    
-                    // Date
-                    doc.setFontSize(10);
-                    doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 30);
-
-                    // Table
-                    const tableData = exportData.map(user => [
-                      user.Email,
-                      user["Ad Soyad"],
-                      user.Rol,
-                      user.Durum,
-                      user["Kayıt Tarihi"],
-                      user["Son Güncelleme"]
-                    ]);
-
-                    (doc as any).autoTable({
-                      head: [['Email', 'Ad Soyad', 'Rol', 'Durum', 'Kayıt Tarihi', 'Son Güncelleme']],
-                      body: tableData,
-                      startY: 40,
-                      styles: {
-                        fontSize: 8,
-                        cellPadding: 3,
-                      },
-                      headStyles: {
-                        fillColor: [41, 128, 185],
-                        textColor: 255,
-                        fontSize: 9,
-                      },
-                      alternateRowStyles: {
-                        fillColor: [245, 245, 245],
-                      },
-                      columnStyles: {
-                        0: { cellWidth: 45 }, // Email
-                        1: { cellWidth: 35 }, // Ad Soyad  
-                        2: { cellWidth: 25 }, // Rol
-                        3: { cellWidth: 25 }, // Durum
-                        4: { cellWidth: 30 }, // Kayıt Tarihi
-                        5: { cellWidth: 30 }, // Son Güncelleme
+                        toast({
+                          title: "Başarılı",
+                          description: `${users.length} kullanıcı Excel formatında dışa aktarıldı.`,
+                        });
+                      } catch (error) {
+                        console.error('Export error:', error);
+                        toast({
+                          title: "Hata",
+                          description: "Dışa aktarma sırasında hata oluştu.",
+                          variant: "destructive",
+                        });
                       }
-                    });
+                    }}
+                  >
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Excel İndir
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-white hover:bg-dark-accent cursor-pointer"
+                    onClick={() => {
+                      try {
+                        if (!users || users.length === 0) {
+                          toast({
+                            title: "Hata",
+                            description: "Dışa aktarılacak kullanıcı bulunamadı.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
 
-                    doc.save(`kullanicilar_${new Date().toISOString().split('T')[0]}.pdf`);
+                        const exportData = (users as any[]).map(u => ({
+                          Email: u.email,
+                          "Ad Soyad": `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+                          Rol: u.role === 'SUPER_ADMIN' ? 'Süper Admin' : u.role === 'ADMIN' ? 'Admin' : 'Kullanıcı',
+                          Durum: u.status === 'SUSPENDED' ? 'Askıya Alındı' : 'Aktif',
+                          "Kayıt Tarihi": new Date(u.createdAt).toLocaleDateString('tr-TR'),
+                          "Son Güncelleme": new Date(u.updatedAt).toLocaleDateString('tr-TR')
+                        }));
 
-                    toast({
-                      title: "Başarılı",
-                      description: `${users.length} kullanıcı PDF formatında dışa aktarıldı.`,
-                    });
-                  }
-                } catch (error) {
-                  console.error('Export error:', error);
-                  toast({
-                    title: "Hata",
-                    description: "Dışa aktarma sırasında hata oluştu.",
-                    variant: "destructive",
-                  });
-                }
-              }}>
-                <SelectTrigger className="w-40 bg-dark-secondary border-green-600 text-green-400 hover:bg-green-600/10">
-                  <Download className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Dışa Aktar" />
-                </SelectTrigger>
-                <SelectContent className="bg-dark-primary border-dark-accent">
-                  <SelectItem value="csv" className="text-white hover:bg-dark-accent">
-                    <div className="flex items-center gap-2">
-                      <FileSpreadsheet className="h-4 w-4" />
-                      Excel
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="pdf" className="text-white hover:bg-dark-accent">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      PDF
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                        // PDF Export
+                        const { jsPDF } = require('jspdf');
+                        require('jspdf-autotable');
+                        
+                        const doc = new jsPDF({
+                          orientation: 'landscape',
+                          unit: 'mm',
+                          format: 'a4'
+                        });
+
+                        // Title
+                        doc.setFontSize(16);
+                        doc.text('Kullanici Listesi', 20, 20);
+                        
+                        // Date
+                        doc.setFontSize(10);
+                        doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 30);
+
+                        // Table
+                        const tableData = exportData.map(user => [
+                          user.Email,
+                          user["Ad Soyad"],
+                          user.Rol,
+                          user.Durum,
+                          user["Kayıt Tarihi"],
+                          user["Son Güncelleme"]
+                        ]);
+
+                        (doc as any).autoTable({
+                          head: [['Email', 'Ad Soyad', 'Rol', 'Durum', 'Kayit Tarihi', 'Son Guncelleme']],
+                          body: tableData,
+                          startY: 40,
+                          styles: {
+                            fontSize: 8,
+                            cellPadding: 3,
+                          },
+                          headStyles: {
+                            fillColor: [41, 128, 185],
+                            textColor: 255,
+                            fontSize: 9,
+                          },
+                          alternateRowStyles: {
+                            fillColor: [245, 245, 245],
+                          },
+                          columnStyles: {
+                            0: { cellWidth: 45 }, // Email
+                            1: { cellWidth: 35 }, // Ad Soyad  
+                            2: { cellWidth: 25 }, // Rol
+                            3: { cellWidth: 25 }, // Durum
+                            4: { cellWidth: 30 }, // Kayıt Tarihi
+                            5: { cellWidth: 30 }, // Son Güncelleme
+                          }
+                        });
+
+                        doc.save(`kullanicilar_${new Date().toISOString().split('T')[0]}.pdf`);
+
+                        toast({
+                          title: "Başarılı",
+                          description: `${users.length} kullanıcı PDF formatında dışa aktarıldı.`,
+                        });
+                      } catch (error) {
+                        console.error('Export error:', error);
+                        toast({
+                          title: "Hata",
+                          description: "Dışa aktarma sırasında hata oluştu.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    PDF İndir
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               {isSuperAdmin && (
                 <Button
                   className="bg-purple-600 hover:bg-purple-700"
