@@ -498,7 +498,7 @@ export default function AdminUsers() {
                     {/* Quick Actions */}
                     {hasAdminAccess && (
                       <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-600">
-                        {/* Status Toggle */}
+                        {/* Engelle/Aktif Et */}
                         <Button
                           size="sm"
                           variant={selectedUser.status === 'SUSPENDED' ? "outline" : "destructive"}
@@ -507,13 +507,34 @@ export default function AdminUsers() {
                               ? "border-green-600 text-green-400 hover:bg-green-600/10"
                               : "bg-red-600 hover:bg-red-700"
                           }
-                          onClick={() => updateStatusMutation.mutate({
-                            userId: selectedUser.id,
-                            status: selectedUser.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED'
-                          })}
+                          onClick={async () => {
+                            try {
+                              await updateStatusMutation.mutateAsync({
+                                userId: selectedUser.id,
+                                status: selectedUser.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED'
+                              });
+                              toast({
+                                title: "Başarılı",
+                                description: selectedUser.status === 'SUSPENDED' 
+                                  ? "Kullanıcı aktif edildi" 
+                                  : "Kullanıcı engellendi",
+                              });
+                            } catch (error) {
+                              toast({
+                                title: "Hata",
+                                description: "İşlem başarısız oldu",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
                           disabled={updateStatusMutation.isPending}
                         >
-                          {selectedUser.status === 'SUSPENDED' ? (
+                          {updateStatusMutation.isPending ? (
+                            <>
+                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              İşleniyor...
+                            </>
+                          ) : selectedUser.status === 'SUSPENDED' ? (
                             <>
                               <UserCheck className="h-4 w-4 mr-2" />
                               Aktif Et
@@ -525,6 +546,49 @@ export default function AdminUsers() {
                             </>
                           )}
                         </Button>
+
+                        {/* Askıya Al - Separate action */}
+                        {selectedUser.status !== 'SUSPENDED' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-yellow-600 text-yellow-400 hover:bg-yellow-600/10"
+                            onClick={async () => {
+                              const confirmed = confirm("Bu kullanıcıyı askıya almak istediğinizden emin misiniz?");
+                              if (confirmed) {
+                                try {
+                                  await updateStatusMutation.mutateAsync({
+                                    userId: selectedUser.id,
+                                    status: 'SUSPENDED'
+                                  });
+                                  toast({
+                                    title: "Başarılı",
+                                    description: "Kullanıcı askıya alındı",
+                                  });
+                                } catch (error) {
+                                  toast({
+                                    title: "Hata",
+                                    description: "Askıya alma işlemi başarısız oldu",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }
+                            }}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            {updateStatusMutation.isPending ? (
+                              <>
+                                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-yellow-400 border-t-transparent" />
+                                İşleniyor...
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle className="h-4 w-4 mr-2" />
+                                Askıya Al
+                              </>
+                            )}
+                          </Button>
+                        )}
 
                         {/* Role Toggle */}
                         {isSuperAdmin && selectedUser.role !== 'SUPER_ADMIN' && (
@@ -543,16 +607,42 @@ export default function AdminUsers() {
                           </Button>
                         )}
 
-                        {/* Force Logout */}
+                        {/* Oturumları Sonlandır */}
                         <Button
                           size="sm"
                           variant="outline"
                           className="border-orange-600 text-orange-400 hover:bg-orange-600/10"
-                          onClick={() => terminateSessionsMutation.mutate(selectedUser.id)}
+                          onClick={async () => {
+                            const confirmed = confirm("Bu kullanıcının tüm oturumlarını sonlandırmak istediğinizden emin misiniz?");
+                            if (confirmed) {
+                              try {
+                                await terminateSessionsMutation.mutateAsync(selectedUser.id);
+                                toast({
+                                  title: "Başarılı",
+                                  description: "Kullanıcının tüm oturumları sonlandırıldı",
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: "Hata",
+                                  description: "Oturum sonlandırma işlemi başarısız oldu",
+                                  variant: "destructive"
+                                });
+                              }
+                            }
+                          }}
                           disabled={terminateSessionsMutation.isPending}
                         >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Oturumları Sonlandır
+                          {terminateSessionsMutation.isPending ? (
+                            <>
+                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-orange-400 border-t-transparent" />
+                              Sonlandırılıyor...
+                            </>
+                          ) : (
+                            <>
+                              <LogOut className="h-4 w-4 mr-2" />
+                              Oturumları Sonlandır
+                            </>
+                          )}
                         </Button>
 
                         {/* View Profile */}
@@ -700,46 +790,169 @@ export default function AdminUsers() {
 
               {/* Compact Admin Actions */}
               {hasAdminAccess && (
-                <div className="flex justify-center gap-2 pt-2 border-t border-gray-600">
-                  <Button
-                    variant="outline" 
-                    size="sm"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-600 text-xs px-2"
-                    onClick={() => {
-                      setShowUserProfile(false);
-                      setShowAuditLog(true);
-                    }}
-                  >
-                    <FileText className="h-3 w-3 mr-1" />
-                    Geçmiş
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-yellow-600 text-yellow-400 hover:bg-yellow-600/10 text-xs px-2"
-                    onClick={async () => {
-                      const note = prompt("Admin notu ekleyin:");
-                      if (note && note.trim()) {
-                        try {
-                          await apiRequest(`/api/admin/users/${selectedUser.id}/notes`, "POST", { note: note.trim(), category: "general" });
-                          setShowUserProfile(false);
-                          toast({
-                            title: "Başarılı",
-                            description: "Admin notu başarıyla kaydedildi.",
-                          });
-                        } catch (error) {
-                          toast({
-                            title: "Hata",
-                            description: "Admin notu kaydedilemedi.",
-                            variant: "destructive"
-                          });
-                        }
+                <div className="space-y-3 pt-3 border-t border-gray-600">
+                  {/* Primary Actions Row */}
+                  <div className="flex justify-center gap-2">
+                    <Button
+                      variant={selectedUser.status === 'SUSPENDED' ? "outline" : "destructive"}
+                      size="sm"
+                      className={
+                        selectedUser.status === 'SUSPENDED'
+                          ? "border-green-600 text-green-400 hover:bg-green-600/10 text-xs px-2"
+                          : "bg-red-600 hover:bg-red-700 text-xs px-2"
                       }
-                    }}
-                  >
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    Not Ekle
-                  </Button>
+                      onClick={async () => {
+                        const action = selectedUser.status === 'SUSPENDED' ? 'aktif et' : 'engelle';
+                        const confirmed = confirm(`Bu kullanıcıyı ${action}mek istediğinizden emin misiniz?`);
+                        if (confirmed) {
+                          try {
+                            await updateStatusMutation.mutateAsync({
+                              userId: selectedUser.id,
+                              status: selectedUser.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED'
+                            });
+                            toast({
+                              title: "Başarılı",
+                              description: selectedUser.status === 'SUSPENDED' 
+                                ? "Kullanıcı aktif edildi" 
+                                : "Kullanıcı engellendi",
+                            });
+                            setShowUserProfile(false);
+                          } catch (error) {
+                            toast({
+                              title: "Hata",
+                              description: "İşlem başarısız oldu",
+                              variant: "destructive"
+                            });
+                          }
+                        }
+                      }}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      {updateStatusMutation.isPending ? (
+                        <div className="h-3 w-3 mr-1 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      ) : selectedUser.status === 'SUSPENDED' ? (
+                        <UserCheck className="h-3 w-3 mr-1" />
+                      ) : (
+                        <Ban className="h-3 w-3 mr-1" />
+                      )}
+                      {selectedUser.status === 'SUSPENDED' ? 'Aktif Et' : 'Engelle'}
+                    </Button>
+
+                    {/* Askıya Al - Only show if user is active */}
+                    {selectedUser.status !== 'SUSPENDED' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-yellow-600 text-yellow-400 hover:bg-yellow-600/10 text-xs px-2"
+                        onClick={async () => {
+                          const confirmed = confirm("Bu kullanıcıyı askıya almak istediğinizden emin misiniz?");
+                          if (confirmed) {
+                            try {
+                              await updateStatusMutation.mutateAsync({
+                                userId: selectedUser.id,
+                                status: 'SUSPENDED'
+                              });
+                              toast({
+                                title: "Başarılı",
+                                description: "Kullanıcı askıya alındı",
+                              });
+                              setShowUserProfile(false);
+                            } catch (error) {
+                              toast({
+                                title: "Hata",
+                                description: "Askıya alma işlemi başarısız oldu",
+                                variant: "destructive"
+                              });
+                            }
+                          }
+                        }}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        {updateStatusMutation.isPending ? (
+                          <div className="h-3 w-3 mr-1 animate-spin rounded-full border-2 border-yellow-400 border-t-transparent" />
+                        ) : (
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                        )}
+                        Askıya Al
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-orange-600 text-orange-400 hover:bg-orange-600/10 text-xs px-2"
+                      onClick={async () => {
+                        const confirmed = confirm("Bu kullanıcının tüm oturumlarını sonlandırmak istediğinizden emin misiniz?");
+                        if (confirmed) {
+                          try {
+                            await terminateSessionsMutation.mutateAsync(selectedUser.id);
+                            toast({
+                              title: "Başarılı",
+                              description: "Kullanıcının tüm oturumları sonlandırıldı",
+                            });
+                            setShowUserProfile(false);
+                          } catch (error) {
+                            toast({
+                              title: "Hata",
+                              description: "Oturum sonlandırma işlemi başarısız oldu",
+                              variant: "destructive"
+                            });
+                          }
+                        }
+                      }}
+                      disabled={terminateSessionsMutation.isPending}
+                    >
+                      {terminateSessionsMutation.isPending ? (
+                        <div className="h-3 w-3 mr-1 animate-spin rounded-full border-2 border-orange-400 border-t-transparent" />
+                      ) : (
+                        <LogOut className="h-3 w-3 mr-1" />
+                      )}
+                      Oturumları Sonlandır
+                    </Button>
+                  </div>
+
+                  {/* Secondary Actions Row */}
+                  <div className="flex justify-center gap-2">
+                    <Button
+                      variant="outline" 
+                      size="sm"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-600 text-xs px-2"
+                      onClick={() => {
+                        setShowUserProfile(false);
+                        setShowAuditLog(true);
+                      }}
+                    >
+                      <FileText className="h-3 w-3 mr-1" />
+                      Geçmiş
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-cyan-600 text-cyan-400 hover:bg-cyan-600/10 text-xs px-2"
+                      onClick={async () => {
+                        const note = prompt("Admin notu ekleyin:");
+                        if (note && note.trim()) {
+                          try {
+                            await apiRequest(`/api/admin/users/${selectedUser.id}/notes`, "POST", { note: note.trim(), category: "general" });
+                            setShowUserProfile(false);
+                            toast({
+                              title: "Başarılı",
+                              description: "Admin notu başarıyla kaydedildi.",
+                            });
+                          } catch (error) {
+                            toast({
+                              title: "Hata",
+                              description: "Admin notu kaydedilemedi.",
+                              variant: "destructive"
+                            });
+                          }
+                        }
+                      }}
+                    >
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Not Ekle
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
