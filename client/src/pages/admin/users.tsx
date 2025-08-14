@@ -285,7 +285,8 @@ export default function AdminUsers() {
                     className="text-white hover:bg-dark-accent cursor-pointer"
                     onClick={() => {
                       try {
-                        if (!users || users.length === 0) {
+                        const userList = Array.isArray(users) ? users : [];
+                        if (userList.length === 0) {
                           toast({
                             title: "Hata",
                             description: "Dışa aktarılacak kullanıcı bulunamadı.",
@@ -294,7 +295,7 @@ export default function AdminUsers() {
                           return;
                         }
 
-                        const exportData = (users as any[]).map(u => ({
+                        const exportData = userList.map((u: any) => ({
                           Email: u.email,
                           "Ad Soyad": `${u.firstName || ''} ${u.lastName || ''}`.trim(),
                           Rol: u.role === 'SUPER_ADMIN' ? 'Süper Admin' : u.role === 'ADMIN' ? 'Admin' : 'Kullanıcı',
@@ -328,7 +329,7 @@ export default function AdminUsers() {
 
                         toast({
                           title: "Başarılı",
-                          description: `${users.length} kullanıcı Excel formatında dışa aktarıldı.`,
+                          description: `${userList.length} kullanıcı Excel formatında dışa aktarıldı.`,
                         });
                       } catch (error) {
                         console.error('Export error:', error);
@@ -347,7 +348,8 @@ export default function AdminUsers() {
                     className="text-white hover:bg-dark-accent cursor-pointer"
                     onClick={() => {
                       try {
-                        if (!users || users.length === 0) {
+                        const userList = Array.isArray(users) ? users : [];
+                        if (userList.length === 0) {
                           toast({
                             title: "Hata",
                             description: "Dışa aktarılacak kullanıcı bulunamadı.",
@@ -356,7 +358,7 @@ export default function AdminUsers() {
                           return;
                         }
 
-                        const exportData = (users as any[]).map(u => ({
+                        const exportData = userList.map((u: any) => ({
                           Email: u.email,
                           "Ad Soyad": `${u.firstName || ''} ${u.lastName || ''}`.trim(),
                           Rol: u.role === 'SUPER_ADMIN' ? 'Süper Admin' : u.role === 'ADMIN' ? 'Admin' : 'Kullanıcı',
@@ -423,7 +425,7 @@ export default function AdminUsers() {
 
                         toast({
                           title: "Başarılı",
-                          description: `${users.length} kullanıcı PDF formatında dışa aktarıldı.`,
+                          description: `${userList.length} kullanıcı PDF formatında dışa aktarıldı.`,
                         });
                       } catch (error) {
                         console.error('Export error:', error);
