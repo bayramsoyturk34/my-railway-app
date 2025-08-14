@@ -470,123 +470,133 @@ export default function AdminUsers() {
                     </TableCell>
                     <TableCell>
                       {isSuperAdmin ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-dark-accent border-gray-600 w-48">
-                            {/* Role Management (USER ⇄ ADMIN) */}
-                            <DropdownMenuItem 
-                              className="text-white hover:bg-gray-600"
-                              onClick={() => updateRoleMutation.mutate({
-                                userId: user.id,
-                                role: user.role === 'ADMIN' ? 'USER' : 'ADMIN'
-                              })}
-                              disabled={user.role === 'SUPER_ADMIN'}
-                            >
-                              {user.role === 'ADMIN' ? (
-                                <>
-                                  <UserCog className="h-4 w-4 mr-2" />
-                                  Kullanıcı Yap
-                                </>
-                              ) : (
-                                <>
-                                  <Shield className="h-4 w-4 mr-2" />
-                                  Admin Yap
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            
-                            {/* Status Management (ACTIVE ⇄ SUSPENDED) */}
-                            <DropdownMenuItem 
-                              className="text-white hover:bg-gray-600"
-                              onClick={() => updateStatusMutation.mutate({
-                                userId: user.id,
-                                status: user.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED'
-                              })}
-                            >
-                              {user.status === 'SUSPENDED' ? (
-                                <>
-                                  <UserCheck className="h-4 w-4 mr-2" />
-                                  Aktif Et
-                                </>
-                              ) : (
-                                <>
-                                  <Ban className="h-4 w-4 mr-2" />
-                                  Askıya Al
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            
-                            {/* Password Reset */}
-                            <DropdownMenuItem 
-                              className="text-white hover:bg-gray-600"
-                              onClick={() => sendPasswordResetMutation.mutate(user.id)}
-                            >
-                              <Key className="h-4 w-4 mr-2" />
-                              Parola Sıfırla
-                            </DropdownMenuItem>
-                            
-                            {/* Force Logout */}
-                            <DropdownMenuItem 
-                              className="text-white hover:bg-gray-600"
-                              onClick={() => terminateSessionsMutation.mutate(user.id)}
-                            >
-                              <LogOut className="h-4 w-4 mr-2" />
-                              Oturumları Sonlandır
-                            </DropdownMenuItem>
-                            
-                            {/* Audit Log */}
-                            <DropdownMenuItem 
-                              className="text-white hover:bg-gray-600"
-                              onClick={() => {
-                                console.log(`Viewing audit log for user: ${user.id}`);
-                                toast({
-                                  title: "Audit Log",
-                                  description: "Kullanıcı geçmişi görüntüleniyor...",
-                                });
-                              }}
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Aktivite Geçmişi
-                            </DropdownMenuItem>
-                            
-                            {/* View Profile */}
-                            <DropdownMenuItem 
-                              className="text-white hover:bg-gray-600"
-                              onClick={() => {
-                                console.log(`Viewing profile for user: ${user.id}`);
-                                toast({
-                                  title: "Profil",
-                                  description: "Kullanıcı profili görüntüleniyor...",
-                                });
-                              }}
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              Profili Görüntüle
-                            </DropdownMenuItem>
-                            
-                            {/* Add Admin Note */}
-                            <DropdownMenuItem 
-                              className="text-yellow-400 hover:bg-gray-600"
-                              onClick={() => {
-                                const note = prompt("Admin notu ekleyin:");
-                                if (note) {
-                                  console.log(`Adding admin note for user ${user.id}: ${note}`);
+                        <div className="flex items-center gap-2">
+                          {/* Quick Status Toggle Buttons */}
+                          <Button
+                            size="sm"
+                            variant={user.status === 'SUSPENDED' ? "outline" : "destructive"}
+                            className={
+                              user.status === 'SUSPENDED'
+                                ? "border-green-600 text-green-400 hover:bg-green-600/10 h-7 px-2"
+                                : "bg-red-600 hover:bg-red-700 h-7 px-2"
+                            }
+                            onClick={() => updateStatusMutation.mutate({
+                              userId: user.id,
+                              status: user.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED'
+                            })}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            {user.status === 'SUSPENDED' ? (
+                              <>
+                                <UserCheck className="h-3 w-3 mr-1" />
+                                Aktif Et
+                              </>
+                            ) : (
+                              <>
+                                <Ban className="h-3 w-3 mr-1" />
+                                Engelle
+                              </>
+                            )}
+                          </Button>
+
+                          {/* Full Admin Menu */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="bg-dark-accent border-gray-600 w-52">
+                              {/* Role Management (USER ⇄ ADMIN) */}
+                              <DropdownMenuItem 
+                                className="text-white hover:bg-gray-600"
+                                onClick={() => updateRoleMutation.mutate({
+                                  userId: user.id,
+                                  role: user.role === 'ADMIN' ? 'USER' : 'ADMIN'
+                                })}
+                                disabled={user.role === 'SUPER_ADMIN'}
+                              >
+                                {user.role === 'ADMIN' ? (
+                                  <>
+                                    <UserCog className="h-4 w-4 mr-2" />
+                                    Kullanıcı Yap
+                                  </>
+                                ) : (
+                                  <>
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Admin Yap
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              
+                              {/* Password Reset */}
+                              <DropdownMenuItem 
+                                className="text-white hover:bg-gray-600"
+                                onClick={() => sendPasswordResetMutation.mutate(user.id)}
+                              >
+                                <Key className="h-4 w-4 mr-2" />
+                                Parola Sıfırla
+                              </DropdownMenuItem>
+                              
+                              {/* Force Logout */}
+                              <DropdownMenuItem 
+                                className="text-white hover:bg-gray-600"
+                                onClick={() => terminateSessionsMutation.mutate(user.id)}
+                              >
+                                <LogOut className="h-4 w-4 mr-2" />
+                                Oturumları Sonlandır
+                              </DropdownMenuItem>
+                              
+                              {/* Audit Log */}
+                              <DropdownMenuItem 
+                                className="text-white hover:bg-gray-600"
+                                onClick={() => {
+                                  console.log(`Viewing audit log for user: ${user.id}`);
                                   toast({
-                                    title: "Not Eklendi",
-                                    description: "Admin notu başarıyla kaydedildi.",
+                                    title: "Audit Log",
+                                    description: "Kullanıcı geçmişi görüntüleniyor...",
                                   });
-                                }
-                              }}
-                            >
-                              <AlertTriangle className="h-4 w-4 mr-2" />
-                              Admin Notu Ekle
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                                }}
+                              >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Aktivite Geçmişi
+                              </DropdownMenuItem>
+                              
+                              {/* View Profile */}
+                              <DropdownMenuItem 
+                                className="text-white hover:bg-gray-600"
+                                onClick={() => {
+                                  console.log(`Viewing profile for user: ${user.id}`);
+                                  toast({
+                                    title: "Profil",
+                                    description: "Kullanıcı profili görüntüleniyor...",
+                                  });
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Profili Görüntüle
+                              </DropdownMenuItem>
+                              
+                              {/* Add Admin Note */}
+                              <DropdownMenuItem 
+                                className="text-yellow-400 hover:bg-gray-600"
+                                onClick={() => {
+                                  const note = prompt("Admin notu ekleyin:");
+                                  if (note) {
+                                    console.log(`Adding admin note for user ${user.id}: ${note}`);
+                                    toast({
+                                      title: "Not Eklendi",
+                                      description: "Admin notu başarıyla kaydedildi.",
+                                    });
+                                  }
+                                }}
+                              >
+                                <AlertTriangle className="h-4 w-4 mr-2" />
+                                Admin Notu Ekle
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       ) : (
                         <span className="text-gray-500 text-sm">Yetki yok</span>
                       )}
