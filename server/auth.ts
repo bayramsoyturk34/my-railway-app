@@ -28,7 +28,16 @@ export const getSession = async (sessionId: string): Promise<any | null> => {
     if (!session) return null;
     
     const sessionData = session.sess as any;
-    return sessionData.userId ? await storage.getUser(sessionData.userId) : null;
+    const user = sessionData.userId ? await storage.getUser(sessionData.userId) : null;
+    
+    // Check if user is suspended and invalidate session
+    if (user && user.status === 'SUSPENDED') {
+      await deleteSession(sessionId);
+      console.log("Session invalidated for suspended user:", user.email);
+      return null;
+    }
+    
+    return user;
   } catch (error) {
     console.error("Get session error:", error);
     return null;
@@ -171,6 +180,11 @@ export async function setupAuth(app: Express) {
         user = await storage.getUserByEmail(email);
         if (!user || user.password !== password) {
           return res.status(401).json({ message: "Geçersiz email veya şifre" });
+        }
+        
+        // Check if user is suspended
+        if (user.status === 'SUSPENDED') {
+          return res.status(403).json({ message: "Hesabınız askıya alınmıştır. Lütfen sistem yöneticisiyle iletişime geçin." });
         }
       }
       
