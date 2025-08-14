@@ -3057,10 +3057,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // SUPER_ADMIN Exclusive Routes
   
   // Role Management (USER ⇄ ADMIN)
-  app.put("/api/admin/users/:userId/role", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+  app.put("/api/admin/users/:userId/role", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.id;
+      const currentUser = await storage.getUser(currentUserId);
+      
+      // Only SUPER_ADMIN can change roles
+      if (currentUser?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Only SUPER_ADMIN can change user roles" });
+      }
+
       const { userId } = req.params;
       const { role } = req.body;
+      
+      // Don't allow SUPER_ADMIN to change their own role
+      if (userId === currentUserId) {
+        return res.status(403).json({ error: "Cannot change your own role" });
+      }
+      
+      const targetUser = await storage.getUser(userId);
+      if (targetUser?.role === 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Cannot change SUPER_ADMIN role" });
+      }
       
       if (role !== 'USER' && role !== 'ADMIN') {
         return res.status(400).json({ error: "Invalid role. Only USER or ADMIN allowed." });
@@ -3086,8 +3104,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Status Management (ACTIVE ⇄ SUSPENDED)
-  app.put("/api/admin/users/:userId/status", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+  app.put("/api/admin/users/:userId/status", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.id;
+      const currentUser = await storage.getUser(currentUserId);
+      
+      // Only admins can change status
+      if (!currentUser?.isAdmin && currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const { userId } = req.params;
       const { status } = req.body;
       
@@ -3115,8 +3141,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Force logout all sessions
-  app.post("/api/admin/users/:userId/terminate-sessions", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+  app.post("/api/admin/users/:userId/terminate-sessions", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.id;
+      const currentUser = await storage.getUser(currentUserId);
+      
+      // Only admins can terminate sessions
+      if (!currentUser?.isAdmin && currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const { userId } = req.params;
       
       // Terminate all user sessions
@@ -3140,8 +3174,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send password reset link
-  app.post("/api/admin/users/:userId/reset-password", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+  app.post("/api/admin/users/:userId/reset-password", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.id;
+      const currentUser = await storage.getUser(currentUserId);
+      
+      // Only admins can send password reset
+      if (!currentUser?.isAdmin && currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const { userId } = req.params;
       
       // Generate password reset link and send email
@@ -3165,8 +3207,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create invitation
-  app.post("/api/admin/invitations", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+  app.post("/api/admin/invitations", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.id;
+      const currentUser = await storage.getUser(currentUserId);
+      
+      // Only SUPER_ADMIN can create invitations
+      if (currentUser?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Only SUPER_ADMIN can send invitations" });
+      }
+
       const { email, role } = req.body;
       
       if (!email || (role !== 'USER' && role !== 'ADMIN')) {
