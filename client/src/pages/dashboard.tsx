@@ -22,7 +22,8 @@ import {
   Bell,
   X,
   MessageCircle,
-  MessageSquare
+  MessageSquare,
+  UserCircle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/header";
@@ -303,6 +304,19 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 text-white text-sm">
                 <span>{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
               </div>
+            )}
+
+            {/* Account Button */}
+            {user && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-blue-400 hover:bg-dark-accent"
+                onClick={() => setLocation("/account")}
+                title="Hesabım"
+              >
+                <UserCircle className="h-5 w-5" />
+              </Button>
             )}
 
             {/* Logout button */}

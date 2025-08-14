@@ -1,4 +1,4 @@
-import { Menu, Settings, LogOut, User, Shield } from "lucide-react";
+import { Menu, Settings, LogOut, User, Shield, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
@@ -77,7 +77,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
             onClick={() => window.location.href = "/account"}
             title="Hesabım"
           >
-            <User className="h-6 w-6" />
+            <UserCircle className="h-6 w-6" />
           </Button>
         )}
         
