@@ -28,10 +28,13 @@ import {
   type DirectThread, type InsertDirectThread,
   type DirectMessage, type InsertDirectMessage,
   type ImageUpload, type InsertImageUpload,
+  type SMSHistory, type InsertSMSHistory,
+  type SMSTemplate, type InsertSMSTemplate,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
   companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users,
-  firmInvites, presenceLogs, messageDrafts, autoResponders, directThreads, directMessages, imageUploads, autoReplyLogs
+  firmInvites, presenceLogs, messageDrafts, autoResponders, directThreads, directMessages, imageUploads, autoReplyLogs,
+  smsHistory, smsTemplates
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
@@ -213,6 +216,13 @@ export interface IStorage {
   
   // Image Uploads
   createImageUpload(upload: InsertImageUpload): Promise<ImageUpload>;
+
+  // SMS Management
+  getSMSHistory(userId: string): Promise<SMSHistory[]>;
+  createSMSHistory(userId: string, sms: InsertSMSHistory): Promise<SMSHistory>;
+  updateSMSHistory(id: string, updates: Partial<SMSHistory>): Promise<SMSHistory | undefined>;
+  getSMSTemplates(userId: string): Promise<SMSTemplate[]>;
+  createSMSTemplate(userId: string, template: InsertSMSTemplate): Promise<SMSTemplate>;
 }
 
 export class MemStorage implements IStorage {
@@ -1926,6 +1936,43 @@ export class DatabaseStorage implements IStorage {
       demoUsers,
       todayRegistrations
     };
+  }
+
+  // SMS Management
+  async getSMSHistory(userId: string): Promise<SMSHistory[]> {
+    return await db.select().from(smsHistory)
+      .where(eq(smsHistory.userId, userId))
+      .orderBy(desc(smsHistory.createdAt));
+  }
+
+  async createSMSHistory(userId: string, sms: InsertSMSHistory): Promise<SMSHistory> {
+    const [result] = await db.insert(smsHistory).values({
+      ...sms,
+      userId
+    }).returning();
+    return result;
+  }
+
+  async updateSMSHistory(id: string, updates: Partial<SMSHistory>): Promise<SMSHistory | undefined> {
+    const [result] = await db.update(smsHistory)
+      .set(updates)
+      .where(eq(smsHistory.id, id))
+      .returning();
+    return result;
+  }
+
+  async getSMSTemplates(userId: string): Promise<SMSTemplate[]> {
+    return await db.select().from(smsTemplates)
+      .where(and(eq(smsTemplates.userId, userId), eq(smsTemplates.isActive, true)))
+      .orderBy(desc(smsTemplates.createdAt));
+  }
+
+  async createSMSTemplate(userId: string, template: InsertSMSTemplate): Promise<SMSTemplate> {
+    const [result] = await db.insert(smsTemplates).values({
+      ...template,
+      userId
+    }).returning();
+    return result;
   }
 }
 

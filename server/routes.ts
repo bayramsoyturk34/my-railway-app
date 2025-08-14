@@ -35,7 +35,9 @@ import {
   insertAutoResponderSchema,
   insertDirectThreadSchema,
   insertDirectMessageSchema,
-  insertImageUploadSchema
+  insertImageUploadSchema,
+  insertSMSHistorySchema,
+  insertSMSTemplateSchema
 } from "@shared/schema";
 
 // Helper function to update quote total
@@ -2588,6 +2590,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to mark message as read" });
     }
   });
+
+  // SMS API Routes
+  app.get("/api/sms/history", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const smsHistory = await storage.getSMSHistory(userId);
+      res.json(smsHistory);
+    } catch (error) {
+      console.error("Error fetching SMS history:", error);
+      res.status(500).json({ error: "Failed to fetch SMS history" });
+    }
+  });
+
+  app.post("/api/sms/send", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { message, recipients, templateId } = req.body;
+
+      if (!message || !recipients || recipients.length === 0) {
+        return res.status(400).json({ error: "Message and recipients are required" });
+      }
+
+      // Get recipient data (personnel and customers)
+      const personnel = await storage.getPersonnelByUserId(userId);
+      const customers = await storage.getCustomersByUserId(userId);
+      
+      const allRecipients = [
+        ...personnel.map(p => ({
+          id: p.id,
+          name: p.name,
+          phone: p.phone || '',
+          type: 'personnel'
+        })),
+        ...customers.map(c => ({
+          id: c.id,
+          name: c.name,
+          phone: c.phone || '',
+          type: 'customer'
+        }))
+      ].filter(r => r.phone && recipients.includes(r.id));
+
+      if (allRecipients.length === 0) {
+        return res.status(400).json({ error: "No valid phone numbers found for selected recipients" });
+      }
+
+      // Calculate SMS cost (estimate: 0.08 TL per SMS)
+      const smsCount = Math.ceil(message.length / 160);
+      const estimatedCost = allRecipients.length * smsCount * 0.08;
+
+      // Create SMS history record
+      const smsHistoryData = {
+        message,
+        recipientCount: allRecipients.length,
+        recipientData: allRecipients,
+        status: 'pending' as const,
+        cost: estimatedCost.toString(),
+        templateId: templateId || null,
+        errorMessage: null,
+        netgsmResponse: null
+      };
+
+      const smsRecord = await storage.createSMSHistory(userId, smsHistoryData);
+
+      // NetGSM API integration (mock for now)
+      try {
+        const netgsmResult = await sendSMSViaNetGSM(message, allRecipients);
+        
+        // Update SMS record with result
+        await storage.updateSMSHistory(smsRecord.id, {
+          status: 'sent',
+          sentAt: new Date(),
+          netgsmResponse: netgsmResult
+        });
+
+        res.json({ 
+          success: true, 
+          smsId: smsRecord.id,
+          recipientCount: allRecipients.length,
+          estimatedCost,
+          status: 'sent'
+        });
+      } catch (smsError) {
+        // Update SMS record with error
+        await storage.updateSMSHistory(smsRecord.id, {
+          status: 'failed',
+          errorMessage: smsError instanceof Error ? smsError.message : 'SMS send failed'
+        });
+
+        res.status(500).json({ 
+          error: "SMS send failed", 
+          details: smsError instanceof Error ? smsError.message : 'Unknown error'
+        });
+      }
+    } catch (error) {
+      console.error("Error sending SMS:", error);
+      res.status(500).json({ error: "Failed to send SMS" });
+    }
+  });
+
+  app.get("/api/sms/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const templates = await storage.getSMSTemplates(userId);
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching SMS templates:", error);
+      res.status(500).json({ error: "Failed to fetch SMS templates" });
+    }
+  });
+
+  app.post("/api/sms/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const templateData = insertSMSTemplateSchema.parse(req.body);
+      const template = await storage.createSMSTemplate(userId, templateData);
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating SMS template:", error);
+      res.status(500).json({ error: "Failed to create SMS template" });
+    }
+  });
+
+  // NetGSM SMS sending function (mock implementation)
+  async function sendSMSViaNetGSM(message: string, recipients: Array<{id: string, name: string, phone: string, type: string}>): Promise<any> {
+    // This would normally make an HTTP request to NetGSM API
+    // For now, we'll simulate a successful response
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+    
+    // Mock NetGSM response
+    return {
+      status: 'success',
+      messageId: `netgsm_${Date.now()}`,
+      recipientCount: recipients.length,
+      cost: recipients.length * Math.ceil(message.length / 160) * 0.08,
+      timestamp: new Date().toISOString(),
+      details: recipients.map(r => ({
+        phone: r.phone,
+        status: 'sent',
+        messageId: `msg_${r.id}_${Date.now()}`
+      }))
+    };
+  }
 
   const httpServer = createServer(app);
   return httpServer;

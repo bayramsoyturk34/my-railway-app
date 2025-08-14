@@ -23,6 +23,7 @@ import EnhancedCompanyDirectory from "@/pages/enhanced-company-directory-fixed";
 import Messages from "@/pages/messages";
 import Reports from "@/pages/reports";
 import AdminDashboard from "@/pages/admin-dashboard";
+import BulkSMS from "@/pages/bulk-sms";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -73,6 +74,7 @@ function Router() {
       <Route path="/enhanced-company-directory" component={EnhancedCompanyDirectory} />
       <Route path="/messages" component={Messages} />
       <Route path="/reports" component={Reports} />
+      <Route path="/bulk-sms" component={BulkSMS} />
       <Route path="/admin" component={AdminDashboard} />
       <Route component={Dashboard} />
     </Switch>

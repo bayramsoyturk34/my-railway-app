@@ -21,7 +21,8 @@ import {
   Shield,
   Bell,
   X,
-  MessageCircle
+  MessageCircle,
+  MessageSquare
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/header";
@@ -75,6 +76,7 @@ export default function Dashboard() {
     { id: "customers", icon: UserCog, label: "Müşteriler", onClick: () => setLocation("/customers"), iconColor: "text-orange-400" },
     { id: "messages", icon: MessageCircle, label: "Mesajlar", onClick: () => setLocation("/messages"), iconColor: "text-purple-400" },
     { id: "company-directory", icon: MessageCircle, label: "PRO Firma Rehberi", onClick: () => setLocation("/enhanced-company-directory"), iconColor: "text-purple-400" },
+    { id: "bulk-sms", icon: MessageSquare, label: "Toplu SMS", onClick: () => setLocation("/bulk-sms"), iconColor: "text-green-400" },
     { id: "reports", icon: Info, label: "Raporlar", onClick: () => setLocation("/reports"), iconColor: "text-pink-400" }
   ], [setLocation]);
 

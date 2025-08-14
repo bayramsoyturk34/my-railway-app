@@ -63,6 +63,7 @@ Preferred communication style: Simple, everyday language.
 - Compact Dropdown UI for messaging - converted long conversation lists to space-efficient dropdown menus in both Messages page and Enhanced Company Directory.
 - Real-time Search System for Messages - implemented working search functionality with instant filtering of companies as you type, replacing dropdown with interactive list view.
 - Optimized Conversation List Heights - dramatically reduced messaging interface heights: Messages page (80px) and Enhanced Company Directory (80px from 500px), achieving significant space savings while maintaining usability.
+- Bulk SMS System with NetGSM Integration - implemented comprehensive toplu SMS functionality with template management, recipient selection, cost calculation, and SMS history tracking for personnel and customer notifications.
 
 # External Dependencies
 

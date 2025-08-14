@@ -790,3 +790,55 @@ export type InsertCompanyMute = z.infer<typeof insertCompanyMuteSchema>;
 
 export type AbuseReport = typeof abuseReports.$inferSelect;
 export type InsertAbuseReport = z.infer<typeof insertAbuseReportSchema>;
+
+// SMS Management System
+export const smsHistory = pgTable("sms_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
+  message: text("message").notNull(),
+  recipientCount: integer("recipient_count").notNull(),
+  recipientData: jsonb("recipient_data").notNull(), // Array of {id, name, phone, type}
+  templateId: varchar("template_id"), // Optional template reference
+  status: text("status").notNull().default("pending"), // "pending", "sent", "failed"
+  cost: decimal("cost", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  sentAt: timestamp("sent_at"),
+  errorMessage: text("error_message"),
+  netgsmResponse: jsonb("netgsm_response"), // NetGSM API response
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const smsTemplates = pgTable("sms_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
+  name: text("name").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(), // "personnel", "customer", "general"
+  isActive: boolean("is_active").default(true),
+  usageCount: integer("usage_count").default(0),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertSMSHistorySchema = createInsertSchema(smsHistory).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  sentAt: true,
+}).extend({
+  templateId: z.string().optional().nullable(),
+  errorMessage: z.string().optional().nullable(),
+  netgsmResponse: z.any().optional().nullable(),
+});
+
+export const insertSMSTemplateSchema = createInsertSchema(smsTemplates).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+}).extend({
+  usageCount: z.number().optional(),
+});
+
+export type SMSHistory = typeof smsHistory.$inferSelect;
+export type InsertSMSHistory = z.infer<typeof insertSMSHistorySchema>;
+
+export type SMSTemplate = typeof smsTemplates.$inferSelect;
+export type InsertSMSTemplate = z.infer<typeof insertSMSTemplateSchema>;
