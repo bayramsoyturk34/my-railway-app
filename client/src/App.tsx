@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import MaintenanceCheck from "@/components/maintenance-check";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -61,14 +62,12 @@ function Router() {
     );
   }
 
-  // For authenticated users, prioritize dashboard for root path
-  if (location === "/") {
-    return <Dashboard />;
-  }
-
   return (
-    <Switch>
-      <Route path="/personnel/:id" component={PersonnelDetail} />
+    <>
+      <MaintenanceCheck />
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/personnel/:id" component={PersonnelDetail} />
       <Route path="/personnel" component={Personnel} />
       <Route path="/timesheet" component={Timesheet} />
       <Route path="/projects/:id" component={ProjectDetail} />
@@ -88,7 +87,8 @@ function Router() {
       <Route path="/admin/logs" component={AdminLogs} />
       <Route path="/admin/sessions" component={AdminSessions} />
       <Route component={Dashboard} />
-    </Switch>
+      </Switch>
+    </>
   );
 }
 

@@ -64,10 +64,10 @@ async function updateQuoteTotal(quoteId: string) {
   }
 }
 
-// Maintenance mode middleware
+// Maintenance mode middleware - check before auth
 const checkMaintenanceMode = async (req: any, res: any, next: any) => {
   try {
-    // Skip maintenance check for admin users and auth endpoints
+    // Skip maintenance check for auth endpoints and admin endpoints
     if (req.path.startsWith('/api/auth') || req.path.startsWith('/api/admin')) {
       return next();
     }
@@ -75,15 +75,17 @@ const checkMaintenanceMode = async (req: any, res: any, next: any) => {
     const settings = await storage.getSystemSettings();
     const maintenanceSetting = settings.find(s => s.key === 'maintenance_mode');
     
-    if (maintenanceSetting && maintenanceSetting.value === "true") {
-      // Check if user is admin
-      if (req.user) {
-        const user = await storage.getUser(req.user.id);
-        if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
-          return next();
-        }
+    // Handle both string and JSON value formats
+    let isMaintenanceMode = false;
+    if (maintenanceSetting) {
+      if (typeof maintenanceSetting.value === 'string') {
+        isMaintenanceMode = maintenanceSetting.value === "true";
+      } else {
+        isMaintenanceMode = maintenanceSetting.value === true || maintenanceSetting.value === "true";
       }
-      
+    }
+    
+    if (isMaintenanceMode) {
       return res.status(503).json({
         message: "Sistem bakım modunda. Lütfen daha sonra tekrar deneyin.",
         maintenance: true
@@ -103,6 +105,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Apply maintenance mode check to all routes except auth and admin
   app.use(checkMaintenanceMode);
+
+  // Maintenance mode check endpoint
+  app.get("/api/maintenance/status", async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      const maintenanceSetting = settings.find(s => s.key === 'maintenance_mode');
+      
+      let isMaintenanceMode = false;
+      if (maintenanceSetting) {
+        if (typeof maintenanceSetting.value === 'string') {
+          isMaintenanceMode = maintenanceSetting.value === "true";
+        } else {
+          isMaintenanceMode = maintenanceSetting.value === true || maintenanceSetting.value === "true";
+        }
+      }
+      
+      res.json({ 
+        maintenance: isMaintenanceMode,
+        message: isMaintenanceMode ? "Sistem bakım modunda" : "Sistem normal çalışıyor"
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Maintenance status check failed" });
+    }
+  });
 
   // Auth endpoints handled in auth.ts
   // Personnel routes
