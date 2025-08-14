@@ -68,16 +68,18 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           </div>
         )}
         
-        {/* Account Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-blue-400 hover:bg-dark-accent"
-          onClick={() => window.location.href = "/account"}
-          title="Hesabım"
-        >
-          <User className="h-6 w-6" />
-        </Button>
+        {/* Account Button - for all authenticated users */}
+        {user && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-blue-400 hover:bg-dark-accent"
+            onClick={() => window.location.href = "/account"}
+            title="Hesabım"
+          >
+            <User className="h-6 w-6" />
+          </Button>
+        )}
         
         {/* Admin Panel Button - only for admins */}
         {user && (user as any).isAdmin && (
