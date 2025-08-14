@@ -258,6 +258,20 @@ export interface IStorage {
     registrationsThisMonth: number;
     messagesThisMonth: number;
   }>;
+
+  // Session management
+  getActiveSessions(): Promise<{
+    id: string;
+    userId: string;
+    userEmail: string;
+    ipAddress: string;
+    userAgent: string;
+    lastActivity: string;
+    createdAt: string;
+    isActive: boolean;
+    location?: string;
+  }[]>;
+  terminateSession(sessionId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -847,6 +861,51 @@ export class MemStorage implements IStorage {
 
   async deleteCustomerQuoteItem(id: string): Promise<boolean> {
     return this.customerQuoteItems.delete(id);
+  }
+
+  // Session management (mock implementation)
+  async getActiveSessions(): Promise<{
+    id: string;
+    userId: string;
+    userEmail: string;
+    ipAddress: string;
+    userAgent: string;
+    lastActivity: string;
+    createdAt: string;
+    isActive: boolean;
+    location?: string;
+  }[]> {
+    // Mock sessions data for development
+    const mockSessions = [
+      {
+        id: randomUUID(),
+        userId: "eynffxrvr1e",
+        userEmail: "modacizimtasarim@gmail.com",
+        ipAddress: "192.168.1.100",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        lastActivity: new Date().toISOString(),
+        createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+        isActive: true,
+        location: "İstanbul, Türkiye"
+      },
+      {
+        id: randomUUID(),
+        userId: "user2",
+        userEmail: "test@example.com",
+        ipAddress: "10.0.0.50",
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        lastActivity: new Date(Date.now() - 1800000).toISOString(), // 30 minutes ago
+        createdAt: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+        isActive: false,
+        location: "Ankara, Türkiye"
+      }
+    ];
+    return mockSessions;
+  }
+
+  async terminateSession(sessionId: string): Promise<boolean> {
+    // Mock session termination - always returns success
+    return true;
   }
 }
 

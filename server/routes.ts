@@ -2886,6 +2886,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin sessions endpoints
+  app.get("/api/admin/sessions", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const sessions = await storage.getActiveSessions();
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+      res.status(500).json({ error: "Failed to fetch sessions" });
+    }
+  });
+
+  app.post("/api/admin/sessions/:sessionId/terminate", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { sessionId } = req.params;
+      await storage.terminateSession(sessionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error terminating session:", error);
+      res.status(500).json({ error: "Failed to terminate session" });
+    }
+  });
+
   app.get("/api/admin/settings", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const settings = await storage.getSystemSettings();
