@@ -192,6 +192,10 @@ export default function BulkSMSPage() {
     queryKey: ["/api/sms/history"],
   });
 
+  // Debug info
+  console.log('Personnel data:', personnel);
+  console.log('Customers data:', customers);
+
   // Combine recipients
   const allRecipients: SMSRecipient[] = [
     ...personnel.map(p => ({
@@ -206,7 +210,9 @@ export default function BulkSMSPage() {
       phone: c.phone || '',
       type: 'customer' as const
     }))
-  ].filter(r => r.phone); // Only include recipients with phone numbers
+  ].filter(r => r.phone && r.phone.trim() !== ''); // Only include recipients with phone numbers
+  
+  console.log('All recipients:', allRecipients);
 
   const filteredRecipients = allRecipients.filter(r => {
     const matchesType = recipientType === 'all' || r.type === recipientType;
