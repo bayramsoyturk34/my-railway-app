@@ -64,6 +64,7 @@ Preferred communication style: Simple, everyday language.
 - Real-time Search System for Messages - implemented working search functionality with instant filtering of companies as you type, replacing dropdown with interactive list view.
 - Optimized Conversation List Heights - dramatically reduced messaging interface heights: Messages page (80px) and Enhanced Company Directory (80px from 500px), achieving significant space savings while maintaining usability.
 - Bulk SMS System with NetGSM Integration - implemented comprehensive toplu SMS functionality with template management (20+ templates including campaign and holiday templates), recipient selection with dropdown format, cost calculation, SMS history tracking, real NetGSM API integration, and dynamic send button for personnel and customer notifications.
+- User Account Management System - implemented comprehensive "Hesabım" (My Account) page for all users with profile editing (name, email), password change functionality, profile picture management, notifications preferences, and system preferences tabs. Accessible via blue header button for all authenticated users, with backend API endpoints for profile updates and password changes.
 
 # External Dependencies
 
