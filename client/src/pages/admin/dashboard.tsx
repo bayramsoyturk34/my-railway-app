@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { 
   Shield, Users, MessageSquare, Database, TrendingUp, 
   Activity, Settings, Bell, Calendar, BarChart3,
-  UserCheck, UserX, HardDrive, Zap
+  UserCheck, UserX, HardDrive, Zap, RefreshCw, AlertTriangle
 } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,21 +15,26 @@ import { Progress } from "@/components/ui/progress";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
 
-  // Admin dashboard stats
+  // Admin dashboard stats with enhanced auto-refresh
   const { data: dashboardStats, isLoading } = useQuery({
     queryKey: ["/api/admin/dashboard-stats"],
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: autoRefresh ? 15000 : false, // 15 seconds when enabled
+    onSuccess: () => setLastUpdateTime(new Date()),
   });
 
-  // System metrics
+  // System metrics with real-time monitoring
   const { data: systemMetrics } = useQuery({
     queryKey: ["/api/admin/system-metrics"],
+    refetchInterval: autoRefresh ? 10000 : false, // 10 seconds when enabled
   });
 
-  // Recent admin logs
+  // Recent admin logs with live updates
   const { data: adminLogs } = useQuery({
     queryKey: ["/api/admin/logs"],
+    refetchInterval: autoRefresh ? 8000 : false, // 8 seconds when enabled
   });
 
   if (isLoading) {
@@ -114,18 +120,50 @@ export default function AdminDashboard() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+        {/* Enhanced Header with Live Controls */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <Shield className="h-8 w-8 text-purple-400" />
             <div>
               <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
-              <p className="text-gray-400">Sistem yönetimi ve izleme</p>
+              <div className="flex items-center gap-3 text-sm text-gray-400">
+                <span>Sistem yönetimi ve izleme</span>
+                <span>•</span>
+                <span>Son güncelleme: {lastUpdateTime.toLocaleTimeString('tr-TR')}</span>
+              </div>
             </div>
           </div>
-          <Badge variant="outline" className="px-3 py-1 text-purple-400 border-purple-400">
-            Yönetici
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`border transition-colors ${
+                autoRefresh 
+                  ? 'border-green-500 text-green-400 hover:bg-green-500/10' 
+                  : 'border-gray-500 text-gray-400 hover:bg-gray-500/10'
+              }`}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
+              {autoRefresh ? 'Canlı' : 'Manuel'}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ["/api/admin/dashboard-stats"] });
+                queryClient.invalidateQueries({ queryKey: ["/api/admin/logs"] });
+                setLastUpdateTime(new Date());
+              }}
+              className="border-purple-600 text-purple-400 hover:bg-purple-600/10"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Yenile
+            </Button>
+            <Badge variant="outline" className="px-3 py-1 text-purple-400 border-purple-400">
+              Yönetici
+            </Badge>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -218,9 +256,17 @@ export default function AdminDashboard() {
           {/* Recent Admin Logs */}
           <Card className="bg-dark-secondary border-dark-accent">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Activity className="h-5 w-5 text-purple-400" />
-                Son Admin Aktiviteleri
+              <CardTitle className="text-white flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-purple-400" />
+                  Canlı Admin Aktiviteleri
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span className={`text-xs ${autoRefresh ? 'text-green-400' : 'text-gray-400'}`}>
+                    {autoRefresh ? 'Canlı' : 'Durduruldu'}
+                  </span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
