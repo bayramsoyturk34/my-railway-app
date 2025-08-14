@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Home, MessageSquare, Send, Users, Phone, Clock, CheckCircle, XCircle, Search } from "lucide-react";
+import { Home, MessageSquare, Send, Users, Phone, Clock, CheckCircle, XCircle, Search, ChevronDown, ChevronUp } from "lucide-react";
 import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -176,6 +176,7 @@ export default function BulkSMSPage() {
   const [recipientType, setRecipientType] = useState<'all' | 'personnel' | 'customer'>('all');
   const [templateCategory, setTemplateCategory] = useState<'all' | 'personnel' | 'customer' | 'campaign' | 'holiday'>('all');
   const [searchTerm, setSearchTerm] = useState("");
+  const [showRecipients, setShowRecipients] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -192,9 +193,7 @@ export default function BulkSMSPage() {
     queryKey: ["/api/sms/history"],
   });
 
-  // Debug info
-  console.log('Personnel data:', personnel);
-  console.log('Customers data:', customers);
+
 
   // Combine recipients
   const allRecipients: SMSRecipient[] = [
@@ -212,7 +211,7 @@ export default function BulkSMSPage() {
     }))
   ].filter(r => r.phone && r.phone.trim() !== ''); // Only include recipients with phone numbers
   
-  console.log('All recipients:', allRecipients);
+
 
   const filteredRecipients = allRecipients.filter(r => {
     const matchesType = recipientType === 'all' || r.type === recipientType;
@@ -489,32 +488,63 @@ export default function BulkSMSPage() {
                     )}
                   </div>
 
-                  <div className="max-h-64 overflow-y-auto space-y-2">
-                    {filteredRecipients.map(recipient => (
-                      <div
-                        key={recipient.id}
-                        className="flex items-center space-x-2 p-2 rounded border border-gray-600 hover:bg-dark-accent"
-                      >
-                        <Checkbox
-                          checked={selectedRecipients.includes(recipient.id)}
-                          onCheckedChange={() => handleRecipientToggle(recipient.id)}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm font-medium truncate">
-                            {recipient.name}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-3 w-3 text-gray-400" />
-                            <p className="text-gray-400 text-xs">
-                              {recipient.phone}
-                            </p>
+                  {/* Recipients Dropdown */}
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowRecipients(!showRecipients)}
+                      className="w-full border-gray-600 text-gray-300 hover:bg-dark-accent flex items-center justify-between"
+                    >
+                      <span>
+                        {selectedRecipients.length > 0 
+                          ? `${selectedRecipients.length} kişi seçildi` 
+                          : 'Alıcı seç'}
+                      </span>
+                      {showRecipients ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+
+                    {showRecipients && (
+                      <div className="border border-gray-600 rounded-md bg-dark-accent max-h-48 overflow-y-auto">
+                        {filteredRecipients.length === 0 ? (
+                          <div className="p-4 text-center text-gray-400">
+                            Telefon numarası olan kişi bulunamadı
                           </div>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {recipient.type === 'personnel' ? 'Personel' : 'Müşteri'}
-                        </Badge>
+                        ) : (
+                          <div className="p-2 space-y-1">
+                            {filteredRecipients.map(recipient => (
+                              <div
+                                key={recipient.id}
+                                className="flex items-center space-x-2 p-2 rounded hover:bg-dark-secondary cursor-pointer"
+                                onClick={() => handleRecipientToggle(recipient.id)}
+                              >
+                                <Checkbox
+                                  checked={selectedRecipients.includes(recipient.id)}
+                                  onCheckedChange={() => handleRecipientToggle(recipient.id)}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-white text-sm font-medium truncate">
+                                    {recipient.name}
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <Phone className="h-3 w-3 text-gray-400" />
+                                    <p className="text-gray-400 text-xs">
+                                      {recipient.phone}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs">
+                                  {recipient.type === 'personnel' ? 'Personel' : 'Müşteri'}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </CardContent>
