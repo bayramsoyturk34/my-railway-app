@@ -2712,25 +2712,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // NetGSM SMS sending function (mock implementation)
+  // NetGSM SMS sending function (real implementation)
   async function sendSMSViaNetGSM(message: string, recipients: Array<{id: string, name: string, phone: string, type: string}>): Promise<any> {
-    // This would normally make an HTTP request to NetGSM API
-    // For now, we'll simulate a successful response
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-    
-    // Mock NetGSM response
-    return {
-      status: 'success',
-      messageId: `netgsm_${Date.now()}`,
-      recipientCount: recipients.length,
-      cost: recipients.length * Math.ceil(message.length / 160) * 0.08,
-      timestamp: new Date().toISOString(),
-      details: recipients.map(r => ({
-        phone: r.phone,
-        status: 'sent',
-        messageId: `msg_${r.id}_${Date.now()}`
-      }))
-    };
+    const username = process.env.NETGSM_USERNAME;
+    const password = process.env.NETGSM_PASSWORD;
+    const header = process.env.NETGSM_HEADER;
+
+    // If no API credentials, use mock mode
+    if (!username || !password || !header) {
+      console.log('NetGSM credentials not found, using mock mode');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return {
+        status: 'mock_success',
+        messageId: `mock_${Date.now()}`,
+        recipientCount: recipients.length,
+        note: 'SMS not sent - NetGSM credentials required'
+      };
+    }
+
+    try {
+      // Real NetGSM API call
+      const phoneNumbers = recipients.map(r => r.phone).filter(p => p).join(',');
+      
+      const fetch = (await import('node-fetch')).default;
+      const response = await fetch('https://api.netgsm.com.tr/sms/send/get', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          usercode: username,
+          password: password,
+          gsmno: phoneNumbers,
+          message: message,
+          msgheader: header
+        })
+      });
+
+      const result = await response.text();
+      
+      // NetGSM returns different response formats
+      if (result.startsWith('00') || result.includes('OK')) {
+        return {
+          status: 'success',
+          messageId: result,
+          recipientCount: recipients.length,
+          cost: recipients.length * Math.ceil(message.length / 160) * 0.08,
+          timestamp: new Date().toISOString(),
+          details: recipients.map(r => ({
+            phone: r.phone,
+            status: 'sent',
+            messageId: `msg_${r.id}_${Date.now()}`
+          }))
+        };
+      } else {
+        throw new Error(`NetGSM API Error: ${result}`);
+      }
+    } catch (error) {
+      console.error('NetGSM API Error:', error);
+      throw error;
+    }
   }
 
   const httpServer = createServer(app);
