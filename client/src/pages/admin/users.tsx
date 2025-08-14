@@ -367,7 +367,7 @@ export default function AdminUsers() {
                           "Son Güncelleme": new Date(u.updatedAt).toLocaleDateString('tr-TR')
                         }));
 
-                        // PDF Export
+                        // PDF Export - simplified approach
                         const { jsPDF } = require('jspdf');
                         require('jspdf-autotable');
                         
@@ -385,14 +385,14 @@ export default function AdminUsers() {
                         doc.setFontSize(10);
                         doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 30);
 
-                        // Table
+                        // Table data with safe values
                         const tableData = exportData.map(user => [
-                          user.Email,
-                          user["Ad Soyad"],
-                          user.Rol,
-                          user.Durum,
-                          user["Kayıt Tarihi"],
-                          user["Son Güncelleme"]
+                          user.Email || '',
+                          user["Ad Soyad"] || '',
+                          user.Rol || '',
+                          user.Durum || '',
+                          user["Kayıt Tarihi"] || '',
+                          user["Son Güncelleme"] || ''
                         ]);
 
                         (doc as any).autoTable({
@@ -412,12 +412,12 @@ export default function AdminUsers() {
                             fillColor: [245, 245, 245],
                           },
                           columnStyles: {
-                            0: { cellWidth: 45 }, // Email
-                            1: { cellWidth: 35 }, // Ad Soyad  
-                            2: { cellWidth: 25 }, // Rol
-                            3: { cellWidth: 25 }, // Durum
-                            4: { cellWidth: 30 }, // Kayıt Tarihi
-                            5: { cellWidth: 30 }, // Son Güncelleme
+                            0: { cellWidth: 45 },
+                            1: { cellWidth: 35 },
+                            2: { cellWidth: 25 },
+                            3: { cellWidth: 25 },
+                            4: { cellWidth: 30 },
+                            5: { cellWidth: 30 },
                           }
                         });
 
