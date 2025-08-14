@@ -30,11 +30,16 @@ import {
   type ImageUpload, type InsertImageUpload,
   type SMSHistory, type InsertSMSHistory,
   type SMSTemplate, type InsertSMSTemplate,
+  type AdminLog, type InsertAdminLog,
+  type SystemSetting, type InsertSystemSetting,
+  type Announcement, type InsertAnnouncement,
+  type UserSession, type InsertUserSession,
+  type SystemMetric, type InsertSystemMetric,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
   companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users,
   firmInvites, presenceLogs, messageDrafts, autoResponders, directThreads, directMessages, imageUploads, autoReplyLogs,
-  smsHistory, smsTemplates
+  smsHistory, smsTemplates, adminLogs, systemSettings, announcements, userSessions, systemMetrics
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
@@ -223,6 +228,32 @@ export interface IStorage {
   updateSMSHistory(id: string, updates: Partial<SMSHistory>): Promise<SMSHistory | undefined>;
   getSMSTemplates(userId: string): Promise<SMSTemplate[]>;
   createSMSTemplate(userId: string, template: InsertSMSTemplate): Promise<SMSTemplate>;
+
+  // Admin Panel Operations
+  getAllUsersForAdmin(): Promise<User[]>;
+  createAdminLog(log: InsertAdminLog): Promise<AdminLog>;
+  getAdminLogs(limit?: number): Promise<AdminLog[]>;
+  getSystemSettings(): Promise<SystemSetting[]>;
+  getSystemSetting(key: string): Promise<SystemSetting | undefined>;
+  upsertSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting>;
+  getAnnouncements(): Promise<Announcement[]>;
+  createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: string, updates: Partial<InsertAnnouncement>): Promise<Announcement | undefined>;
+  deleteAnnouncement(id: string): Promise<boolean>;
+  getUserSessions(): Promise<UserSession[]>;
+  getUserSessionsByUserId(userId: string): Promise<UserSession[]>;
+  createUserSession(session: InsertUserSession): Promise<UserSession>;
+  deactivateUserSession(id: string): Promise<boolean>;
+  getSystemMetrics(metricType?: string, limit?: number): Promise<SystemMetric[]>;
+  createSystemMetric(metric: InsertSystemMetric): Promise<SystemMetric>;
+  getDashboardStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    totalMessages: number;
+    totalStorage: number;
+    registrationsThisMonth: number;
+    messagesThisMonth: number;
+  }>;
 }
 
 export class MemStorage implements IStorage {
@@ -1973,6 +2004,157 @@ export class DatabaseStorage implements IStorage {
       userId
     }).returning();
     return result;
+  }
+
+  // Admin Panel Operations
+  async getAllUsersForAdmin(): Promise<User[]> {
+    return await db.select().from(users)
+      .orderBy(desc(users.createdAt));
+  }
+
+  async createAdminLog(log: InsertAdminLog): Promise<AdminLog> {
+    const [result] = await db.insert(adminLogs).values(log).returning();
+    return result;
+  }
+
+  async getAdminLogs(limit: number = 100): Promise<AdminLog[]> {
+    return await db.select().from(adminLogs)
+      .orderBy(desc(adminLogs.createdAt))
+      .limit(limit);
+  }
+
+  async getSystemSettings(): Promise<SystemSetting[]> {
+    return await db.select().from(systemSettings)
+      .orderBy(systemSettings.category, systemSettings.key);
+  }
+
+  async getSystemSetting(key: string): Promise<SystemSetting | undefined> {
+    const [result] = await db.select().from(systemSettings)
+      .where(eq(systemSettings.key, key));
+    return result;
+  }
+
+  async upsertSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting> {
+    const [result] = await db.insert(systemSettings)
+      .values(setting)
+      .onConflictDoUpdate({
+        target: systemSettings.key,
+        set: {
+          value: setting.value,
+          description: setting.description,
+          category: setting.category,
+          updatedBy: setting.updatedBy,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  }
+
+  async getAnnouncements(): Promise<Announcement[]> {
+    return await db.select().from(announcements)
+      .where(eq(announcements.isActive, true))
+      .orderBy(desc(announcements.createdAt));
+  }
+
+  async createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement> {
+    const [result] = await db.insert(announcements).values(announcement).returning();
+    return result;
+  }
+
+  async updateAnnouncement(id: string, updates: Partial<InsertAnnouncement>): Promise<Announcement | undefined> {
+    const [result] = await db.update(announcements)
+      .set(updates)
+      .where(eq(announcements.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteAnnouncement(id: string): Promise<boolean> {
+    const result = await db.delete(announcements)
+      .where(eq(announcements.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async getUserSessions(): Promise<UserSession[]> {
+    return await db.select().from(userSessions)
+      .orderBy(desc(userSessions.lastActivity));
+  }
+
+  async getUserSessionsByUserId(userId: string): Promise<UserSession[]> {
+    return await db.select().from(userSessions)
+      .where(eq(userSessions.userId, userId))
+      .orderBy(desc(userSessions.lastActivity));
+  }
+
+  async createUserSession(session: InsertUserSession): Promise<UserSession> {
+    const [result] = await db.insert(userSessions).values(session).returning();
+    return result;
+  }
+
+  async deactivateUserSession(id: string): Promise<boolean> {
+    const [result] = await db.update(userSessions)
+      .set({ isActive: false })
+      .where(eq(userSessions.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async getSystemMetrics(metricType?: string, limit: number = 100): Promise<SystemMetric[]> {
+    let query = db.select().from(systemMetrics);
+    
+    if (metricType) {
+      query = query.where(eq(systemMetrics.metricType, metricType));
+    }
+    
+    return await query
+      .orderBy(desc(systemMetrics.recordedAt))
+      .limit(limit);
+  }
+
+  async createSystemMetric(metric: InsertSystemMetric): Promise<SystemMetric> {
+    const [result] = await db.insert(systemMetrics).values(metric).returning();
+    return result;
+  }
+
+  async getDashboardStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    totalMessages: number;
+    totalStorage: number;
+    registrationsThisMonth: number;
+    messagesThisMonth: number;
+  }> {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Get user stats
+    const allUsers = await db.select().from(users);
+    const totalUsers = allUsers.length;
+    const registrationsThisMonth = allUsers.filter(u => 
+      new Date(u.createdAt) >= monthStart
+    ).length;
+
+    // Get message stats
+    const allMessages = await db.select().from(directMessages);
+    const totalMessages = allMessages.length;
+    const messagesThisMonth = allMessages.filter(m => 
+      new Date(m.createdAt) >= monthStart
+    ).length;
+
+    // Get storage stats (from image uploads)
+    const allUploads = await db.select().from(imageUploads);
+    const totalStorage = allUploads.reduce((sum, upload) => sum + upload.fileSize, 0);
+
+    return {
+      totalUsers,
+      activeUsers: totalUsers, // For now, assume all users are active
+      totalMessages,
+      totalStorage,
+      registrationsThisMonth,
+      messagesThisMonth,
+    };
   }
 }
 

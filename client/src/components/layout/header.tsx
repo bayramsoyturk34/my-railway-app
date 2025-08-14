@@ -1,9 +1,10 @@
-import { Menu, Settings, LogOut, User } from "lucide-react";
+import { Menu, Settings, LogOut, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -66,6 +67,20 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
             <span>{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
           </div>
         )}
+        
+        {/* Admin Panel Button - only for admins */}
+        {user && (user as any).isAdmin && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-purple-400 hover:bg-dark-accent"
+            onClick={() => window.location.href = "/admin"}
+            title="Admin Panel"
+          >
+            <Shield className="h-6 w-6" />
+          </Button>
+        )}
+        
         <Button
           variant="ghost"
           size="icon"

@@ -1,0 +1,324 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { 
+  Shield, Users, MessageSquare, Database, TrendingUp, 
+  Activity, Settings, Bell, Calendar, BarChart3,
+  UserCheck, UserX, HardDrive, Zap
+} from "lucide-react";
+import Header from "@/components/layout/header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+
+export default function AdminDashboard() {
+  const [, setLocation] = useLocation();
+
+  // Admin dashboard stats
+  const { data: dashboardStats, isLoading } = useQuery({
+    queryKey: ["/api/admin/dashboard-stats"],
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // System metrics
+  const { data: systemMetrics } = useQuery({
+    queryKey: ["/api/admin/system-metrics"],
+  });
+
+  // Recent admin logs
+  const { data: adminLogs } = useQuery({
+    queryKey: ["/api/admin/logs"],
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-primary">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4 animate-spin" />
+              <p className="text-gray-400">Admin panel yükleniyor...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = dashboardStats || {
+    totalUsers: 0,
+    activeUsers: 0,
+    totalMessages: 0,
+    totalStorage: 0,
+    registrationsThisMonth: 0,
+    messagesThisMonth: 0,
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const adminActions = [
+    { 
+      title: "Kullanıcı Yönetimi", 
+      description: "Kullanıcıları görüntüle ve yönet",
+      icon: Users, 
+      color: "bg-blue-500",
+      route: "/admin/users" 
+    },
+    { 
+      title: "Sistem Ayarları", 
+      description: "Genel sistem ayarlarını düzenle",
+      icon: Settings, 
+      color: "bg-green-500",
+      route: "/admin/settings" 
+    },
+    { 
+      title: "Duyurular", 
+      description: "Sistem duyurularını yönet",
+      icon: Bell, 
+      color: "bg-yellow-500",
+      route: "/admin/announcements" 
+    },
+    { 
+      title: "Admin Logları", 
+      description: "Sistem aktivitelerini incele",
+      icon: Activity, 
+      color: "bg-purple-500",
+      route: "/admin/logs" 
+    },
+    { 
+      title: "Metrikler", 
+      description: "Sistem performansını izle",
+      icon: BarChart3, 
+      color: "bg-red-500",
+      route: "/admin/metrics" 
+    },
+    { 
+      title: "Oturumlar", 
+      description: "Aktif kullanıcı oturumları",
+      icon: UserCheck, 
+      color: "bg-indigo-500",
+      route: "/admin/sessions" 
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-dark-primary">
+      <Header />
+      
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Shield className="h-8 w-8 text-purple-400" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
+              <p className="text-gray-400">Sistem yönetimi ve izleme</p>
+            </div>
+          </div>
+          <Badge variant="outline" className="px-3 py-1 text-purple-400 border-purple-400">
+            Yönetici
+          </Badge>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-dark-secondary border-dark-accent">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Toplam Kullanıcı</p>
+                  <p className="text-2xl font-bold text-white">{stats.totalUsers}</p>
+                  <p className="text-green-400 text-xs mt-1">
+                    +{stats.registrationsThisMonth} bu ay
+                  </p>
+                </div>
+                <Users className="h-10 w-10 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-dark-secondary border-dark-accent">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Aktif Kullanıcı</p>
+                  <p className="text-2xl font-bold text-white">{stats.activeUsers}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <p className="text-green-400 text-xs">Çevrimiçi</p>
+                  </div>
+                </div>
+                <UserCheck className="h-10 w-10 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-dark-secondary border-dark-accent">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Toplam Mesaj</p>
+                  <p className="text-2xl font-bold text-white">{stats.totalMessages}</p>
+                  <p className="text-blue-400 text-xs mt-1">
+                    +{stats.messagesThisMonth} bu ay
+                  </p>
+                </div>
+                <MessageSquare className="h-10 w-10 text-purple-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-dark-secondary border-dark-accent">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Kullanılan Depolama</p>
+                  <p className="text-2xl font-bold text-white">{formatBytes(stats.totalStorage)}</p>
+                  <Progress value={75} className="mt-2 h-1" />
+                </div>
+                <HardDrive className="h-10 w-10 text-orange-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {adminActions.map((action) => (
+            <Card 
+              key={action.route}
+              className="bg-dark-secondary border-dark-accent hover:bg-dark-accent transition-colors cursor-pointer"
+              onClick={() => setLocation(action.route)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-lg ${action.color}`}>
+                    <action.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white mb-1">{action.title}</h3>
+                    <p className="text-gray-400 text-sm">{action.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Recent Activity & System Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent Admin Logs */}
+          <Card className="bg-dark-secondary border-dark-accent">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Activity className="h-5 w-5 text-purple-400" />
+                Son Admin Aktiviteleri
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {adminLogs && adminLogs.length > 0 ? (
+                  adminLogs.slice(0, 5).map((log: any) => (
+                    <div key={log.id} className="flex items-start gap-3 p-3 border border-gray-600 rounded">
+                      <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium">{log.action}</p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(log.createdAt).toLocaleString('tr-TR')}
+                        </p>
+                        {log.targetEntity && (
+                          <p className="text-gray-400 text-xs">
+                            Hedef: {log.targetEntity}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-400">Henüz admin aktivitesi yok</p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-600">
+                <Button 
+                  variant="outline" 
+                  className="w-full border-gray-600 text-gray-300 hover:bg-dark-accent"
+                  onClick={() => setLocation("/admin/logs")}
+                >
+                  Tüm Logları Görüntüle
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* System Health */}
+          <Card className="bg-dark-secondary border-dark-accent">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Zap className="h-5 w-5 text-yellow-400" />
+                Sistem Durumu
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">API Durumu</span>
+                  <Badge variant="outline" className="text-green-400 border-green-400">
+                    Çalışıyor
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Veritabanı</span>
+                  <Badge variant="outline" className="text-green-400 border-green-400">
+                    Bağlı
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">SMS Servisi</span>
+                  <Badge variant="outline" className="text-yellow-400 border-yellow-400">
+                    Beklemede
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Mesajlaşma</span>
+                  <Badge variant="outline" className="text-green-400 border-green-400">
+                    Aktif
+                  </Badge>
+                </div>
+                
+                <div className="mt-6 p-4 bg-dark-accent rounded border border-gray-600">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="h-4 w-4 text-green-400" />
+                    <span className="text-white text-sm font-medium">Sistem Performansı</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-400">CPU</span>
+                      <span className="text-white">45%</span>
+                    </div>
+                    <Progress value={45} className="h-1" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-400">Bellek</span>
+                      <span className="text-white">62%</span>
+                    </div>
+                    <Progress value={62} className="h-1" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

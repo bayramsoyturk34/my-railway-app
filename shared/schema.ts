@@ -842,3 +842,102 @@ export type InsertSMSHistory = z.infer<typeof insertSMSHistorySchema>;
 
 export type SMSTemplate = typeof smsTemplates.$inferSelect;
 export type InsertSMSTemplate = z.infer<typeof insertSMSTemplateSchema>;
+
+// Admin Panel Tables
+export const adminLogs = pgTable("admin_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminUserId: varchar("admin_user_id").notNull(),
+  action: text("action").notNull(), // "USER_SUSPENDED", "FEATURE_TOGGLED", etc.
+  targetEntity: text("target_entity"), // "User", "Firm", "System"
+  targetId: varchar("target_id"),
+  details: jsonb("details"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const systemSettings = pgTable("system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").unique().notNull(),
+  value: jsonb("value").notNull(),
+  description: text("description"),
+  category: text("category").default("general"), // "general", "email", "sms", "billing"
+  updatedBy: varchar("updated_by"),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+export const announcements = pgTable("announcements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  level: text("level").default("info"), // "info", "warning", "critical"
+  targets: jsonb("targets").default('["all"]'), // ["all"] or ["user:id", "admin"]
+  publishAt: timestamp("publish_at").default(sql`now()`),
+  expireAt: timestamp("expire_at"),
+  isActive: boolean("is_active").default(true),
+  createdBy: varchar("created_by").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const userSessions = pgTable("user_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  sessionToken: text("session_token").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  location: text("location"),
+  isActive: boolean("is_active").default(true),
+  lastActivity: timestamp("last_activity").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const systemMetrics = pgTable("system_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  metricType: text("metric_type").notNull(), // "users", "messages", "storage", "api_calls"
+  value: decimal("value", { precision: 15, scale: 2 }).notNull(),
+  metadata: jsonb("metadata"),
+  recordedAt: timestamp("recorded_at").default(sql`now()`),
+});
+
+// Insert schemas for admin tables
+export const insertAdminLogSchema = createInsertSchema(adminLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSystemMetricSchema = createInsertSchema(systemMetrics).omit({
+  id: true,
+  recordedAt: true,
+});
+
+// Types for admin tables
+export type AdminLog = typeof adminLogs.$inferSelect;
+export type InsertAdminLog = z.infer<typeof insertAdminLogSchema>;
+
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
+
+export type Announcement = typeof announcements.$inferSelect;
+export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
+
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+
+export type SystemMetric = typeof systemMetrics.$inferSelect;
+export type InsertSystemMetric = z.infer<typeof insertSystemMetricSchema>;

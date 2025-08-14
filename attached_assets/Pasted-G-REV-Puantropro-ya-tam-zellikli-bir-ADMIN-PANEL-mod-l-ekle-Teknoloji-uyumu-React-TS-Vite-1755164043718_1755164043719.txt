@@ -1,0 +1,81 @@
+GÖREV: Puantropro’ya tam özellikli bir **ADMIN PANEL** modülü ekle.
+Teknoloji uyumu: React+TS (Vite, TanStack Query, Zustand, Tailwind, shadcn/ui), Backend Node+TS (Express), Prisma ORM, SSE.
+Roller: SUPER_ADMIN (global), ADMIN (firma yöneticisi). Var olan RBAC’ı kullan.
+
+# 0) ENV GENİŞLETME
+ADMIN_SESSION_TTL_HOURS=12
+BACKUP_CRON="0 3 * * *"          # her gün 03:00
+EXPORT_MAX_ROWS=100000
+FEATURE_FLAGS_DEFAULT="directory,dm,presence,invites,autoresponder,uploads,analytics,reports,billing"
+STRIPE_SECRET_KEY="sk_test_xxx"   # zaten varsa kullan
+STRIPE_WEBHOOK_SECRET="whsec_xxx"
+SMTP_* (opsiyonel e-posta)
+SSE_ENABLE=true
+
+# 1) VERİTABANI (PRISMA) – YENİ MODELLER/ALANLAR
+model FeatureFlag {
+  id        String   @id @default(cuid())
+  key       String   @unique     // "billing","analytics","presence"...
+  enabled   Boolean  @default(true)
+  scope     String   @default("global") // "global" | "firm:{id}"
+  value     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique   // "trialDays","demoLimits.personel","email.from"
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  level     String   @default("info") // info|warning|critical
+  targets   String[] // "all" | "firm:{id}" | "role:ADMIN" ...
+  publishAt DateTime @default(now())
+  expireAt  DateTime?
+  createdBy String
+}
+
+model RateLimitBan {
+  id        String   @id @default(cuid())
+  firmId    String?
+  userId    String?
+  scope     String   // "messages","upload","global"
+  reason    String?
+  until     DateTime
+  createdAt DateTime @default(now())
+}
+
+model WebhookEndpoint {
+  id        String   @id @default(cuid())
+  firmId    String?
+  url       String
+  events    String[] // ["QUOTE_APPROVED","NEW_DM",...]
+  secret    String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique   // "invite","new_dm","invoice_paid"
+  subject   String
+  html      String
+  updatedAt DateTime @updatedAt
+}
+
+model AdminNote {
+  id        String   @id @default(cuid())
+  entity    String   // "Firm"|"User"|"Thread"|"Quote"...
+  entityId  String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+}
+
+mode

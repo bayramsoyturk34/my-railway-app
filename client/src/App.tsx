@@ -24,6 +24,7 @@ import Messages from "@/pages/messages";
 import Reports from "@/pages/reports";
 import AdminDashboard from "@/pages/admin-dashboard";
 import BulkSMS from "@/pages/bulk-sms";
+import AdminPanel from "@/pages/admin/dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -75,7 +76,7 @@ function Router() {
       <Route path="/messages" component={Messages} />
       <Route path="/reports" component={Reports} />
       <Route path="/bulk-sms" component={BulkSMS} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin" component={AdminPanel} />
       <Route component={Dashboard} />
     </Switch>
   );

@@ -2774,6 +2774,207 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Admin Panel Routes
+  const isAdmin = (req: any, res: any, next: any) => {
+    if (!req.user || !req.user.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    next();
+  };
+
+  app.get("/api/admin/dashboard-stats", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin dashboard stats:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsersForAdmin();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching all users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/logs", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      const logs = await storage.getAdminLogs(limit);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching admin logs:", error);
+      res.status(500).json({ error: "Failed to fetch admin logs" });
+    }
+  });
+
+  app.post("/api/admin/logs", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const logData = {
+        ...req.body,
+        adminUserId: req.user.id,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      };
+      const log = await storage.createAdminLog(logData);
+      res.status(201).json(log);
+    } catch (error) {
+      console.error("Error creating admin log:", error);
+      res.status(500).json({ error: "Failed to create admin log" });
+    }
+  });
+
+  app.get("/api/admin/settings", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching system settings:", error);
+      res.status(500).json({ error: "Failed to fetch system settings" });
+    }
+  });
+
+  app.post("/api/admin/settings", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const settingData = {
+        ...req.body,
+        updatedBy: req.user.id,
+      };
+      const setting = await storage.upsertSystemSetting(settingData);
+      
+      // Log the action
+      await storage.createAdminLog({
+        adminUserId: req.user.id,
+        action: "SYSTEM_SETTING_UPDATED",
+        targetEntity: "SystemSetting",
+        targetId: setting.id,
+        details: { key: setting.key, value: setting.value },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json(setting);
+    } catch (error) {
+      console.error("Error updating system setting:", error);
+      res.status(500).json({ error: "Failed to update system setting" });
+    }
+  });
+
+  app.get("/api/admin/announcements", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const announcements = await storage.getAnnouncements();
+      res.json(announcements);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      res.status(500).json({ error: "Failed to fetch announcements" });
+    }
+  });
+
+  app.post("/api/admin/announcements", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const announcementData = {
+        ...req.body,
+        createdBy: req.user.id,
+      };
+      const announcement = await storage.createAnnouncement(announcementData);
+      
+      // Log the action
+      await storage.createAdminLog({
+        adminUserId: req.user.id,
+        action: "ANNOUNCEMENT_CREATED",
+        targetEntity: "Announcement",
+        targetId: announcement.id,
+        details: { title: announcement.title },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.status(201).json(announcement);
+    } catch (error) {
+      console.error("Error creating announcement:", error);
+      res.status(500).json({ error: "Failed to create announcement" });
+    }
+  });
+
+  app.put("/api/admin/announcements/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const announcement = await storage.updateAnnouncement(id, req.body);
+      if (!announcement) {
+        return res.status(404).json({ error: "Announcement not found" });
+      }
+      
+      // Log the action
+      await storage.createAdminLog({
+        adminUserId: req.user.id,
+        action: "ANNOUNCEMENT_UPDATED",
+        targetEntity: "Announcement",
+        targetId: id,
+        details: { title: announcement.title },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json(announcement);
+    } catch (error) {
+      console.error("Error updating announcement:", error);
+      res.status(500).json({ error: "Failed to update announcement" });
+    }
+  });
+
+  app.delete("/api/admin/announcements/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteAnnouncement(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Announcement not found" });
+      }
+      
+      // Log the action
+      await storage.createAdminLog({
+        adminUserId: req.user.id,
+        action: "ANNOUNCEMENT_DELETED",
+        targetEntity: "Announcement",
+        targetId: id,
+        details: {},
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+      res.status(500).json({ error: "Failed to delete announcement" });
+    }
+  });
+
+  app.get("/api/admin/sessions", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const sessions = await storage.getUserSessions();
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching user sessions:", error);
+      res.status(500).json({ error: "Failed to fetch user sessions" });
+    }
+  });
+
+  app.get("/api/admin/system-metrics", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const metricType = req.query.type as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      const metrics = await storage.getSystemMetrics(metricType, limit);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching system metrics:", error);
+      res.status(500).json({ error: "Failed to fetch system metrics" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
