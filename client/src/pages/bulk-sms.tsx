@@ -553,8 +553,14 @@ export default function BulkSMSPage() {
             {/* Send Button */}
             <Button
               onClick={handleSendSMS}
-              disabled={sendSMSMutation.isPending || !customMessage.trim() || selectedRecipients.length === 0}
-              className="w-full bg-green-500 hover:bg-green-600 text-white"
+              disabled={sendSMSMutation.isPending}
+              className={`w-full text-white ${
+                sendSMSMutation.isPending 
+                  ? 'bg-gray-500' 
+                  : !customMessage.trim() || selectedRecipients.length === 0
+                    ? 'bg-gray-600 hover:bg-gray-700'
+                    : 'bg-green-500 hover:bg-green-600'
+              }`}
             >
               <Send className="h-4 w-4 mr-2" />
               {sendSMSMutation.isPending ? "Gönderiliyor..." : "SMS Gönder"}
