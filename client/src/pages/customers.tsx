@@ -131,11 +131,17 @@ export default function CustomersPage() {
         </div>
 
         <AdvancedFilters
-          filters={filters}
-          onFiltersChange={handleFilterChange}
+          onFilterChange={handleFilterChange}
           onExport={handleExport}
-          showExportButtons={false}
-          entityType="customer"
+          exportData={filteredCustomers.map(customer => ({
+            name: customer.name,
+            company: customer.company || '-',
+            phone: customer.phone || '-',
+            email: customer.email || '-',
+            status: customer.status || 'aktif',
+            date: customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('tr-TR') : '-'
+          }))}
+          exportTitle="Müşteriler"
         />
 
         {isLoading ? (

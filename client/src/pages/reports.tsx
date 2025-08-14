@@ -471,6 +471,13 @@ export default function ReportsPage() {
             <AdvancedFilters
               onFilterChange={handleFilterChange}
               onExport={handleExport}
+              exportData={filteredReports.map((template: any) => ({
+                name: template.name,
+                type: template.type === 'financial' ? 'Finansal' : template.type === 'personnel' ? 'Personel' : 'Diğer',
+                description: template.description,
+                category: template.category || '-'
+              }))}
+              exportTitle="Rapor Şablonları"
             />
           </div>
           
