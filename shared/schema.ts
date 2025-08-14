@@ -25,6 +25,8 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   isAdmin: boolean("is_admin").default(false), // Admin flag
+  status: varchar("status").default("ACTIVE"), // User status: ACTIVE, SUSPENDED
+  role: varchar("role").default("USER"), // User role: USER, ADMIN, SUPER_ADMIN
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
