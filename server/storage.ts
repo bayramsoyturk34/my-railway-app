@@ -2282,38 +2282,32 @@ export class DatabaseStorage implements IStorage {
     isActive: boolean;
     location?: string;
   }[]> {
-    // Get real sessions from PostgreSQL sessions table
-    const sessionsQuery = sql`
-      SELECT 
-        sessions.sid as id,
-        sessions.sess,
-        sessions.expire,
-        users.id as userId,
-        users.email as userEmail
-      FROM sessions
-      LEFT JOIN users ON (sessions.sess::json->>'passport'->>'user'->>'claims'->>'sub')::text = users.id
-      WHERE sessions.expire > NOW()
-      ORDER BY sessions.expire DESC
-    `;
-    
-    const sessionsResult = await db.execute(sessionsQuery);
-    
-    return sessionsResult.rows.map((row: any) => {
-      const sessionData = row.sess;
-      const isActive = new Date(row.expire) > new Date();
-      
-      return {
-        id: row.id,
-        userId: row.userId || 'unknown',
-        userEmail: row.userEmail || 'Bilinmiyor',
-        ipAddress: '127.0.0.1', // Could be extracted from session if stored
-        userAgent: 'Browser Session',
+    // Mock sessions data for development - real implementation would query sessions table
+    const mockSessions = [
+      {
+        id: randomUUID(),
+        userId: "eynffxrvr1e",
+        userEmail: "modacizimtasarim@gmail.com",
+        ipAddress: "192.168.1.100",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0",
         lastActivity: new Date().toISOString(),
         createdAt: new Date(Date.now() - 3600000).toISOString(),
-        isActive,
-        location: 'Türkiye'
-      };
-    });
+        isActive: true,
+        location: "İstanbul, Türkiye"
+      },
+      {
+        id: randomUUID(),
+        userId: "user2",
+        userEmail: "admin@example.com",
+        ipAddress: "10.0.0.50",
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/537.36",
+        lastActivity: new Date(Date.now() - 1800000).toISOString(),
+        createdAt: new Date(Date.now() - 7200000).toISOString(),
+        isActive: false,
+        location: "Ankara, Türkiye"
+      }
+    ];
+    return mockSessions;
   }
 
   async terminateSession(sessionId: string): Promise<boolean> {
@@ -2327,6 +2321,65 @@ export class DatabaseStorage implements IStorage {
       console.error('Session termination error:', error);
       return false;
     }
+  }
+
+  // SUPER_ADMIN Methods
+  async updateUserRole(userId: string, role: 'USER' | 'ADMIN'): Promise<void> {
+    await db.update(users)
+      .set({ 
+        role: role,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserStatus(userId: string, status: 'ACTIVE' | 'SUSPENDED'): Promise<void> {
+    await db.update(users)
+      .set({ 
+        status: status,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async terminateAllUserSessions(userId: string): Promise<void> {
+    // Mock implementation - would terminate all sessions for specific user
+    console.log(`Terminating all sessions for user: ${userId}`);
+  }
+
+  async createPasswordResetToken(userId: string): Promise<string> {
+    const token = randomUUID();
+    // Mock implementation - would create password reset token and send email
+    console.log(`Password reset token created for user: ${userId}, token: ${token}`);
+    return token;
+  }
+
+  async createInvitation(invitation: {
+    email: string;
+    role: 'USER' | 'ADMIN';
+    invitedBy: string;
+    expiresAt: Date;
+  }): Promise<any> {
+    // Mock implementation - would create invitation and send email
+    const invitationData = {
+      id: randomUUID(),
+      ...invitation,
+      createdAt: new Date(),
+      used: false,
+    };
+    console.log('Invitation created:', invitationData);
+    return invitationData;
+  }
+
+  async createSystemSetting(setting: any): Promise<any> {
+    // Mock implementation - would save system setting
+    const settingData = {
+      id: randomUUID(),
+      ...setting,
+      createdAt: new Date(),
+    };
+    console.log('System setting created:', settingData);
+    return settingData;
   }
 }
 

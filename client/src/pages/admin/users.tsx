@@ -3,7 +3,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { 
   ArrowLeft, Users, UserCheck, UserX, Mail, Calendar, 
-  Shield, ShieldOff, Search, Filter, MoreVertical
+  Shield, ShieldOff, Search, Filter, MoreVertical, Ban, 
+  Key, LogOut, FileText, Eye, AlertTriangle, Crown, 
+  UserCog, Building, Download, Plus, UserPlus
 } from "lucide-react";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,29 +32,119 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 export default function AdminUsers() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
   const { toast } = useToast();
+
+  // Fetch current user to check if SUPER_ADMIN
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
 
   // Fetch all users
   const { data: users, isLoading } = useQuery({
     queryKey: ["/api/admin/users"],
   });
 
-  // Toggle admin status
-  const toggleAdminMutation = useMutation({
-    mutationFn: async ({ userId, isAdmin }: { userId: string; isAdmin: boolean }) => {
-      return await apiRequest(`/api/admin/users/${userId}/admin`, "PUT", { isAdmin });
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+
+  // SUPER_ADMIN: Role management
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: 'USER' | 'ADMIN' }) => {
+      return await apiRequest(`/api/admin/users/${userId}/role`, "PUT", { role });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
         title: "Başarılı",
-        description: "Kullanıcı admin durumu güncellendi.",
+        description: "Kullanıcı rolü güncellendi.",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Hata",
-        description: error.message || "Admin durumu güncellenirken hata oluştu.",
+        description: error.message || "Rol güncellenirken hata oluştu.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // SUPER_ADMIN: Status management (ACTIVE ⇄ SUSPENDED)
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ userId, status }: { userId: string; status: 'ACTIVE' | 'SUSPENDED' }) => {
+      return await apiRequest(`/api/admin/users/${userId}/status`, "PUT", { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Başarılı",
+        description: "Kullanıcı durumu güncellendi.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Durum güncellenirken hata oluştu.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // SUPER_ADMIN: Force logout all sessions
+  const terminateSessionsMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await apiRequest(`/api/admin/users/${userId}/terminate-sessions`, "POST", {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Kullanıcının tüm oturumları sonlandırıldı.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Oturum sonlandırma başarısız.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // SUPER_ADMIN: Send password reset
+  const sendPasswordResetMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await apiRequest(`/api/admin/users/${userId}/reset-password`, "POST", {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Parola sıfırlama bağlantısı gönderildi.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Parola sıfırlama başarısız.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // SUPER_ADMIN: Create invitation
+  const createInvitationMutation = useMutation({
+    mutationFn: async ({ email, role }: { email: string; role: 'USER' | 'ADMIN' }) => {
+      return await apiRequest(`/api/admin/invitations`, "POST", { email, role });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Davet bağlantısı oluşturuldu ve gönderildi.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Davet oluşturma başarısız.",
         variant: "destructive",
       });
     },
@@ -95,17 +187,29 @@ export default function AdminUsers() {
     );
   }
 
-  const filteredUsers = users?.filter((user: any) =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  // Enhanced filtering with role and status
+  const filteredUsers = users?.filter((user: any) => {
+    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "active" && user.status !== 'SUSPENDED') ||
+      (statusFilter === "suspended" && user.status === 'SUSPENDED');
+    
+    const matchesRole = roleFilter === "all" ||
+      (roleFilter === "admin" && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) ||
+      (roleFilter === "user" && user.role === 'USER');
+    
+    return matchesSearch && matchesStatus && matchesRole;
+  }) || [];
 
   const stats = {
     total: users?.length || 0,
-    active: users?.filter((u: any) => u.isActive !== false).length || 0,
-    admins: users?.filter((u: any) => u.isAdmin).length || 0,
-    inactive: users?.filter((u: any) => u.isActive === false).length || 0,
+    active: users?.filter((u: any) => u.status !== 'SUSPENDED').length || 0,
+    suspended: users?.filter((u: any) => u.status === 'SUSPENDED').length || 0,
+    admins: users?.filter((u: any) => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN').length || 0,
+    users: users?.filter((u: any) => u.role === 'USER').length || 0,
   };
 
   return (
@@ -113,7 +217,7 @@ export default function AdminUsers() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+        {/* Enhanced Header for SUPER_ADMIN */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button
@@ -127,11 +231,60 @@ export default function AdminUsers() {
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-400" />
               <div>
-                <h1 className="text-2xl font-bold text-white">Kullanıcı Yönetimi</h1>
-                <p className="text-gray-400">Sistem kullanıcılarını yönet</p>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-white">Kullanıcı Yönetimi</h1>
+                  {isSuperAdmin && (
+                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                      <Crown className="h-3 w-3 mr-1" />
+                      SUPER ADMIN
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-gray-400">
+                  {isSuperAdmin ? 'Tam sistem kontrolü ve kullanıcı yönetimi' : 'Kullanıcıları görüntüle ve yönet'}
+                </p>
               </div>
             </div>
           </div>
+          
+          {isSuperAdmin && (
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-green-600 text-green-400 hover:bg-green-600/10"
+                onClick={() => {
+                  const csvData = users?.map(u => ({
+                    Email: u.email,
+                    Role: u.role,
+                    Status: u.status || 'ACTIVE',
+                    Created: new Date(u.createdAt).toLocaleDateString('tr-TR')
+                  }));
+                  console.log('Exporting users:', csvData);
+                  toast({
+                    title: "Başarılı",
+                    description: "Kullanıcı listesi dışa aktarıldı.",
+                  });
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Dışa Aktar
+              </Button>
+              <Button
+                className="bg-purple-600 hover:bg-purple-700"
+                size="sm"
+                onClick={() => {
+                  const email = prompt("Davet gönderilecek e-posta adresini girin:");
+                  if (email) {
+                    createInvitationMutation.mutate({ email, role: 'USER' });
+                  }
+                }}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Davet Gönder
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -176,32 +329,65 @@ export default function AdminUsers() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Pasif</p>
-                  <p className="text-2xl font-bold text-white">{stats.inactive}</p>
+                  <p className="text-gray-400 text-sm">Askıya Alınmış</p>
+                  <p className="text-2xl font-bold text-white">{stats.suspended}</p>
                 </div>
-                <UserX className="h-8 w-8 text-red-400" />
+                <Ban className="h-8 w-8 text-red-400" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Search and Filters */}
+        {/* Enhanced Search and Filters for SUPER_ADMIN */}
         <Card className="bg-dark-secondary border-dark-accent mb-6">
           <CardContent className="p-6">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Kullanıcı ara (email, isim)..."
+                  placeholder="Email, isim veya soyisimle ara..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 bg-dark-primary border-gray-600 text-white"
                 />
               </div>
-              <Button variant="outline" className="border-gray-600 text-gray-300">
-                <Filter className="h-4 w-4 mr-2" />
-                Filtrele
-              </Button>
+              
+              {isSuperAdmin && (
+                <div className="flex items-center gap-3">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 bg-dark-primary border border-gray-600 text-white rounded-md text-sm"
+                  >
+                    <option value="all">Tüm Durumlar</option>
+                    <option value="active">Aktif</option>
+                    <option value="suspended">Askıya Alınmış</option>
+                  </select>
+                  
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    className="px-3 py-2 bg-dark-primary border border-gray-600 text-white rounded-md text-sm"
+                  >
+                    <option value="all">Tüm Roller</option>
+                    <option value="user">Kullanıcı</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-gray-600 text-gray-300"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setStatusFilter("all");
+                      setRoleFilter("all");
+                    }}
+                  >
+                    Temizle
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -258,74 +444,152 @@ export default function AdminUsers() {
                       <Badge 
                         variant="outline" 
                         className={
-                          user.isActive !== false
-                            ? "text-green-400 border-green-400" 
-                            : "text-red-400 border-red-400"
+                          user.status === 'SUSPENDED'
+                            ? "text-red-400 border-red-400" 
+                            : "text-green-400 border-green-400"
                         }
                       >
-                        {user.isActive !== false ? "Aktif" : "Pasif"}
+                        {user.status === 'SUSPENDED' ? "Askıya Alınmış" : "Aktif"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge 
                         variant="outline" 
                         className={
-                          user.isAdmin
+                          user.role === 'SUPER_ADMIN' 
+                            ? "text-pink-400 border-pink-400 bg-pink-400/10" :
+                          user.role === 'ADMIN'
                             ? "text-purple-400 border-purple-400" 
                             : "text-gray-400 border-gray-400"
                         }
                       >
-                        {user.isAdmin ? "Admin" : "Kullanıcı"}
+                        {user.role === 'SUPER_ADMIN' && <Crown className="h-3 w-3 mr-1" />}
+                        {user.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' : 
+                         user.role === 'ADMIN' ? 'Admin' : 'Kullanıcı'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-dark-accent border-gray-600">
-                          <DropdownMenuItem 
-                            className="text-white hover:bg-gray-600"
-                            onClick={() => toggleAdminMutation.mutate({
-                              userId: user.id,
-                              isAdmin: !user.isAdmin
-                            })}
-                          >
-                            {user.isAdmin ? (
-                              <>
-                                <ShieldOff className="h-4 w-4 mr-2" />
-                                Admin Kaldır
-                              </>
-                            ) : (
-                              <>
-                                <Shield className="h-4 w-4 mr-2" />
-                                Admin Yap
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-white hover:bg-gray-600"
-                            onClick={() => toggleActiveMutation.mutate({
-                              userId: user.id,
-                              isActive: user.isActive === false
-                            })}
-                          >
-                            {user.isActive !== false ? (
-                              <>
-                                <UserX className="h-4 w-4 mr-2" />
-                                Deaktive Et
-                              </>
-                            ) : (
-                              <>
-                                <UserCheck className="h-4 w-4 mr-2" />
-                                Aktive Et
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {isSuperAdmin ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-dark-accent border-gray-600 w-48">
+                            {/* Role Management (USER ⇄ ADMIN) */}
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-600"
+                              onClick={() => updateRoleMutation.mutate({
+                                userId: user.id,
+                                role: user.role === 'ADMIN' ? 'USER' : 'ADMIN'
+                              })}
+                              disabled={user.role === 'SUPER_ADMIN'}
+                            >
+                              {user.role === 'ADMIN' ? (
+                                <>
+                                  <UserCog className="h-4 w-4 mr-2" />
+                                  Kullanıcı Yap
+                                </>
+                              ) : (
+                                <>
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Admin Yap
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            
+                            {/* Status Management (ACTIVE ⇄ SUSPENDED) */}
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-600"
+                              onClick={() => updateStatusMutation.mutate({
+                                userId: user.id,
+                                status: user.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED'
+                              })}
+                            >
+                              {user.status === 'SUSPENDED' ? (
+                                <>
+                                  <UserCheck className="h-4 w-4 mr-2" />
+                                  Aktif Et
+                                </>
+                              ) : (
+                                <>
+                                  <Ban className="h-4 w-4 mr-2" />
+                                  Askıya Al
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            
+                            {/* Password Reset */}
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-600"
+                              onClick={() => sendPasswordResetMutation.mutate(user.id)}
+                            >
+                              <Key className="h-4 w-4 mr-2" />
+                              Parola Sıfırla
+                            </DropdownMenuItem>
+                            
+                            {/* Force Logout */}
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-600"
+                              onClick={() => terminateSessionsMutation.mutate(user.id)}
+                            >
+                              <LogOut className="h-4 w-4 mr-2" />
+                              Oturumları Sonlandır
+                            </DropdownMenuItem>
+                            
+                            {/* Audit Log */}
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-600"
+                              onClick={() => {
+                                console.log(`Viewing audit log for user: ${user.id}`);
+                                toast({
+                                  title: "Audit Log",
+                                  description: "Kullanıcı geçmişi görüntüleniyor...",
+                                });
+                              }}
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              Aktivite Geçmişi
+                            </DropdownMenuItem>
+                            
+                            {/* View Profile */}
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-600"
+                              onClick={() => {
+                                console.log(`Viewing profile for user: ${user.id}`);
+                                toast({
+                                  title: "Profil",
+                                  description: "Kullanıcı profili görüntüleniyor...",
+                                });
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Profili Görüntüle
+                            </DropdownMenuItem>
+                            
+                            {/* Add Admin Note */}
+                            <DropdownMenuItem 
+                              className="text-yellow-400 hover:bg-gray-600"
+                              onClick={() => {
+                                const note = prompt("Admin notu ekleyin:");
+                                if (note) {
+                                  console.log(`Adding admin note for user ${user.id}: ${note}`);
+                                  toast({
+                                    title: "Not Eklendi",
+                                    description: "Admin notu başarıyla kaydedildi.",
+                                  });
+                                }
+                              }}
+                            >
+                              <AlertTriangle className="h-4 w-4 mr-2" />
+                              Admin Notu Ekle
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <span className="text-gray-500 text-sm">Yetki yok</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

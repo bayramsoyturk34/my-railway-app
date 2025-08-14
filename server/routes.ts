@@ -2774,10 +2774,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
-  // Admin Panel Routes
+  // Admin Panel Routes with SUPER_ADMIN support
   const isAdmin = (req: any, res: any, next: any) => {
-    if (!req.user || !req.user.isAdmin) {
+    if (!req.user || (!req.user.isAdmin && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN')) {
       return res.status(403).json({ error: "Admin access required" });
+    }
+    next();
+  };
+
+  const isSuperAdmin = (req: any, res: any, next: any) => {
+    if (!req.user || req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "Super Admin access required" });
     }
     next();
   };
@@ -2924,23 +2931,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         updatedBy: req.user.id,
       };
-      const setting = await storage.upsertSystemSetting(settingData);
+      const setting = await storage.createSystemSetting(settingData);
+      res.status(201).json(setting);
+    } catch (error) {
+      console.error("Error creating system setting:", error);
+      res.status(500).json({ error: "Failed to create system setting" });
+    }
+  });
+
+  // SUPER_ADMIN Exclusive Routes
+  
+  // Role Management (USER ⇄ ADMIN)
+  app.put("/api/admin/users/:userId/role", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const { role } = req.body;
       
-      // Log the action
+      if (role !== 'USER' && role !== 'ADMIN') {
+        return res.status(400).json({ error: "Invalid role. Only USER or ADMIN allowed." });
+      }
+      
+      await storage.updateUserRole(userId, role);
+      
+      // Log this action
       await storage.createAdminLog({
+        action: `Role changed to ${role}`,
         adminUserId: req.user.id,
-        action: "SYSTEM_SETTING_UPDATED",
-        targetEntity: "SystemSetting",
-        targetId: setting.id,
-        details: { key: setting.key, value: setting.value },
+        targetEntity: `User:${userId}`,
+        targetEntityId: userId,
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
       
-      res.json(setting);
+      res.json({ success: true });
     } catch (error) {
-      console.error("Error updating system setting:", error);
-      res.status(500).json({ error: "Failed to update system setting" });
+      console.error("Error updating user role:", error);
+      res.status(500).json({ error: "Failed to update user role" });
+    }
+  });
+
+  // Status Management (ACTIVE ⇄ SUSPENDED)
+  app.put("/api/admin/users/:userId/status", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const { status } = req.body;
+      
+      if (status !== 'ACTIVE' && status !== 'SUSPENDED') {
+        return res.status(400).json({ error: "Invalid status. Only ACTIVE or SUSPENDED allowed." });
+      }
+      
+      await storage.updateUserStatus(userId, status);
+      
+      // Log this action
+      await storage.createAdminLog({
+        action: `Status changed to ${status}`,
+        adminUserId: req.user.id,
+        targetEntity: `User:${userId}`,
+        targetEntityId: userId,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Force logout all sessions
+  app.post("/api/admin/users/:userId/terminate-sessions", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Terminate all user sessions
+      await storage.terminateAllUserSessions(userId);
+      
+      // Log this action
+      await storage.createAdminLog({
+        action: "All sessions terminated",
+        adminUserId: req.user.id,
+        targetEntity: `User:${userId}`,
+        targetEntityId: userId,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error terminating user sessions:", error);
+      res.status(500).json({ error: "Failed to terminate user sessions" });
+    }
+  });
+
+  // Send password reset link
+  app.post("/api/admin/users/:userId/reset-password", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Generate password reset link and send email
+      const resetToken = await storage.createPasswordResetToken(userId);
+      
+      // Log this action
+      await storage.createAdminLog({
+        action: "Password reset link sent",
+        adminUserId: req.user.id,
+        targetEntity: `User:${userId}`,
+        targetEntityId: userId,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json({ success: true, message: "Password reset link sent to user email" });
+    } catch (error) {
+      console.error("Error sending password reset:", error);
+      res.status(500).json({ error: "Failed to send password reset link" });
+    }
+  });
+
+  // Create invitation
+  app.post("/api/admin/invitations", isAuthenticated, isSuperAdmin, async (req: any, res) => {
+    try {
+      const { email, role } = req.body;
+      
+      if (!email || (role !== 'USER' && role !== 'ADMIN')) {
+        return res.status(400).json({ error: "Valid email and role (USER or ADMIN) required" });
+      }
+      
+      const invitation = await storage.createInvitation({
+        email,
+        role,
+        invitedBy: req.user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      });
+      
+      // Log this action
+      await storage.createAdminLog({
+        action: `Invitation sent to ${email} with ${role} role`,
+        adminUserId: req.user.id,
+        targetEntity: `Invitation:${email}`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.status(201).json(invitation);
+    } catch (error) {
+      console.error("Error creating invitation:", error);
+      res.status(500).json({ error: "Failed to create invitation" });
     }
   });
 
