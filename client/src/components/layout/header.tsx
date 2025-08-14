@@ -58,7 +58,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         <Menu className="h-6 w-6" />
       </Button>
       
-      <h1 className="text-xl font-bold text-white">PuantajPro</h1>
+      <h1 className="text-xl font-bold text-white">puantropls</h1>
       
       <div className="flex items-center gap-2">
         {user && (

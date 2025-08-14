@@ -112,7 +112,7 @@ export default function Login() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">Giriş Yap</CardTitle>
           <CardDescription className="text-gray-400">
-            PuantajPro hesabınıza giriş yapın
+            puantropls hesabınıza giriş yapın
           </CardDescription>
         </CardHeader>
         <CardContent>

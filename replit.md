@@ -1,6 +1,6 @@
 # Overview
 
-PuantajPro is a full-stack web application designed for personnel timesheet and project management, primarily for businesses in Turkey. It enables tracking employee work hours, managing projects, handling financial transactions, and maintaining personnel records. Key features include a dark-themed interface with Turkish language support, comprehensive CRUD operations, a multi-item quote system, an integrated company directory with messaging, and a robust authentication and administrative system with data isolation. The business vision is to provide a comprehensive, user-friendly solution for managing various aspects of business operations efficiently.
+puantropls is a full-stack web application designed for personnel timesheet and project management, primarily for businesses in Turkey. It enables tracking employee work hours, managing projects, handling financial transactions, and maintaining personnel records. Key features include a dark-themed interface with Turkish language support, comprehensive CRUD operations, a multi-item quote system, an integrated company directory with messaging, and a robust authentication and administrative system with data isolation. The business vision is to provide a comprehensive, user-friendly solution for managing various aspects of business operations efficiently.
 
 # User Preferences
 

@@ -169,7 +169,7 @@ export default function AdminSettings() {
                       <Label htmlFor="app-name" className="text-gray-300">Uygulama Adı</Label>
                       <Input
                         id="app-name"
-                        defaultValue={settingsMap.app_name || "PuantajPro"}
+                        defaultValue={settingsMap.app_name || "puantropls"}
                         className="bg-dark-primary border-gray-600 text-white"
                         onChange={(e) => handleSettingChange("app_name", e.target.value)}
                       />

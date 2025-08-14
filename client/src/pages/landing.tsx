@@ -35,7 +35,7 @@ export default function Landing() {
       
       toast({
         title: "Başarıyla giriş yapıldı!",
-        description: "PuantajPro'ya hoş geldiniz.",
+        description: "puantropls'ya hoş geldiniz.",
       });
     },
     onError: (error: any) => {
@@ -57,7 +57,7 @@ export default function Landing() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            PuantajPro
+            puantropls
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
             Türkiye'nin en gelişmiş personel puantaj ve proje yönetim sistemi. 
@@ -181,7 +181,7 @@ export default function Landing() {
             <CardHeader>
               <CardTitle className="text-2xl text-white">Hemen Başlayın</CardTitle>
               <CardDescription className="text-gray-300">
-                PuantajPro ile iş süreçlerinizi dijitalleştirin ve verimliliğinizi artırın.
+                puantropls ile iş süreçlerinizi dijitalleştirin ve verimliliğinizi artırın.
               </CardDescription>
             </CardHeader>
             <CardContent>

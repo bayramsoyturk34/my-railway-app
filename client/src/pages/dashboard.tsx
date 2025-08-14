@@ -156,7 +156,7 @@ export default function Dashboard() {
       <div className="min-h-screen bg-dark-primary text-white">
         <header className="flex justify-between items-center p-4 bg-dark-primary border-b border-dark-accent">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-white">PuantajPro</h1>
+            <h1 className="text-xl font-bold text-white">puantropls</h1>
           </div>
           
           <div className="flex items-center gap-4">
