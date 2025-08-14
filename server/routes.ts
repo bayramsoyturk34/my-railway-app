@@ -67,8 +67,10 @@ async function updateQuoteTotal(quoteId: string) {
 // Maintenance mode middleware - check before auth
 const checkMaintenanceMode = async (req: any, res: any, next: any) => {
   try {
-    // Skip maintenance check for auth endpoints and admin endpoints
-    if (req.path.startsWith('/api/auth') || req.path.startsWith('/api/admin')) {
+    // Skip maintenance check for auth endpoints, admin endpoints, and maintenance status
+    if (req.path.startsWith('/api/auth') || 
+        req.path.startsWith('/api/admin') || 
+        req.path === '/api/maintenance/status') {
       return next();
     }
 
@@ -103,10 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   
-  // Apply maintenance mode check to all routes except auth and admin
-  app.use(checkMaintenanceMode);
-
-  // Maintenance mode check endpoint
+  // Maintenance mode check endpoint - BEFORE middleware
   app.get("/api/maintenance/status", async (req, res) => {
     try {
       const settings = await storage.getSystemSettings();
@@ -121,6 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Always return 200 for status check, regardless of maintenance mode
       res.json({ 
         maintenance: isMaintenanceMode,
         message: isMaintenanceMode ? "Sistem bakım modunda" : "Sistem normal çalışıyor"
@@ -129,6 +129,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Maintenance status check failed" });
     }
   });
+
+  // Apply maintenance mode check to all routes except auth and admin
+  app.use(checkMaintenanceMode);
 
   // Auth endpoints handled in auth.ts
   // Personnel routes
