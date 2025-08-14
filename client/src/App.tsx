@@ -31,6 +31,7 @@ import AdminSettings from "@/pages/admin/settings";
 import AdminAnnouncements from "@/pages/admin/announcements";
 import AdminLogs from "@/pages/admin/logs";
 import AdminSessions from "@/pages/admin/sessions";
+import Account from "@/pages/account";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -86,6 +87,7 @@ function Router() {
       <Route path="/admin/announcements" component={AdminAnnouncements} />
       <Route path="/admin/logs" component={AdminLogs} />
       <Route path="/admin/sessions" component={AdminSessions} />
+      <Route path="/account" component={Account} />
       <Route component={Dashboard} />
       </Switch>
     </>

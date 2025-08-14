@@ -284,6 +284,56 @@ export async function setupAuth(app: Express) {
       res.json({ success: true }); // Still return success even if cleanup fails
     }
   });
+
+  // Update user profile
+  app.put("/api/auth/profile", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { firstName, lastName, email } = req.body;
+      
+      const updatedUser = await storage.updateUser(userId, {
+        firstName,
+        lastName,
+        email,
+        updatedAt: new Date()
+      });
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Change password
+  app.post("/api/auth/change-password", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { currentPassword, newPassword } = req.body;
+      
+      // Get current user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify current password
+      if (user.password !== currentPassword) {
+        return res.status(400).json({ message: "Mevcut şifre yanlış" });
+      }
+      
+      // Update password
+      await storage.updateUser(userId, {
+        password: newPassword,
+        updatedAt: new Date()
+      });
+      
+      res.json({ message: "Şifre başarıyla değiştirildi" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Failed to change password" });
+    }
+  });
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
