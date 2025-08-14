@@ -1,0 +1,95 @@
+
+> rest-express@1.0.0 dev
+9:40:14 AM [express] serving on port 5000s
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Auth successful for user: eynffxrvr1e
+9:40:22 AM [express] GET /api/auth/user 304 in 441ms :: {"id":"eynffxrvr1e","email":"modacizimtasari…
+9:40:22 AM [express] GET /api/admin/dashboard-stats 200 in 304ms :: {"totalUsers":5,"activeUsers":5,…
+9:40:22 AM [express] GET /api/admin/system-metrics 200 in 368ms :: []
+9:40:22 AM [express] GET /api/admin/logs 200 in 361ms :: []
+9:40:53 AM [express] GET /api/admin/dashboard-stats 304 in 481ms :: {"totalUsers":5,"activeUsers":5,…
+9:40:58 AM [express] GET /api/notifications 304 in 359ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+All transactions: [
+  {
+    type: 'income',
+    amount: '5000.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: asd'
+  }
+]
+Financial summary: {
+  totalIncome: 5000,
+  totalExpenses: 0,
+  netBalance: 5000,
+  customerTasks: { total: 10800, pending: 1, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 0,
+    pending: 0,
+    approvedCount: 0,
+    pendingCount: 0
+  },
+  customerPayments: { total: 11000, thisMonth: 11000, count: 2 }
+}
+9:40:58 AM [express] GET /api/financial-summary 304 in 532ms :: {"totalIncome":5000,"totalExpenses":…
+9:41:03 AM [express] GET /api/notifications 304 in 177ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+9:41:09 AM [express] GET /api/notifications 304 in 179ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+Auth successful for user: eynffxrvr1e
+9:41:13 AM [express] GET /api/auth/user 304 in 177ms :: {"id":"eynffxrvr1e","email":"modacizimtasari…
+9:41:14 AM [express] GET /api/notifications 304 in 175ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+All transactions: [
+  {
+    type: 'income',
+    amount: '5000.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: asd'
+  }
+]
+Financial summary: {
+  totalIncome: 5000,
+  totalExpenses: 0,
+  netBalance: 5000,
+  customerTasks: { total: 10800, pending: 1, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 0,
+    pending: 0,
+    approvedCount: 0,
+    pendingCount: 0
+  },
+  customerPayments: { total: 11000, thisMonth: 11000, count: 2 }
+}
+9:41:14 AM [express] GET /api/financial-summary 304 in 741ms :: {"totalIncome":5000,"totalExpenses":…
+Auth successful for user: eynffxrvr1e
+Auth successful for user: eynffxrvr1e
+9:41:27 AM [express] GET /api/auth/user 200 in 182ms :: {"id":"eynffxrvr1e","email":"modacizimtasari…
+9:41:27 AM [express] GET /api/admin/dashboard-stats 304 in 319ms :: {"totalUsers":5,"activeUsers":5,…
+9:41:27 AM [express] GET /api/admin/system-metrics 304 in 374ms :: []
+9:41:27 AM [express] GET /api/admin/logs 304 in 374ms :: []
+9:41:53 AM [express] GET /api/notifications 304 in 364ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+All transactions: [
+  {
+    type: 'income',
+    amount: '5000.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: asd'
+  }
+]
+Financial summary: {
+  totalIncome: 5000,
+  totalExpenses: 0,
+  netBalance: 5000,
+  customerTasks: { total: 10800, pending: 1, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 0,
+    pending: 0,
+    approvedCount: 0,
+    pendingCount: 0
+  },
+  customerPayments: { total: 11000, thisMonth: 11000, count: 2 }
+}
+9:41:53 AM [express] GET /api/financial-summary 304 in 718ms :: {"totalIncome":5000,"totalExpenses":…
+9:41:58 AM [express] GET /api/notifications 304 in 182ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+9:42:03 AM [express] GET /api/notifications 304 in 174ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+9:42:09 AM [express] GET /api/notifications 304 in 177ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…
+9:42:14 AM [express] GET /api/notifications 304 in 176ms :: [{"id":"db6464b8-a7b8-433f-8bea-b47bed96…

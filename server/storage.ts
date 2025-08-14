@@ -53,6 +53,10 @@ export interface IStorage {
   
   // Admin operations
   getAllUsers(): Promise<User[]>;
+  updateUserAdminStatus(userId: string, isAdmin: boolean): Promise<void>;
+  updateUserActiveStatus(userId: string, isActive: boolean): Promise<void>;
+  getSystemSettings(): Promise<SystemSetting[]>;
+  saveSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting>;
   getAdminStats(): Promise<{
     totalUsers: number;
     activeUsers: number;
@@ -2007,9 +2011,59 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Admin Panel Operations
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users)
+      .orderBy(desc(users.createdAt));
+  }
+
   async getAllUsersForAdmin(): Promise<User[]> {
     return await db.select().from(users)
       .orderBy(desc(users.createdAt));
+  }
+
+  async updateUserAdminStatus(userId: string, isAdmin: boolean): Promise<void> {
+    await db.update(users)
+      .set({ isAdmin })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserActiveStatus(userId: string, isActive: boolean): Promise<void> {
+    await db.update(users)
+      .set({ isActive })
+      .where(eq(users.id, userId));
+  }
+
+  async getSystemSettings(): Promise<SystemSetting[]> {
+    return await db.select().from(systemSettings)
+      .orderBy(desc(systemSettings.createdAt));
+  }
+
+  async saveSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting> {
+    // Check if setting exists
+    const existingSetting = await db.select().from(systemSettings)
+      .where(eq(systemSettings.key, setting.key))
+      .limit(1);
+
+    if (existingSetting.length > 0) {
+      // Update existing setting
+      const [result] = await db.update(systemSettings)
+        .set({ 
+          value: setting.value,
+          updatedAt: new Date()
+        })
+        .where(eq(systemSettings.key, setting.key))
+        .returning();
+      return result;
+    } else {
+      // Create new setting
+      const [result] = await db.insert(systemSettings)
+        .values({
+          ...setting,
+          id: randomUUID()
+        })
+        .returning();
+      return result;
+    }
   }
 
   async createAdminLog(log: InsertAdminLog): Promise<AdminLog> {

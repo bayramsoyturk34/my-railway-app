@@ -25,6 +25,10 @@ import Reports from "@/pages/reports";
 import AdminDashboard from "@/pages/admin-dashboard";
 import BulkSMS from "@/pages/bulk-sms";
 import AdminPanel from "@/pages/admin/dashboard";
+import AdminUsers from "@/pages/admin/users";
+import AdminSettings from "@/pages/admin/settings";
+import AdminAnnouncements from "@/pages/admin/announcements";
+import AdminLogs from "@/pages/admin/logs";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -77,6 +81,10 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/bulk-sms" component={BulkSMS} />
       <Route path="/admin" component={AdminPanel} />
+      <Route path="/admin/users" component={AdminUsers} />
+      <Route path="/admin/settings" component={AdminSettings} />
+      <Route path="/admin/announcements" component={AdminAnnouncements} />
+      <Route path="/admin/logs" component={AdminLogs} />
       <Route component={Dashboard} />
     </Switch>
   );

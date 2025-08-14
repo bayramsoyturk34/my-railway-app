@@ -2802,6 +2802,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin users endpoints
+  app.get('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.put('/api/admin/users/:userId/admin', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { isAdmin: makeAdmin } = req.body;
+      await storage.updateUserAdminStatus(userId, makeAdmin);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user admin status:", error);
+      res.status(500).json({ message: "Failed to update admin status" });
+    }
+  });
+
+  app.put('/api/admin/users/:userId/active', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { isActive } = req.body;
+      await storage.updateUserActiveStatus(userId, isActive);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user active status:", error);
+      res.status(500).json({ message: "Failed to update active status" });
+    }
+  });
+
+  // Admin settings endpoints
+  app.get('/api/admin/settings', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching system settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.post('/api/admin/settings', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const setting = req.body;
+      await storage.saveSystemSetting(setting);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error saving setting:", error);
+      res.status(500).json({ message: "Failed to save setting" });
+    }
+  });
+
   app.get("/api/admin/logs", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
