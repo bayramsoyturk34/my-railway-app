@@ -926,7 +926,23 @@ export const insertSystemMetricSchema = createInsertSchema(systemMetrics).omit({
   recordedAt: true,
 });
 
-// Types for admin tables
+// Admin Notes Table - for admin comments on users
+export const adminNotes = pgTable("admin_notes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  targetUserId: varchar("target_user_id").notNull(), // User being noted
+  adminUserId: varchar("admin_user_id").notNull(), // Admin making the note
+  note: text("note").notNull(),
+  category: text("category").default("general"), // "general", "warning", "positive", "violation"
+  isPrivate: boolean("is_private").default(true), // Private to admins only
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertAdminNoteSchema = createInsertSchema(adminNotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for admin panel
 export type AdminLog = typeof adminLogs.$inferSelect;
 export type InsertAdminLog = z.infer<typeof insertAdminLogSchema>;
 
@@ -941,3 +957,6 @@ export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
 
 export type SystemMetric = typeof systemMetrics.$inferSelect;
 export type InsertSystemMetric = z.infer<typeof insertSystemMetricSchema>;
+
+export type AdminNote = typeof adminNotes.$inferSelect;
+export type InsertAdminNote = z.infer<typeof insertAdminNoteSchema>;

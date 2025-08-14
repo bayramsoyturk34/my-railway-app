@@ -589,14 +589,26 @@ export default function AdminUsers() {
                               {/* Add Admin Note */}
                               <DropdownMenuItem 
                                 className="text-yellow-400 hover:bg-gray-600"
-                                onClick={() => {
+                                onClick={async () => {
                                   const note = prompt("Admin notu ekleyin:");
-                                  if (note) {
-                                    console.log(`Adding admin note for user ${user.id}: ${note}`);
-                                    toast({
-                                      title: "Not Eklendi",
-                                      description: "Admin notu başarıyla kaydedildi.",
-                                    });
+                                  if (note && note.trim()) {
+                                    try {
+                                      await apiRequest(`/api/admin/users/${user.id}/notes`, {
+                                        method: "POST",
+                                        body: JSON.stringify({ note: note.trim(), category: "general" }),
+                                        headers: { "Content-Type": "application/json" }
+                                      });
+                                      toast({
+                                        title: "Başarılı",
+                                        description: "Admin notu başarıyla kaydedildi.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "Hata",
+                                        description: "Admin notu kaydedilemedi.",
+                                        variant: "destructive"
+                                      });
+                                    }
                                   }
                                 }}
                               >
@@ -721,15 +733,27 @@ export default function AdminUsers() {
                     variant="outline"
                     size="sm"
                     className="border-yellow-600 text-yellow-400 hover:bg-yellow-600/10 text-xs px-2"
-                    onClick={() => {
+                    onClick={async () => {
                       const note = prompt("Admin notu ekleyin:");
-                      if (note) {
-                        console.log(`Adding admin note for user ${selectedUser.id}: ${note}`);
-                        setShowUserProfile(false);
-                        toast({
-                          title: "Not Eklendi",
-                          description: "Admin notu başarıyla kaydedildi.",
-                        });
+                      if (note && note.trim()) {
+                        try {
+                          await apiRequest(`/api/admin/users/${selectedUser.id}/notes`, {
+                            method: "POST",
+                            body: JSON.stringify({ note: note.trim(), category: "general" }),
+                            headers: { "Content-Type": "application/json" }
+                          });
+                          setShowUserProfile(false);
+                          toast({
+                            title: "Başarılı",
+                            description: "Admin notu başarıyla kaydedildi.",
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Hata",
+                            description: "Admin notu kaydedilemedi.",
+                            variant: "destructive"
+                          });
+                        }
                       }
                     }}
                   >

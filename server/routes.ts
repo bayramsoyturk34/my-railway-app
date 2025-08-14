@@ -2944,6 +2944,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Notes endpoints
+  app.get("/api/admin/users/:userId/notes", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const notes = await storage.getAdminNotesByUser(userId);
+      res.json(notes);
+    } catch (error) {
+      console.error("Error fetching admin notes:", error);
+      res.status(500).json({ error: "Failed to fetch admin notes" });
+    }
+  });
+
+  app.post("/api/admin/users/:userId/notes", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const { note, category = "general" } = req.body;
+      
+      const noteData = {
+        targetUserId: userId,
+        adminUserId: req.user.id,
+        note,
+        category,
+        isPrivate: true
+      };
+      
+      const adminNote = await storage.createAdminNote(noteData);
+      
+      // Also create an admin log for audit purposes
+      await storage.createAdminLog({
+        adminUserId: req.user.id,
+        action: "ADMIN_NOTE_ADDED",
+        targetEntity: "User",
+        targetId: userId,
+        details: { noteId: adminNote.id, category, notePreview: note.substring(0, 50) },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(201).json(adminNote);
+    } catch (error) {
+      console.error("Error creating admin note:", error);
+      res.status(500).json({ error: "Failed to create admin note" });
+    }
+  });
+
   // Admin sessions endpoints
   app.get("/api/admin/sessions", isAuthenticated, isAdmin, async (req: any, res) => {
     try {

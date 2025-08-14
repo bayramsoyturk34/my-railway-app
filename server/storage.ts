@@ -35,11 +35,12 @@ import {
   type Announcement, type InsertAnnouncement,
   type UserSession, type InsertUserSession,
   type SystemMetric, type InsertSystemMetric,
+  type AdminNote, type InsertAdminNote,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
   companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users,
   firmInvites, presenceLogs, messageDrafts, autoResponders, directThreads, directMessages, imageUploads, autoReplyLogs,
-  smsHistory, smsTemplates, adminLogs, systemSettings, announcements, userSessions, systemMetrics
+  smsHistory, smsTemplates, adminLogs, systemSettings, announcements, userSessions, systemMetrics, adminNotes
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
@@ -63,6 +64,14 @@ export interface IStorage {
     demoUsers: number;
     todayRegistrations: number;
   }>;
+
+  // Admin Notes
+  getAdminNotesByUser(targetUserId: string): Promise<AdminNote[]>;
+  createAdminNote(note: InsertAdminNote): Promise<AdminNote>;
+  getAdminLogsRecent(): Promise<AdminLog[]>;
+  createAdminLog(log: InsertAdminLog): Promise<AdminLog>;
+  getSystemMetrics(): Promise<SystemMetric[]>;
+  createSystemMetric(metric: InsertSystemMetric): Promise<SystemMetric>;
 
   // Personnel
   getPersonnel(): Promise<Personnel[]>;
@@ -2380,6 +2389,24 @@ export class DatabaseStorage implements IStorage {
     };
     console.log('System setting created:', settingData);
     return settingData;
+  }
+
+  // Admin Notes operations
+  async getAdminNotesByUser(targetUserId: string): Promise<AdminNote[]> {
+    return await db.select().from(adminNotes)
+      .where(eq(adminNotes.targetUserId, targetUserId))
+      .orderBy(desc(adminNotes.createdAt));
+  }
+
+  async createAdminNote(note: InsertAdminNote): Promise<AdminNote> {
+    const [result] = await db.insert(adminNotes).values(note).returning();
+    return result;
+  }
+
+  async getAdminLogsRecent(): Promise<AdminLog[]> {
+    return await db.select().from(adminLogs)
+      .orderBy(desc(adminLogs.createdAt))
+      .limit(50);
   }
 }
 
