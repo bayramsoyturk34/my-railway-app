@@ -30,6 +30,7 @@ import {
   type ImageUpload, type InsertImageUpload,
   type SMSHistory, type InsertSMSHistory,
   type SMSTemplate, type InsertSMSTemplate,
+  type PaymentNotification, type InsertPaymentNotification,
   type AdminLog, type InsertAdminLog,
   type SystemSetting, type InsertSystemSetting,
   type Announcement, type InsertAnnouncement,
@@ -40,7 +41,7 @@ import {
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
   companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users,
   firmInvites, presenceLogs, messageDrafts, autoResponders, directThreads, directMessages, imageUploads, autoReplyLogs,
-  smsHistory, smsTemplates, adminLogs, systemSettings, announcements, userSessions, systemMetrics, adminNotes
+  smsHistory, smsTemplates, paymentNotifications, adminLogs, systemSettings, announcements, userSessions, systemMetrics, adminNotes
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
@@ -242,6 +243,12 @@ export interface IStorage {
   updateSMSHistory(id: string, updates: Partial<SMSHistory>): Promise<SMSHistory | undefined>;
   getSMSTemplates(userId: string): Promise<SMSTemplate[]>;
   createSMSTemplate(userId: string, template: InsertSMSTemplate): Promise<SMSTemplate>;
+
+  // Payment Notifications
+  createPaymentNotification(userId: string, notification: InsertPaymentNotification): Promise<PaymentNotification>;
+  getPaymentNotifications(): Promise<PaymentNotification[]>;
+  getPaymentNotificationsByUser(userId: string): Promise<PaymentNotification[]>;
+  updatePaymentNotificationStatus(id: string, status: string, adminNote?: string, processedBy?: string): Promise<PaymentNotification | undefined>;
 
   // Admin Panel Operations
   getAllUsersForAdmin(): Promise<User[]>;
@@ -2082,6 +2089,39 @@ export class DatabaseStorage implements IStorage {
       ...template,
       userId
     }).returning();
+    return result;
+  }
+
+  // Payment Notifications
+  async createPaymentNotification(userId: string, notification: InsertPaymentNotification): Promise<PaymentNotification> {
+    const [result] = await db.insert(paymentNotifications).values({
+      ...notification,
+      userId
+    }).returning();
+    return result;
+  }
+
+  async getPaymentNotifications(): Promise<PaymentNotification[]> {
+    return await db.select().from(paymentNotifications)
+      .orderBy(desc(paymentNotifications.createdAt));
+  }
+
+  async getPaymentNotificationsByUser(userId: string): Promise<PaymentNotification[]> {
+    return await db.select().from(paymentNotifications)
+      .where(eq(paymentNotifications.userId, userId))
+      .orderBy(desc(paymentNotifications.createdAt));
+  }
+
+  async updatePaymentNotificationStatus(id: string, status: string, adminNote?: string, processedBy?: string): Promise<PaymentNotification | undefined> {
+    const [result] = await db.update(paymentNotifications)
+      .set({
+        status,
+        adminNote,
+        processedBy,
+        processedAt: new Date()
+      })
+      .where(eq(paymentNotifications.id, id))
+      .returning();
     return result;
   }
 

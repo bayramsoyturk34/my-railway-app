@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { z } from "zod";
 import crypto from "crypto";
 import multer from "multer";
+import nodemailer from "nodemailer";
 import { 
   insertPersonnelSchema, 
   insertProjectSchema, 
@@ -37,7 +38,8 @@ import {
   insertDirectMessageSchema,
   insertImageUploadSchema,
   insertSMSHistorySchema,
-  insertSMSTemplateSchema
+  insertSMSTemplateSchema,
+  insertPaymentNotificationSchema
 } from "@shared/schema";
 
 // Helper function to update quote total
@@ -3053,6 +3055,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to create admin note" });
     }
   });
+
+  // Payment Notification endpoints
+  app.post("/api/payment/notify", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const paymentData = insertPaymentNotificationSchema.parse(req.body);
+      
+      // Create payment notification record
+      const notification = await storage.createPaymentNotification(userId, paymentData);
+      
+      // Send email notification to admin
+      await sendPaymentNotificationEmail(notification, req.user);
+      
+      res.status(201).json({
+        success: true,
+        message: "Ödeme bildiriminiz alındı. En kısa sürede işleme alınacaktır.",
+        notificationId: notification.id
+      });
+    } catch (error) {
+      console.error("Error creating payment notification:", error);
+      res.status(500).json({ error: "Failed to create payment notification" });
+    }
+  });
+
+  // Email sending function for payment notifications
+  async function sendPaymentNotificationEmail(notification: any, user: any) {
+    try {
+      // Create transporter (using Gmail as example - can be configured)
+      const transporter = nodemailer.createTransporter({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER || 'admin@puantropls.com',
+          pass: process.env.EMAIL_PASSWORD || 'defaultpassword'
+        }
+      });
+
+      const emailContent = `
+Yeni Ödeme Bildirimi - puantropls
+
+Kullanıcı Bilgileri:
+- Email: ${user.email}
+- Kullanıcı ID: ${user.id}
+
+Ödeme Detayları:
+- Ödeme Tarihi: ${notification.paymentDate}
+- Gönderen: ${notification.senderName}
+- Banka: ${notification.senderBank}
+- Tutar: ${notification.amount}
+- Açıklama: ${notification.description || 'Belirtilmemiş'}
+
+Bu ödeme bildirimini admin panelinden onaylayabilirsiniz.
+
+puantropls Admin Sistemi
+      `;
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER || 'admin@puantropls.com',
+        to: 'admin@puantropls.com',
+        subject: `Yeni Ödeme Bildirimi - ${user.email}`,
+        text: emailContent
+      });
+
+      console.log('Payment notification email sent successfully');
+    } catch (error) {
+      console.error('Error sending payment notification email:', error);
+      // Don't throw error - notification should still be created even if email fails
+    }
+  }
 
   // Admin sessions endpoints
   app.get("/api/admin/sessions", isAuthenticated, isAdmin, async (req: any, res) => {

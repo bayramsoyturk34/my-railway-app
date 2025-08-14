@@ -27,6 +27,9 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false), // Admin flag
   status: varchar("status").default("ACTIVE"), // User status: ACTIVE, SUSPENDED
   role: varchar("role").default("USER"), // User role: USER, ADMIN, SUPER_ADMIN
+  subscriptionType: varchar("subscription_type").default("DEMO"), // DEMO, PRO
+  subscriptionStatus: varchar("subscription_status").default("ACTIVE"), // ACTIVE, EXPIRED, PENDING
+  subscriptionEndDate: timestamp("subscription_end_date"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -844,6 +847,36 @@ export type InsertSMSHistory = z.infer<typeof insertSMSHistorySchema>;
 
 export type SMSTemplate = typeof smsTemplates.$inferSelect;
 export type InsertSMSTemplate = z.infer<typeof insertSMSTemplateSchema>;
+
+// Payment Notifications
+export const paymentNotifications = pgTable("payment_notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users table
+  paymentDate: timestamp("payment_date").notNull(),
+  senderName: text("sender_name").notNull(),
+  senderBank: text("sender_bank").notNull(),
+  amount: text("amount").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("pending"), // "pending", "approved", "rejected"
+  adminNote: text("admin_note"),
+  processedBy: varchar("processed_by"), // Admin user who processed
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertPaymentNotificationSchema = createInsertSchema(paymentNotifications).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  status: true,
+  processedBy: true,
+  processedAt: true,
+}).extend({
+  adminNote: z.string().optional().nullable(),
+});
+
+export type PaymentNotification = typeof paymentNotifications.$inferSelect;
+export type InsertPaymentNotification = z.infer<typeof insertPaymentNotificationSchema>;
 
 // Admin Panel Tables
 export const adminLogs = pgTable("admin_logs", {
