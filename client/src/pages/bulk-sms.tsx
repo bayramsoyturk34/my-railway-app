@@ -17,7 +17,7 @@ interface SMSTemplate {
   id: string;
   name: string;
   content: string;
-  category: 'personnel' | 'customer' | 'general';
+  category: 'personnel' | 'customer' | 'general' | 'campaign' | 'holiday';
 }
 
 interface SMSRecipient {
@@ -38,6 +38,7 @@ interface SMSHistory {
 }
 
 const smsTemplates: SMSTemplate[] = [
+  // Personnel Templates
   {
     id: 'salary-notification',
     name: 'Maaş Bildirimi',
@@ -50,6 +51,8 @@ const smsTemplates: SMSTemplate[] = [
     content: 'Sayın {name}, yarın saat {time}\'da toplantımız bulunmaktadır. Katılımınızı bekleriz.',
     category: 'personnel'
   },
+  
+  // Customer Templates
   {
     id: 'project-update',
     name: 'Proje Güncellemesi',
@@ -62,11 +65,105 @@ const smsTemplates: SMSTemplate[] = [
     content: 'Sayın {name}, {amount} TL tutarındaki borcunuzun son ödeme tarihi yaklaşmaktadır.',
     category: 'customer'
   },
+  
+  // Campaign Templates
   {
-    id: 'holiday-greeting',
-    name: 'Bayram Tebriği',
-    content: 'Bayramınız mübarek olsun! Sağlık ve mutluluk dolu günler dileriz.',
-    category: 'general'
+    id: 'discount-campaign',
+    name: 'İndirim Kampanyası',
+    content: 'Özel fırsat! {discount}% indirimli fiyatlarla hizmetlerimizden yararlanın. Son tarih: {date}',
+    category: 'campaign'
+  },
+  {
+    id: 'new-service',
+    name: 'Yeni Hizmet Duyurusu',
+    content: 'Yeni hizmetimiz {service} artık mevcut! Detaylar için bizi arayın: {phone}',
+    category: 'campaign'
+  },
+  {
+    id: 'feedback-request',
+    name: 'Geri Bildirim Talebi',
+    content: 'Memnuniyet anketimize katılır mısınız? Görüşleriniz bizim için değerli: {link}',
+    category: 'campaign'
+  },
+  {
+    id: 'seasonal-offer',
+    name: 'Mevsimlik Teklifler',
+    content: 'Bu ay özel! {service} hizmeti için %{discount} indirim. Fırsatı kaçırmayın!',
+    category: 'campaign'
+  },
+  
+  // Official Holiday Templates
+  {
+    id: 'new-year',
+    name: 'Yılbaşı Kutlaması',
+    content: 'Yeni yılınız kutlu olsun! 2024 yılında nice başarılar ve mutluluklar dileriz.',
+    category: 'holiday'
+  },
+  {
+    id: 'ramadan-bayram',
+    name: 'Ramazan Bayramı',
+    content: 'Ramazan Bayramınız mübarek olsun! Sağlık, huzur ve bereket dolu günler dileriz.',
+    category: 'holiday'
+  },
+  {
+    id: 'kurban-bayram',
+    name: 'Kurban Bayramı',
+    content: 'Kurban Bayramınız mübarek olsun! Barış, kardeşlik ve paylaşımın hakim olduğu günler dileriz.',
+    category: 'holiday'
+  },
+  {
+    id: 'republic-day',
+    name: '29 Ekim Cumhuriyet Bayramı',
+    content: '29 Ekim Cumhuriyet Bayramımız kutlu olsun! Atatürk\'ün izinde nice yıllar.',
+    category: 'holiday'
+  },
+  {
+    id: 'national-sovereignty',
+    name: '23 Nisan Ulusal Egemenlik',
+    content: '23 Nisan Ulusal Egemenlik ve Çocuk Bayramımız kutlu olsun! Çocuklarımızın geleceği aydınlık olsun.',
+    category: 'holiday'
+  },
+  {
+    id: 'youth-day',
+    name: '19 Mayıs Gençlik Bayramı',
+    content: '19 Mayıs Atatürk\'ü Anma, Gençlik ve Spor Bayramımız kutlu olsun! Gençlerimiz ülkemizin geleceğidir.',
+    category: 'holiday'
+  },
+  {
+    id: 'victory-day',
+    name: '30 Ağustos Zafer Bayramı',
+    content: '30 Ağustos Zafer Bayramımız kutlu olsun! Büyük zaferin yıldönümünde gurur duyuyoruz.',
+    category: 'holiday'
+  },
+  {
+    id: 'teachers-day',
+    name: '24 Kasım Öğretmenler Günü',
+    content: 'Tüm öğretmenlerimizin 24 Kasım Öğretmenler Günü kutlu olsun! Emekleriniz için teşekkürler.',
+    category: 'holiday'
+  },
+  {
+    id: 'mothers-day',
+    name: 'Anneler Günü',
+    content: 'Tüm annelerimizin Anneler Günü kutlu olsun! Sevgi ve fedakarlıklarınız için teşekkürler.',
+    category: 'holiday'
+  },
+  {
+    id: 'fathers-day',
+    name: 'Babalar Günü',
+    content: 'Tüm babalarımızın Babalar Günü kutlu olsun! Destekleriniz ve sevginiz için teşekkürler.',
+    category: 'holiday'
+  },
+  {
+    id: 'womens-day',
+    name: '8 Mart Kadınlar Günü',
+    content: 'Tüm kadınlarımızın 8 Mart Dünya Kadınlar Günü kutlu olsun! Güçlü ve değerlisiniz.',
+    category: 'holiday'
+  },
+  {
+    id: 'workers-day',
+    name: '1 Mayıs İşçi Bayramı',
+    content: 'Tüm çalışanlarımızın 1 Mayıs İşçi Bayramı kutlu olsun! Emekleriniz için teşekkürler.',
+    category: 'holiday'
   }
 ];
 
@@ -76,6 +173,7 @@ export default function BulkSMSPage() {
   const [customMessage, setCustomMessage] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [recipientType, setRecipientType] = useState<'all' | 'personnel' | 'customer'>('all');
+  const [templateCategory, setTemplateCategory] = useState<'all' | 'personnel' | 'customer' | 'campaign' | 'holiday'>('all');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -110,6 +208,10 @@ export default function BulkSMSPage() {
 
   const filteredRecipients = allRecipients.filter(r => 
     recipientType === 'all' || r.type === recipientType
+  );
+
+  const filteredTemplates = smsTemplates.filter(t => 
+    templateCategory === 'all' || t.category === templateCategory
   );
 
   const sendSMSMutation = useMutation({
@@ -231,19 +333,48 @@ export default function BulkSMSPage() {
                   SMS Şablonları
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
-                  <SelectTrigger className="bg-dark-accent border-gray-600 text-white">
-                    <SelectValue placeholder="Hazır şablon seçin (opsiyonel)" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-dark-secondary border-gray-600">
-                    {smsTemplates.map(template => (
-                      <SelectItem key={template.id} value={template.id} className="text-white hover:bg-dark-accent">
-                        {template.name}
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-gray-300">Kategori Filtresi</Label>
+                  <Select value={templateCategory} onValueChange={(value: any) => setTemplateCategory(value)}>
+                    <SelectTrigger className="bg-dark-accent border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-dark-secondary border-gray-600">
+                      <SelectItem value="all" className="text-white hover:bg-dark-accent">
+                        Tüm Şablonlar
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      <SelectItem value="personnel" className="text-white hover:bg-dark-accent">
+                        Personel Şablonları
+                      </SelectItem>
+                      <SelectItem value="customer" className="text-white hover:bg-dark-accent">
+                        Müşteri Şablonları
+                      </SelectItem>
+                      <SelectItem value="campaign" className="text-white hover:bg-dark-accent">
+                        Kampanya Şablonları
+                      </SelectItem>
+                      <SelectItem value="holiday" className="text-white hover:bg-dark-accent">
+                        Tatil Şablonları
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-gray-300">Şablon Seçimi</Label>
+                  <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+                    <SelectTrigger className="bg-dark-accent border-gray-600 text-white">
+                      <SelectValue placeholder="Hazır şablon seçin (opsiyonel)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-dark-secondary border-gray-600">
+                      {filteredTemplates.map(template => (
+                        <SelectItem key={template.id} value={template.id} className="text-white hover:bg-dark-accent">
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardContent>
             </Card>
 
