@@ -267,17 +267,61 @@ export default function AdminUsers() {
                 size="sm"
                 className="border-green-600 text-green-400 hover:bg-green-600/10"
                 onClick={() => {
-                  const csvData = (users as any[])?.map(u => ({
-                    Email: u.email,
-                    Role: u.role,
-                    Status: u.status || 'ACTIVE',
-                    Created: new Date(u.createdAt).toLocaleDateString('tr-TR')
-                  }));
-                  console.log('Exporting users:', csvData);
-                  toast({
-                    title: "Başarılı",
-                    description: "Kullanıcı listesi dışa aktarıldı.",
-                  });
+                  try {
+                    if (!users || users.length === 0) {
+                      toast({
+                        title: "Hata",
+                        description: "Dışa aktarılacak kullanıcı bulunamadı.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    const csvData = (users as any[]).map(u => ({
+                      Email: u.email,
+                      "Ad Soyad": `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+                      Rol: u.role === 'SUPER_ADMIN' ? 'Süper Admin' : u.role === 'ADMIN' ? 'Admin' : 'Kullanıcı',
+                      Durum: u.status === 'SUSPENDED' ? 'Askıya Alındı' : 'Aktif',
+                      "Kayıt Tarihi": new Date(u.createdAt).toLocaleDateString('tr-TR'),
+                      "Son Güncelleme": new Date(u.updatedAt).toLocaleDateString('tr-TR')
+                    }));
+
+                    // Create CSV content with Turkish headers
+                    const headers = Object.keys(csvData[0]);
+                    const csvContent = [
+                      headers.join(','),
+                      ...csvData.map(row => 
+                        Object.values(row).map(value => {
+                          const str = value === null || value === undefined ? '' : String(value);
+                          return str.includes(',') ? `"${str}"` : str;
+                        }).join(',')
+                      )
+                    ].join('\n');
+
+                    // Create and download file
+                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `kullanicilar_${new Date().toISOString().split('T')[0]}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+
+                    toast({
+                      title: "Başarılı",
+                      description: `${users.length} kullanıcı CSV formatında dışa aktarıldı.`,
+                    });
+                  } catch (error) {
+                    console.error('Export error:', error);
+                    toast({
+                      title: "Hata",
+                      description: "Dışa aktarma sırasında hata oluştu.",
+                      variant: "destructive",
+                    });
+                  }
                 }}
               >
                 <Download className="h-4 w-4 mr-2" />
