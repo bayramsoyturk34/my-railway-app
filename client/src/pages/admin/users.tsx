@@ -46,7 +46,16 @@ export default function AdminUsers() {
     queryKey: ["/api/admin/users"],
   });
 
+  // User has admin access if they are either SUPER_ADMIN, ADMIN, or have isAdmin flag
+  const hasAdminAccess = currentUser?.role === 'SUPER_ADMIN' || 
+                        currentUser?.role === 'ADMIN' || 
+                        currentUser?.isAdmin === true;
+  
   const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+  
+  console.log('Current user data:', currentUser);
+  console.log('Has Admin Access:', hasAdminAccess);
+  console.log('Is Super Admin:', isSuperAdmin);
 
   // SUPER_ADMIN: Role management
   const updateRoleMutation = useMutation({
@@ -247,7 +256,7 @@ export default function AdminUsers() {
             </div>
           </div>
           
-          {isSuperAdmin && (
+          {hasAdminAccess && (
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
@@ -270,19 +279,21 @@ export default function AdminUsers() {
                 <Download className="h-4 w-4 mr-2" />
                 Dışa Aktar
               </Button>
-              <Button
-                className="bg-purple-600 hover:bg-purple-700"
-                size="sm"
-                onClick={() => {
-                  const email = prompt("Davet gönderilecek e-posta adresini girin:");
-                  if (email) {
-                    createInvitationMutation.mutate({ email, role: 'USER' });
-                  }
-                }}
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Davet Gönder
-              </Button>
+              {isSuperAdmin && (
+                <Button
+                  className="bg-purple-600 hover:bg-purple-700"
+                  size="sm"
+                  onClick={() => {
+                    const email = prompt("Davet gönderilecek e-posta adresini girin:");
+                    if (email) {
+                      createInvitationMutation.mutate({ email, role: 'USER' });
+                    }
+                  }}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Davet Gönder
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -352,7 +363,7 @@ export default function AdminUsers() {
                 />
               </div>
               
-              {isSuperAdmin && (
+              {hasAdminAccess && (
                 <div className="flex items-center gap-3">
                   <select
                     value={statusFilter}
@@ -469,7 +480,7 @@ export default function AdminUsers() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {isSuperAdmin ? (
+                      {hasAdminAccess ? (
                         <div className="flex items-center gap-2">
                           {/* Quick Status Toggle Buttons */}
                           <Button
