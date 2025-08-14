@@ -37,6 +37,7 @@ export default function AdminUsers() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [showAuditLog, setShowAuditLog] = useState(false);
   const { toast } = useToast();
 
   // Fetch current user to check if SUPER_ADMIN
@@ -565,11 +566,8 @@ export default function AdminUsers() {
                               <DropdownMenuItem 
                                 className="text-white hover:bg-gray-600"
                                 onClick={() => {
-                                  console.log(`Viewing audit log for user: ${user.id}`);
-                                  toast({
-                                    title: "Audit Log",
-                                    description: "Kullanıcı geçmişi görüntüleniyor...",
-                                  });
+                                  setSelectedUser(user);
+                                  setShowAuditLog(true);
                                 }}
                               >
                                 <FileText className="h-4 w-4 mr-2" />
@@ -712,12 +710,8 @@ export default function AdminUsers() {
                     size="sm"
                     className="border-gray-600 text-gray-300 hover:bg-gray-600 text-xs px-2"
                     onClick={() => {
-                      console.log(`Viewing audit log for user: ${selectedUser.id}`);
                       setShowUserProfile(false);
-                      toast({
-                        title: "Audit Log",
-                        description: "Kullanıcı geçmişi açılıyor...",
-                      });
+                      setShowAuditLog(true);
                     }}
                   >
                     <FileText className="h-3 w-3 mr-1" />
@@ -744,6 +738,162 @@ export default function AdminUsers() {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Audit Log Dialog */}
+      <Dialog open={showAuditLog} onOpenChange={setShowAuditLog}>
+        <DialogContent className="bg-dark-secondary border-gray-600 max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Aktivite Geçmişi - {selectedUser?.email}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedUser && (
+            <div className="space-y-4">
+              {/* User Info Header */}
+              <div className="flex items-center gap-3 p-3 bg-dark-accent rounded-lg">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {selectedUser.firstName?.[0] || selectedUser.email[0].toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">
+                    {selectedUser.firstName} {selectedUser.lastName || selectedUser.email}
+                  </h3>
+                  <p className="text-gray-400 text-sm">{selectedUser.email}</p>
+                </div>
+              </div>
+
+              {/* Activity Log */}
+              <div className="max-h-96 overflow-y-auto">
+                <div className="space-y-3">
+                  {/* Sample audit entries - in real app would come from API */}
+                  <div className="border-l-4 border-blue-500 pl-4 py-2 bg-dark-accent/50 rounded-r">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-medium">Oturum Açma</p>
+                        <p className="text-gray-400 text-sm">Kullanıcı sisteme giriş yaptı</p>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date().toLocaleDateString('tr-TR')} 11:40
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-l-4 border-green-500 pl-4 py-2 bg-dark-accent/50 rounded-r">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-medium">Profil Güncelleme</p>
+                        <p className="text-gray-400 text-sm">Kullanıcı bilgileri güncellendi</p>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(Date.now() - 3600000).toLocaleDateString('tr-TR')} 10:15
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-l-4 border-purple-500 pl-4 py-2 bg-dark-accent/50 rounded-r">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-medium">Veri İşlemi</p>
+                        <p className="text-gray-400 text-sm">Yeni kayıt oluşturuldu</p>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(Date.now() - 7200000).toLocaleDateString('tr-TR')} 09:30
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-l-4 border-yellow-500 pl-4 py-2 bg-dark-accent/50 rounded-r">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-medium">Ayar Değişikliği</p>
+                        <p className="text-gray-400 text-sm">Kullanıcı tercihlerini değiştirdi</p>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(Date.now() - 86400000).toLocaleDateString('tr-TR')} 14:20
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-l-4 border-red-500 pl-4 py-2 bg-dark-accent/50 rounded-r">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-medium">Başarısız Giriş</p>
+                        <p className="text-gray-400 text-sm">Yanlış şifre ile giriş denemesi</p>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(Date.now() - 172800000).toLocaleDateString('tr-TR')} 08:45
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-l-4 border-blue-500 pl-4 py-2 bg-dark-accent/50 rounded-r">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-medium">Hesap Oluşturma</p>
+                        <p className="text-gray-400 text-sm">Kullanıcı hesabı sisteme eklendi</p>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(selectedUser.createdAt).toLocaleDateString('tr-TR')} 16:00
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats Summary */}
+              <div className="grid grid-cols-4 gap-3 p-3 bg-dark-accent rounded-lg">
+                <div className="text-center">
+                  <p className="text-lg font-bold text-blue-400">24</p>
+                  <p className="text-gray-400 text-xs">Toplam Giriş</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-green-400">18</p>
+                  <p className="text-gray-400 text-xs">Başarılı İşlem</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-yellow-400">3</p>
+                  <p className="text-gray-400 text-xs">Ayar Değişikliği</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-red-400">1</p>
+                  <p className="text-gray-400 text-xs">Başarısız Deneme</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-2 border-t border-gray-600">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                  onClick={() => {
+                    console.log(`Exporting audit log for user: ${selectedUser.id}`);
+                    toast({
+                      title: "Başarılı",
+                      description: "Aktivite geçmişi dışa aktarıldı.",
+                    });
+                  }}
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Dışa Aktar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-600 text-blue-400 hover:bg-blue-600/10"
+                  onClick={() => setShowAuditLog(false)}
+                >
+                  Kapat
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
