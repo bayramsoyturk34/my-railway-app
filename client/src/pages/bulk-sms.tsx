@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Home, MessageSquare, Send, Users, Phone, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Home, MessageSquare, Send, Users, Phone, Clock, CheckCircle, XCircle, Search } from "lucide-react";
 import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -174,6 +175,7 @@ export default function BulkSMSPage() {
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [recipientType, setRecipientType] = useState<'all' | 'personnel' | 'customer'>('all');
   const [templateCategory, setTemplateCategory] = useState<'all' | 'personnel' | 'customer' | 'campaign' | 'holiday'>('all');
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -206,9 +208,13 @@ export default function BulkSMSPage() {
     }))
   ].filter(r => r.phone); // Only include recipients with phone numbers
 
-  const filteredRecipients = allRecipients.filter(r => 
-    recipientType === 'all' || r.type === recipientType
-  );
+  const filteredRecipients = allRecipients.filter(r => {
+    const matchesType = recipientType === 'all' || r.type === recipientType;
+    const matchesSearch = searchTerm === '' || 
+      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.phone.includes(searchTerm);
+    return matchesType && matchesSearch;
+  });
 
   const filteredTemplates = smsTemplates.filter(t => 
     templateCategory === 'all' || t.category === templateCategory
@@ -447,6 +453,19 @@ export default function BulkSMSPage() {
                     </Select>
                   </div>
 
+                  <div>
+                    <Label className="text-gray-300">Kişi Ara</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="İsim veya telefon numarası..."
+                        className="bg-dark-accent border-gray-600 text-white pl-10"
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <Button
                       variant="outline"
@@ -456,6 +475,12 @@ export default function BulkSMSPage() {
                     >
                       {selectedRecipients.length === filteredRecipients.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
                     </Button>
+                    
+                    {filteredRecipients.length > 0 && (
+                      <div className="text-xs text-gray-400">
+                        {filteredRecipients.length} kişi listelendi
+                      </div>
+                    )}
                   </div>
 
                   <div className="max-h-64 overflow-y-auto space-y-2">
