@@ -2108,6 +2108,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
   // Admin routes
   app.get("/api/admin/stats", isAuthenticated, async (req: any, res) => {
     try {
@@ -2123,6 +2125,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Admin stats error:", error);
       res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
+  // System metrics endpoint
+  app.get("/api/admin/system-metrics", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin && user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      // Mock system metrics - in real app would come from system monitoring
+      const metrics = [
+        {
+          name: "CPU Usage",
+          value: Math.floor(Math.random() * 50) + 30, // 30-80%
+          unit: "%",
+          status: "normal",
+          timestamp: new Date().toISOString()
+        },
+        {
+          name: "Memory Usage", 
+          value: Math.floor(Math.random() * 40) + 40, // 40-80%
+          unit: "%",
+          status: "normal",
+          timestamp: new Date().toISOString()
+        },
+        {
+          name: "Disk Usage",
+          value: Math.floor(Math.random() * 30) + 50, // 50-80%
+          unit: "%", 
+          status: "normal",
+          timestamp: new Date().toISOString()
+        },
+        {
+          name: "Active Connections",
+          value: Math.floor(Math.random() * 50) + 10, // 10-60
+          unit: "conn",
+          status: "normal",
+          timestamp: new Date().toISOString()
+        }
+      ];
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching system metrics:", error);
+      res.status(500).json({ error: "Failed to fetch system metrics" });
     }
   });
 
@@ -2936,6 +2987,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating system setting:", error);
       res.status(500).json({ error: "Failed to create system setting" });
+    }
+  });
+
+  // Admin announcements management  
+  app.get("/api/admin/announcements", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin && user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      // Mock announcements data - in real app would come from database
+      const announcements = [
+        {
+          id: "ann_1",
+          title: "Sistem Güncellemesi",
+          content: "Sistem bu akşam 22:00-24:00 arasında güncellenecektir.",
+          priority: "high",
+          createdAt: new Date().toISOString(),
+          isActive: true
+        },
+        {
+          id: "ann_2", 
+          title: "Yeni Özellikler",
+          content: "Toplu SMS ve gelişmiş raporlama özellikleri eklendi.",
+          priority: "normal",
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          isActive: true
+        }
+      ];
+      
+      res.json(announcements);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      res.status(500).json({ error: "Failed to fetch announcements" });
+    }
+  });
+
+  app.post("/api/admin/announcements", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin && user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const { title, content, priority } = req.body;
+      const announcement = {
+        id: `ann_${Date.now()}`,
+        title,
+        content,
+        priority,
+        createdAt: new Date().toISOString(),
+        isActive: true
+      };
+      
+      console.log("Creating announcement:", announcement);
+      res.status(201).json(announcement);
+    } catch (error) {
+      console.error("Error creating announcement:", error);
+      res.status(500).json({ error: "Failed to create announcement" });
     }
   });
 
