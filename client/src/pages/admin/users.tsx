@@ -620,143 +620,97 @@ export default function AdminUsers() {
         </Card>
       </div>
 
-      {/* User Profile Dialog */}
+      {/* User Profile Dialog - Compact */}
       <Dialog open={showUserProfile} onOpenChange={setShowUserProfile}>
-        <DialogContent className="bg-dark-secondary border-gray-600 max-w-2xl">
+        <DialogContent className="bg-dark-secondary border-gray-600 max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
-              <Eye className="h-5 w-5" />
+              <Eye className="h-4 w-4" />
               Kullanıcı Profili
             </DialogTitle>
           </DialogHeader>
           
           {selectedUser && (
-            <div className="space-y-6">
-              {/* User Header */}
-              <div className="flex items-center gap-4 p-4 bg-dark-accent rounded-lg">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl font-bold">
+            <div className="space-y-4">
+              {/* Compact User Header */}
+              <div className="flex items-center gap-3 p-3 bg-dark-accent rounded-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
                     {selectedUser.firstName?.[0] || selectedUser.email[0].toUpperCase()}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white">
+                  <h3 className="text-lg font-bold text-white">
                     {selectedUser.firstName} {selectedUser.lastName || selectedUser.email}
                   </h3>
-                  <p className="text-gray-400">{selectedUser.email}</p>
-                  <div className="flex items-center gap-2 mt-2">
+                  <p className="text-gray-400 text-sm">{selectedUser.email}</p>
+                  <div className="flex items-center gap-2 mt-1">
                     <Badge 
                       className={
-                        selectedUser.role === 'SUPER_ADMIN' ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" :
-                        selectedUser.role === 'ADMIN' ? "bg-blue-600 text-white" : 
-                        "bg-gray-600 text-white"
+                        selectedUser.role === 'SUPER_ADMIN' ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs" :
+                        selectedUser.role === 'ADMIN' ? "bg-blue-600 text-white text-xs" : 
+                        "bg-gray-600 text-white text-xs"
                       }
                     >
                       {selectedUser.role === 'SUPER_ADMIN' && <Crown className="h-3 w-3 mr-1" />}
                       {selectedUser.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' : 
                        selectedUser.role === 'ADMIN' ? 'Admin' : 'Kullanıcı'}
                     </Badge>
-                    <Badge className={selectedUser.status === 'SUSPENDED' ? "bg-red-600" : "bg-green-600"}>
+                    <Badge className={selectedUser.status === 'SUSPENDED' ? "bg-red-600 text-xs" : "bg-green-600 text-xs"}>
                       {selectedUser.status === 'SUSPENDED' ? 'Engellenmiş' : 'Aktif'}
                     </Badge>
                   </div>
                 </div>
               </div>
 
-              {/* Profile Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="bg-dark-accent border-gray-600">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-white text-sm flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      İletişim Bilgileri
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div>
-                      <p className="text-gray-400 text-xs">E-posta</p>
-                      <p className="text-white">{selectedUser.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">Ad Soyad</p>
-                      <p className="text-white">
-                        {selectedUser.firstName || selectedUser.lastName 
-                          ? `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim()
-                          : 'Belirtilmemiş'
-                        }
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-dark-accent border-gray-600">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-white text-sm flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      Hesap Bilgileri
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div>
-                      <p className="text-gray-400 text-xs">Kayıt Tarihi</p>
-                      <p className="text-white">
-                        {new Date(selectedUser.createdAt).toLocaleDateString('tr-TR', {
-                          year: 'numeric',
-                          month: 'long', 
-                          day: 'numeric'
-                        })}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">Son Güncelleme</p>
-                      <p className="text-white">
-                        {selectedUser.updatedAt 
-                          ? new Date(selectedUser.updatedAt).toLocaleDateString('tr-TR', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })
-                          : 'Bilinmiyor'
-                        }
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Compact Info Grid */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-dark-accent p-3 rounded">
+                  <p className="text-gray-400 text-xs mb-1">Kayıt Tarihi</p>
+                  <p className="text-white">
+                    {new Date(selectedUser.createdAt).toLocaleDateString('tr-TR')}
+                  </p>
+                </div>
+                <div className="bg-dark-accent p-3 rounded">
+                  <p className="text-gray-400 text-xs mb-1">Son Güncelleme</p>
+                  <p className="text-white">
+                    {selectedUser.updatedAt 
+                      ? new Date(selectedUser.updatedAt).toLocaleDateString('tr-TR')
+                      : 'Bilinmiyor'
+                    }
+                  </p>
+                </div>
               </div>
 
-              {/* Activity Summary */}
-              <Card className="bg-dark-accent border-gray-600">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white text-sm flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Aktivite Özeti
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-2xl font-bold text-purple-400">0</p>
-                      <p className="text-gray-400 text-xs">Oturum Sayısı</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-blue-400">0</p>
-                      <p className="text-gray-400 text-xs">İşlem Sayısı</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-green-400">0</p>
-                      <p className="text-gray-400 text-xs">Başarılı Giriş</p>
-                    </div>
+              {/* Compact Activity */}
+              <div className="bg-dark-accent p-3 rounded">
+                <h4 className="text-white text-sm font-medium mb-2 flex items-center gap-2">
+                  <Clock className="h-3 w-3" />
+                  Aktivite Özeti
+                </h4>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div>
+                    <p className="text-lg font-bold text-purple-400">0</p>
+                    <p className="text-gray-400">Oturum</p>
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <p className="text-lg font-bold text-blue-400">0</p>
+                    <p className="text-gray-400">İşlem</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-green-400">0</p>
+                    <p className="text-gray-400">Giriş</p>
+                  </div>
+                </div>
+              </div>
 
-              {/* Admin Actions */}
+              {/* Compact Admin Actions */}
               {hasAdminAccess && (
-                <div className="flex justify-end gap-2 pt-4 border-t border-gray-600">
+                <div className="flex justify-center gap-2 pt-2 border-t border-gray-600">
                   <Button
                     variant="outline" 
                     size="sm"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-600 text-xs px-2"
                     onClick={() => {
                       console.log(`Viewing audit log for user: ${selectedUser.id}`);
                       setShowUserProfile(false);
@@ -766,13 +720,13 @@ export default function AdminUsers() {
                       });
                     }}
                   >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Aktivite Geçmişi
+                    <FileText className="h-3 w-3 mr-1" />
+                    Geçmiş
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-yellow-600 text-yellow-400 hover:bg-yellow-600/10"
+                    className="border-yellow-600 text-yellow-400 hover:bg-yellow-600/10 text-xs px-2"
                     onClick={() => {
                       const note = prompt("Admin notu ekleyin:");
                       if (note) {
@@ -785,8 +739,8 @@ export default function AdminUsers() {
                       }
                     }}
                   >
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    Admin Notu Ekle
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Not Ekle
                   </Button>
                 </div>
               )}
