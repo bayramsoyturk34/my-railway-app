@@ -523,7 +523,10 @@ export default function BulkSMSPage() {
                               >
                                 <Checkbox
                                   checked={selectedRecipients.includes(recipient.id)}
-                                  onCheckedChange={() => handleRecipientToggle(recipient.id)}
+                                  onCheckedChange={(checked) => {
+                                    handleRecipientToggle(recipient.id);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
                                 />
                                 <div className="flex-1 min-w-0">
                                   <p className="text-white text-sm font-medium truncate">
@@ -596,7 +599,7 @@ export default function BulkSMSPage() {
                       <div className="flex items-center gap-4 text-xs text-gray-400">
                         <span>{sms.recipientCount} kişi</span>
                         <span>{new Date(sms.sentAt).toLocaleString('tr-TR')}</span>
-                        <span>{sms.cost.toFixed(2)} TL</span>
+                        <span>{typeof sms.cost === 'number' ? sms.cost.toFixed(2) : parseFloat(sms.cost || '0').toFixed(2)} TL</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
