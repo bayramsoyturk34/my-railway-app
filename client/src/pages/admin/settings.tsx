@@ -200,7 +200,13 @@ export default function AdminSettings() {
                       <Label className="text-gray-300">Bakım Modu</Label>
                       <p className="text-sm text-gray-400">Sistemi geçici olarak devre dışı bırak</p>
                     </div>
-                    <Switch defaultChecked={settingsMap.maintenance_mode === "true"} />
+                    <Switch 
+                      checked={settingsMap.maintenance_mode === "true"}
+                      onCheckedChange={(checked) => {
+                        const value = checked ? "true" : "false";
+                        saveSetting("maintenance_mode", value, "general", "Sistem bakım modu durumu");
+                      }}
+                    />
                   </div>
                 </CardContent>
               </Card>

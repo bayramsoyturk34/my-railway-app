@@ -64,9 +64,45 @@ async function updateQuoteTotal(quoteId: string) {
   }
 }
 
+// Maintenance mode middleware
+const checkMaintenanceMode = async (req: any, res: any, next: any) => {
+  try {
+    // Skip maintenance check for admin users and auth endpoints
+    if (req.path.startsWith('/api/auth') || req.path.startsWith('/api/admin')) {
+      return next();
+    }
+
+    const settings = await storage.getSystemSettings();
+    const maintenanceSetting = settings.find(s => s.key === 'maintenance_mode');
+    
+    if (maintenanceSetting && maintenanceSetting.value === "true") {
+      // Check if user is admin
+      if (req.user) {
+        const user = await storage.getUser(req.user.id);
+        if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
+          return next();
+        }
+      }
+      
+      return res.status(503).json({
+        message: "Sistem bakım modunda. Lütfen daha sonra tekrar deneyin.",
+        maintenance: true
+      });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Maintenance check error:', error);
+    next();
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  
+  // Apply maintenance mode check to all routes except auth and admin
+  app.use(checkMaintenanceMode);
 
   // Auth endpoints handled in auth.ts
   // Personnel routes

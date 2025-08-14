@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
+import MaintenanceBanner from "@/components/maintenance-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,19 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/logs"],
     refetchInterval: autoRefresh ? 8000 : false, // 8 seconds when enabled
   });
+
+  // System settings to check maintenance mode
+  const { data: systemSettings } = useQuery({
+    queryKey: ["/api/admin/settings"],
+    refetchInterval: autoRefresh ? 30000 : false, // 30 seconds when enabled
+  });
+
+  const settingsMap = systemSettings?.reduce((acc: any, setting: any) => {
+    acc[setting.key] = setting.value;
+    return acc;
+  }, {}) || {};
+
+  const isMaintenanceMode = settingsMap.maintenance_mode === "true";
 
   if (isLoading) {
     return (
@@ -120,6 +134,9 @@ export default function AdminDashboard() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Maintenance Mode Banner */}
+        {isMaintenanceMode && <MaintenanceBanner isAdmin={true} />}
+        
         {/* Enhanced Header with Live Controls */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
