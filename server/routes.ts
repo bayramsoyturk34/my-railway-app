@@ -3060,7 +3060,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payment/notify", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const paymentData = insertPaymentNotificationSchema.parse(req.body);
+      
+      // Convert paymentDate string to Date object
+      const processedBody = {
+        ...req.body,
+        paymentDate: new Date(req.body.paymentDate)
+      };
+      
+      const paymentData = insertPaymentNotificationSchema.parse(processedBody);
       
       // Create payment notification record
       const notification = await storage.createPaymentNotification(userId, paymentData);
