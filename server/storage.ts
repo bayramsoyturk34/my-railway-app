@@ -2275,7 +2275,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(paymentNotifications).where(eq(paymentNotifications.userId, userId));
     
     // 7. Delete admin logs where user is the target
-    await db.delete(adminLogs).where(eq(adminLogs.targetEntityId, userId));
+    await db.delete(adminLogs).where(eq(adminLogs.targetId, userId));
     
     // 8. Delete admin notes for the user
     await db.delete(adminNotes).where(eq(adminNotes.targetUserId, userId));
