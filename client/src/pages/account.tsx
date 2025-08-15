@@ -553,7 +553,7 @@ export default function Account() {
                 </CardContent>
               </Card>
 
-              {/* Payment Method - Only show for DEMO users */}
+              {/* PRO Subscription Card - Only show for DEMO users */}
               {(user as any)?.subscriptionType !== 'PRO' && (
                 <Card className="bg-dark-secondary border-dark-accent">
                   <CardHeader>
@@ -562,19 +562,31 @@ export default function Account() {
                       PRO Abonelik Satın Al
                     </CardTitle>
                   </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 rounded-lg border border-blue-500/30">
-                    <h3 className="text-white font-bold text-xl mb-2">PRO Üyelik - 99 TL/Ay</h3>
-                    <ul className="text-gray-300 space-y-2 mb-4">
-                      <li>• Sınırsız personel ekleme</li>
-                      <li>• Sınırsız proje yönetimi</li>
-                      <li>• Detaylı raporlama</li>
-                      <li>• Firma rehberi ve mesajlaşma</li>
-                      <li>• Toplu SMS gönderimi</li>
-                      <li>• Öncelikli müşteri desteği</li>
-                    </ul>
-                  </div>
+                  <CardContent className="space-y-6">
+                    <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 rounded-lg border border-blue-500/30">
+                      <h3 className="text-white font-bold text-xl mb-2">PRO Üyelik - 99 TL/Ay</h3>
+                      <ul className="text-gray-300 space-y-2 mb-4">
+                        <li>• Sınırsız personel ekleme</li>
+                        <li>• Sınırsız proje yönetimi</li>
+                        <li>• Detaylı raporlama</li>
+                        <li>• Firma rehberi ve mesajlaşma</li>
+                        <li>• Toplu SMS gönderimi</li>
+                        <li>• Öncelikli müşteri desteği</li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
+              {/* Payment Information - Always show */}
+              <Card className="bg-dark-secondary border-dark-accent">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Ödeme Bilgileri
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <h4 className="text-white font-medium">Ödeme Yöntemi: EFT/Havale</h4>
                     
@@ -714,7 +726,6 @@ export default function Account() {
                   </div>
                 </CardContent>
               </Card>
-              )}
             </div>
           </TabsContent>
 
