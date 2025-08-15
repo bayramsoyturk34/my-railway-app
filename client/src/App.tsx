@@ -111,6 +111,7 @@ function Router() {
       <Route path="/messages" component={Messages} />
       <Route path="/reports" component={Reports} />
       <Route path="/bulk-sms" component={BulkSMS} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/admin/users" component={AdminUsers} />
       <Route path="/admin/settings" component={AdminSettings} />
