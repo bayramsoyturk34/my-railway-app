@@ -41,13 +41,13 @@ export default function PaymentNotifications() {
   const { data: notifications, isLoading } = useQuery({
     queryKey: statusFilter === 'all' ? ['/api/admin/payment-notifications'] : ['/api/admin/payment-notifications', { status: statusFilter }],
     queryFn: () => statusFilter === 'all' 
-      ? apiRequest('GET', '/api/admin/payment-notifications')
-      : apiRequest('GET', `/api/admin/payment-notifications?status=${statusFilter}`)
+      ? apiRequest('/api/admin/payment-notifications', 'GET')
+      : apiRequest(`/api/admin/payment-notifications?status=${statusFilter}`, 'GET')
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, adminNote }: { id: string; status: string; adminNote?: string }) => {
-      return apiRequest('PUT', `/api/admin/payment-notifications/${id}`, { status, adminNote });
+      return apiRequest(`/api/admin/payment-notifications/${id}`, 'PUT', { status, adminNote });
     },
     onSuccess: () => {
       toast({
