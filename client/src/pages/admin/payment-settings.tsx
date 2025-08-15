@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import type { PaymentSettings } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ export default function PaymentSettings() {
   const { toast } = useToast();
 
   // Fetch current payment settings
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading } = useQuery<PaymentSettings>({
     queryKey: ["/api/admin/payment-settings"],
   });
 
