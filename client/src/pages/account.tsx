@@ -68,22 +68,7 @@ export default function Account() {
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
-        <div className="text-white">Yükleniyor...</div>
-      </div>
-    );
-  }
-
-  // Redirect if not authenticated
-  if (!user) {
-    window.location.href = "/";
-    return null;
-  }
-
-  // Profile form
+  // Profile form - MUST be defined before early returns
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -195,12 +180,10 @@ export default function Account() {
       const formData = new FormData();
       formData.append('profileImage', file);
       
-      const token = localStorage.getItem('auth_token');
+      // Use credentials to send cookies automatically
       const response = await fetch('/api/auth/upload-profile-image', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // This sends cookies automatically
         body: formData,
       });
       
@@ -284,6 +267,21 @@ export default function Account() {
     const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
     fileInput?.click();
   };
+
+  // Show loading state - moved after hooks
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
+        <div className="text-white">Yükleniyor...</div>
+      </div>
+    );
+  }
+
+  // Redirect if not authenticated - moved after hooks
+  if (!user) {
+    window.location.href = "/";
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-dark-primary">

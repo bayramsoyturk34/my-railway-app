@@ -349,7 +349,7 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/auth/upload-profile-image", upload.single('profileImage'), isAuthenticated, async (req, res) => {
+  app.post("/api/auth/upload-profile-image", isAuthenticated, upload.single('profileImage'), async (req, res) => {
     try {
       const userId = (req as any).user.id;
       
