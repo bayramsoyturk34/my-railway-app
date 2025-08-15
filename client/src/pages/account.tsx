@@ -15,8 +15,10 @@ import {
   Bell,
   Globe,
   CreditCard,
-  AlertCircle
+  AlertCircle,
+  Home
 } from "lucide-react";
+import { Link } from "wouter";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -181,7 +183,7 @@ export default function Account() {
       formData.append('profileImage', file);
       
       // Use the same authentication mechanism as other API calls
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('sessionId');
       const response = await fetch('/api/auth/upload-profile-image', {
         method: 'POST',
         headers: {
@@ -301,6 +303,11 @@ export default function Account() {
               <p className="text-gray-400">Hesap bilgilerinizi yönetin</p>
             </div>
           </div>
+          <Link href="/">
+            <Button variant="outline" size="icon" className="bg-dark-secondary border-dark-border hover:bg-dark-accent">
+              <Home className="h-4 w-4 text-white" />
+            </Button>
+          </Link>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
