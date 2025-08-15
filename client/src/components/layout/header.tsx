@@ -50,21 +50,21 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   };
 
   return (
-    <header className="flex justify-between items-center p-4 bg-dark-primary border-b border-dark-accent">
+    <header className="flex justify-between items-center p-4 bg-gray-100 dark:bg-dark-primary border-b border-gray-200 dark:border-dark-accent">
       <Button
         variant="ghost"
         size="icon"
-        className="text-white hover:bg-dark-accent"
+        className="text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent"
         onClick={onMenuClick}
       >
         <Menu className="h-6 w-6" />
       </Button>
       
-      <h1 className="text-xl font-bold text-white">puantropls</h1>
+      <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantropls</h1>
       
       <div className="flex items-center gap-2">
         {user && (
-          <div className="flex items-center gap-2 text-white text-sm">
+          <div className="flex items-center gap-2 text-gray-700 dark:text-white text-sm">
             <User className="h-4 w-4" />
             <span>{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
           </div>

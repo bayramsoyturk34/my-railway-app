@@ -153,10 +153,10 @@ export default function Dashboard() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-dark-primary text-white">
-        <header className="flex justify-between items-center p-4 bg-dark-primary border-b border-dark-accent">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-primary text-gray-800 dark:text-white">
+        <header className="flex justify-between items-center p-4 bg-white dark:bg-dark-primary border-b border-gray-200 dark:border-dark-accent">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-white">puantropls</h1>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantropls</h1>
           </div>
           
           <div className="flex items-center gap-4">
