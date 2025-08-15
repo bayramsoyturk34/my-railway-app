@@ -69,6 +69,11 @@ export default function Account() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
+  // User preferences state
+  const [compactView, setCompactView] = useState(false);
+  const [autoSave, setAutoSave] = useState(true);
+  const [darkTheme, setDarkTheme] = useState(true);
 
   // Fetch payment settings for normal users
   const { data: paymentSettings } = useQuery({
@@ -878,7 +883,18 @@ export default function Account() {
                       <Label className="text-gray-300">Karanlık Tema</Label>
                       <p className="text-sm text-gray-400">Karanlık arayüz temasını kullan</p>
                     </div>
-                    <Switch defaultChecked disabled />
+                    <Switch 
+                      checked={darkTheme} 
+                      onCheckedChange={(checked) => {
+                        setDarkTheme(checked);
+                        if (autoSave) {
+                          toast({
+                            title: "Tema Değiştirildi",
+                            description: checked ? "Karanlık tema aktifleştirildi" : "Açık tema aktifleştirildi",
+                          });
+                        }
+                      }} 
+                    />
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -886,7 +902,18 @@ export default function Account() {
                       <Label className="text-gray-300">Kompakt Görünüm</Label>
                       <p className="text-sm text-gray-400">Daha sıkışık arayüz kullan</p>
                     </div>
-                    <Switch />
+                    <Switch 
+                      checked={compactView} 
+                      onCheckedChange={(checked) => {
+                        setCompactView(checked);
+                        if (autoSave) {
+                          toast({
+                            title: "Görünüm Değiştirildi",
+                            description: checked ? "Kompakt görünüm aktifleştirildi" : "Normal görünüm aktifleştirildi",
+                          });
+                        }
+                      }} 
+                    />
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -894,7 +921,16 @@ export default function Account() {
                       <Label className="text-gray-300">Otomatik Kaydetme</Label>
                       <p className="text-sm text-gray-400">Değişiklikleri otomatik olarak kaydet</p>
                     </div>
-                    <Switch defaultChecked />
+                    <Switch 
+                      checked={autoSave} 
+                      onCheckedChange={(checked) => {
+                        setAutoSave(checked);
+                        toast({
+                          title: "Otomatik Kaydetme",
+                          description: checked ? "Otomatik kaydetme aktifleştirildi" : "Otomatik kaydetme kapatıldı",
+                        });
+                      }} 
+                    />
                   </div>
                 </div>
               </CardContent>
