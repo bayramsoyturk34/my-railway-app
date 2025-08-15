@@ -39,7 +39,8 @@ import {
   insertImageUploadSchema,
   insertSMSHistorySchema,
   insertSMSTemplateSchema,
-  insertPaymentNotificationSchema
+  insertPaymentNotificationSchema,
+  insertPaymentSettingsSchema
 } from "@shared/schema";
 
 // Helper function to update quote total
@@ -3633,7 +3634,36 @@ puantropls Admin Sistemi
     }
   });
 
+  // Payment settings endpoints
+  app.get("/api/admin/payment-settings", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getPaymentSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching payment settings:", error);
+      res.status(500).json({ error: "Failed to fetch payment settings" });
+    }
+  });
 
+  app.put("/api/admin/payment-settings", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const data = insertPaymentSettingsSchema.parse(req.body);
+      const settings = await storage.updatePaymentSettings(data);
+      
+      // Log admin action
+      await storage.createAdminLog({
+        adminId: req.user.id,
+        action: "UPDATE_PAYMENT_SETTINGS",
+        targetType: "PAYMENT_SETTINGS",
+        details: `Updated payment settings: ${data.bankName}, ${data.amount}`,
+      });
+
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating payment settings:", error);
+      res.status(500).json({ error: "Failed to update payment settings" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

@@ -70,6 +70,12 @@ export default function Account() {
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Fetch payment settings
+  const { data: paymentSettings } = useQuery({
+    queryKey: ["/api/admin/payment-settings"],
+    retry: false,
+  });
+
   // Profile form - MUST be defined before early returns
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
@@ -672,7 +678,7 @@ export default function Account() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 rounded-lg border border-blue-500/30">
-                      <h3 className="text-white font-bold text-xl mb-2">PRO Üyelik - 99 TL/Ay</h3>
+                      <h3 className="text-white font-bold text-xl mb-2">PRO Üyelik - {paymentSettings?.amount || "99 TL"}/Ay</h3>
                       <ul className="text-gray-300 space-y-2 mb-4">
                         <li>• Sınırsız personel ekleme</li>
                         <li>• Sınırsız proje yönetimi</li>
@@ -696,26 +702,26 @@ export default function Account() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <h4 className="text-white font-medium">Ödeme Yöntemi: EFT/Havale</h4>
+                    <h4 className="text-white font-medium">Ödeme Yöntemi: {paymentSettings?.paymentMethod || "EFT/Havale"}</h4>
                     
                     <div className="bg-dark-primary p-4 rounded-lg space-y-3">
                       <p className="text-gray-300 font-medium">Banka Bilgileri:</p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-400">Banka:</span>
-                          <span className="text-white">Ziraat Bankası</span>
+                          <span className="text-white">{paymentSettings?.bankName || "Ziraat Bankası"}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Hesap Sahibi:</span>
-                          <span className="text-white">puantropls Ltd.</span>
+                          <span className="text-white">{paymentSettings?.accountHolder || "puantropls Ltd."}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">IBAN:</span>
-                          <span className="text-white font-mono">TR64 0001 0017 4513 6456 7890 01</span>
+                          <span className="text-white font-mono text-xs">{paymentSettings?.iban || "TR64 0001 0017 4513 6456 7890 01"}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Tutar:</span>
-                          <span className="text-white font-bold">99 TL</span>
+                          <span className="text-white font-bold">{paymentSettings?.amount || "99 TL"}</span>
                         </div>
                       </div>
                     </div>

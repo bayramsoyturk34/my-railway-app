@@ -37,11 +37,12 @@ import {
   type UserSession, type InsertUserSession,
   type SystemMetric, type InsertSystemMetric,
   type AdminNote, type InsertAdminNote,
+  type PaymentSettings, type InsertPaymentSettings,
   personnel, projects, timesheets, transactions, notes, contractors, customers,
   customerTasks, customerQuotes, customerQuoteItems, customerPayments, contractorTasks, contractorPayments, personnelPayments,
   companyDirectory, messages, conversations, notifications, companyBlocks, companyMutes, abuseReports, users,
   firmInvites, presenceLogs, messageDrafts, autoResponders, directThreads, directMessages, imageUploads, autoReplyLogs,
-  smsHistory, smsTemplates, paymentNotifications, adminLogs, systemSettings, announcements, userSessions, systemMetrics, adminNotes
+  smsHistory, smsTemplates, paymentNotifications, adminLogs, systemSettings, announcements, userSessions, systemMetrics, adminNotes, paymentSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
@@ -297,6 +298,10 @@ export interface IStorage {
     location?: string;
   }[]>;
   terminateSession(sessionId: string): Promise<boolean>;
+
+  // Payment settings for admin
+  getPaymentSettings(): Promise<PaymentSettings | undefined>;
+  updatePaymentSettings(settings: InsertPaymentSettings): Promise<PaymentSettings>;
 }
 
 export class MemStorage implements IStorage {
@@ -2515,6 +2520,35 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId));
+  }
+
+  // Payment settings methods
+  async getPaymentSettings(): Promise<PaymentSettings | undefined> {
+    const [result] = await db.select().from(paymentSettings).limit(1);
+    return result;
+  }
+
+  async updatePaymentSettings(settings: InsertPaymentSettings): Promise<PaymentSettings> {
+    // Check if settings exist
+    const existing = await this.getPaymentSettings();
+    
+    if (existing) {
+      // Update existing settings
+      const [result] = await db.update(paymentSettings)
+        .set({
+          ...settings,
+          updatedAt: new Date(),
+        })
+        .where(eq(paymentSettings.id, existing.id))
+        .returning();
+      return result;
+    } else {
+      // Create new settings
+      const [result] = await db.insert(paymentSettings)
+        .values(settings)
+        .returning();
+      return result;
+    }
   }
 }
 

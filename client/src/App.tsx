@@ -32,6 +32,7 @@ import AdminAnnouncements from "@/pages/admin/announcements";
 import AdminLogs from "@/pages/admin/logs";
 import AdminSessions from "@/pages/admin/sessions";
 import AdminPaymentNotifications from "@/pages/admin/payment-notifications";
+import AdminPaymentSettings from "@/pages/admin/payment-settings";
 import Account from "@/pages/account";
 
 function Router() {
@@ -89,6 +90,7 @@ function Router() {
       <Route path="/admin/logs" component={AdminLogs} />
       <Route path="/admin/sessions" component={AdminSessions} />
       <Route path="/admin/payment-notifications" component={AdminPaymentNotifications} />
+      <Route path="/admin/payment-settings" component={AdminPaymentSettings} />
       <Route path="/account" component={Account} />
       <Route component={Dashboard} />
       </Switch>

@@ -472,6 +472,18 @@ export const companyBlocks = pgTable("company_blocks", {
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
+// Payment settings for admin
+export const paymentSettings = pgTable("payment_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  bankName: varchar("bank_name").notNull().default("Ziraat Bankası"),
+  accountHolder: varchar("account_holder").notNull().default("puantropls Ltd."),
+  iban: varchar("iban").notNull().default("TR64 0001 0017 4513 6456 7890 01"),
+  amount: varchar("amount").notNull().default("99 TL"),
+  paymentMethod: varchar("payment_method").notNull().default("EFT/Havale"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Company mute system
 export const companyMutes = pgTable("company_mutes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -710,6 +722,15 @@ export const insertCompanyBlockSchema = createInsertSchema(companyBlocks).omit({
   id: true,
   createdAt: true,
 });
+
+export const insertPaymentSettingsSchema = createInsertSchema(paymentSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type PaymentSettings = typeof paymentSettings.$inferSelect;
+export type InsertPaymentSettings = z.infer<typeof insertPaymentSettingsSchema>;
 
 export const insertCompanyMuteSchema = createInsertSchema(companyMutes).omit({
   id: true,
