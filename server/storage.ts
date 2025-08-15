@@ -2330,6 +2330,23 @@ export class DatabaseStorage implements IStorage {
     await db.delete(users).where(eq(users.id, userId));
   }
 
+  async deleteUser(userId: string): Promise<boolean> {
+    try {
+      // Check if user exists
+      const existingUser = await this.getUser(userId);
+      if (!existingUser) {
+        return false;
+      }
+
+      // Delete all user data
+      await this.deleteAllUserData(userId);
+      return true;
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return false;
+    }
+  }
+
   async getSystemSettings(): Promise<SystemSetting[]> {
     return await db.select().from(systemSettings)
       .orderBy(desc(systemSettings.createdAt));

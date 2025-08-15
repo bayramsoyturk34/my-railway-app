@@ -5,7 +5,7 @@ import {
   ArrowLeft, Users, UserCheck, UserX, Mail, Calendar, Clock,
   Shield, ShieldOff, Search, Filter, MoreVertical, Ban, 
   Key, LogOut, FileText, Eye, AlertTriangle, Crown, 
-  UserCog, Building, Download, Plus, UserPlus, FileSpreadsheet
+  UserCog, Building, Download, Plus, UserPlus, FileSpreadsheet, Trash2
 } from "lucide-react";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -145,6 +145,27 @@ export default function AdminUsers() {
       toast({
         title: "Hata",
         description: error.message || "Parola sıfırlama başarısız.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // SUPER_ADMIN: Delete individual user
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await apiRequest(`/api/admin/users/${userId}`, "DELETE");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Başarılı",
+        description: "Kullanıcı başarıyla silindi.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Kullanıcı silinirken hata oluştu.",
         variant: "destructive",
       });
     },
@@ -745,6 +766,47 @@ export default function AdminUsers() {
                           <AlertTriangle className="h-4 w-4 mr-2" />
                           Admin Notu Ekle
                         </Button>
+
+                        {/* Delete User - Only for SUPER_ADMIN and not self */}
+                        {isSuperAdmin && selectedUser.role !== 'SUPER_ADMIN' && selectedUser.id !== currentUser?.id && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            onClick={async () => {
+                              const confirmed = confirm(`Bu kullanıcıyı kalıcı olarak silmek istediğinizden emin misiniz?\n\nKullanıcı: ${selectedUser.email}\n\nBu işlem GERİ ALINAMAZ!`);
+                              if (confirmed) {
+                                try {
+                                  await deleteUserMutation.mutateAsync(selectedUser.id);
+                                  setSelectedUser(null); // Clear selection after delete
+                                  toast({
+                                    title: "Başarılı",
+                                    description: "Kullanıcı kalıcı olarak silindi.",
+                                  });
+                                } catch (error) {
+                                  toast({
+                                    title: "Hata",
+                                    description: "Kullanıcı silinirken hata oluştu.",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }
+                            }}
+                            disabled={deleteUserMutation.isPending}
+                          >
+                            {deleteUserMutation.isPending ? (
+                              <>
+                                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                Siliniyor...
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Kullanıcıyı Sil
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </div>
                     )}
                   </CardContent>

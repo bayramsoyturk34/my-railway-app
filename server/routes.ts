@@ -2973,6 +2973,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DELETE individual user - Only for SUPER_ADMIN
+  app.delete('/api/admin/users/:userId', isAuthenticated, isSuperAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const currentUser = (req as any).user;
+      
+      // Prevent self-deletion
+      if (currentUser.id === userId) {
+        return res.status(400).json({ message: "Cannot delete yourself" });
+      }
+      
+      // Get user to check if it's SUPER_ADMIN
+      const userToDelete = await storage.getUser(userId);
+      if (!userToDelete) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Prevent deleting other SUPER_ADMINs
+      if (userToDelete.role === 'SUPER_ADMIN') {
+        return res.status(403).json({ message: "Cannot delete SUPER_ADMIN users" });
+      }
+      
+      const success = await storage.deleteUser(userId);
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ success: true, message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Admin settings endpoints
   app.get('/api/admin/settings', isAuthenticated, isAdmin, async (req, res) => {
     try {

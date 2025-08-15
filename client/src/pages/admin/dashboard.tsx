@@ -185,59 +185,6 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Delete All Users Button - Only for SUPER_ADMIN */}
-            {user?.role === 'SUPER_ADMIN' && (
-              <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="flex items-center gap-2">
-                    <Trash2 className="h-4 w-4" />
-                    Tüm Kullanıcıları Sil
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-red-600">
-                      <AlertTriangle className="h-5 w-5" />
-                      Tehlikeli İşlem
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-600">
-                      Bu işlem süper admin hariç <strong>TÜM KULLANICILAR</strong>ı ve onlara ait 
-                      <strong> TÜM VERİLERİ</strong> kalıcı olarak silecektir.
-                      <br/><br/>
-                      Bu işlem <strong>GERİ ALINAMAZ</strong>. Emin misiniz?
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowDeleteDialog(false)}
-                      disabled={deleteAllUsersMutation.isPending}
-                    >
-                      İptal
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      onClick={() => deleteAllUsersMutation.mutate()}
-                      disabled={deleteAllUsersMutation.isPending}
-                      className="flex items-center gap-2"
-                    >
-                      {deleteAllUsersMutation.isPending ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Siliniyor...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 className="h-4 w-4" />
-                          Evet, Tümünü Sil
-                        </>
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-            
             <Button 
               variant="outline" 
               size="sm"
