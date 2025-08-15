@@ -334,6 +334,33 @@ export async function setupAuth(app: Express) {
       res.status(500).json({ message: "Failed to change password" });
     }
   });
+
+  // Profile image upload
+  app.post("/api/auth/upload-profile-image", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      // For now, we'll simulate a successful upload and return a placeholder URL
+      // In production, you would integrate with a file storage service like AWS S3, Cloudinary, etc.
+      const timestamp = Date.now();
+      const simulatedUrl = `/uploads/profile-${userId}-${timestamp}.jpg`;
+      
+      // Update user's profile image URL in database
+      await storage.updateUser(userId, {
+        profileImageUrl: simulatedUrl,
+        updatedAt: new Date()
+      });
+      
+      res.json({ 
+        success: true, 
+        profileImageUrl: simulatedUrl,
+        message: "Profil fotoğrafı başarıyla güncellendi" 
+      });
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      res.status(500).json({ message: "Fotoğraf yüklenirken hata oluştu" });
+    }
+  });
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {

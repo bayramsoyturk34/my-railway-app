@@ -65,6 +65,8 @@ export default function Account() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // Show loading state
   if (isLoading) {
@@ -187,6 +189,41 @@ export default function Account() {
     },
   });
 
+  // Profile photo upload mutation
+  const uploadPhotoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('profileImage', file);
+      
+      const response = await fetch('/api/auth/upload-profile-image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Fotoğraf yüklenirken hata oluştu');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Başarılı",
+        description: "Profil fotoğrafınız güncellendi.",
+      });
+      setProfilePicture(null);
+      setPreviewUrl(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Fotoğraf yüklenirken hata oluştu.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onProfileSubmit = (data: ProfileFormData) => {
     updateProfileMutation.mutate(data);
   };
@@ -197,6 +234,50 @@ export default function Account() {
 
   const onPaymentSubmit = (data: PaymentFormData) => {
     paymentNotificationMutation.mutate(data);
+  };
+
+  // Handle photo file selection
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Hata",
+          description: "Dosya boyutu 5MB'dan büyük olamaz.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+        toast({
+          title: "Hata", 
+          description: "Sadece JPG ve PNG formatları desteklenmektedir.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProfilePicture(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload immediately
+      uploadPhotoMutation.mutate(file);
+    }
+  };
+
+  // Trigger file input
+  const triggerPhotoUpload = () => {
+    const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
+    fileInput?.click();
   };
 
   return (
@@ -253,15 +334,28 @@ export default function Account() {
                   {/* Profile Picture */}
                   <div className="flex items-center gap-4">
                     <Avatar className="h-20 w-20">
-                      <AvatarImage src={user?.profileImageUrl || ""} />
+                      <AvatarImage src={previewUrl || user?.profileImageUrl || ""} />
                       <AvatarFallback className="bg-dark-accent text-white text-lg">
                         {user?.firstName?.[0]}{user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-2">
-                      <Button variant="outline" size="sm" className="border-gray-600 text-gray-300">
+                      <input
+                        id="photo-upload"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png"
+                        onChange={handlePhotoChange}
+                        className="hidden"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-gray-600 text-gray-300"
+                        onClick={triggerPhotoUpload}
+                        disabled={uploadPhotoMutation.isPending}
+                      >
                         <Camera className="h-4 w-4 mr-2" />
-                        Fotoğraf Değiştir
+                        {uploadPhotoMutation.isPending ? "Yükleniyor..." : "Fotoğraf Değiştir"}
                       </Button>
                       <p className="text-sm text-gray-400">
                         JPG, PNG formatında, maksimum 5MB
