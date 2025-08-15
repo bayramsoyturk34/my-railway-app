@@ -1800,6 +1800,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const targetCompany = await storage.getCompany(targetCompanyId);
         if (targetCompany && targetCompany.userId) {
+          // Get sender user info for real name
+          const senderUser = await storage.getUser(userId);
+          const senderName = senderUser ? `${senderUser.firstName || ''} ${senderUser.lastName || ''}`.trim() : userCompanies[0].contactPerson;
+          
           const notification = await storage.createNotification({
             userId: targetCompany.userId,
             type: "NEW_DM",
@@ -1807,9 +1811,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               threadId,
               fromCompanyId: userCompanyId,
               fromCompanyName: userCompanies[0].companyName,
+              fromUserName: senderName,
               messageId: message.id,
               title: "Yeni Mesaj",
-              message: `${userCompanies[0].companyName} size mesaj gönderdi`
+              message: `${senderName} size mesaj gönderdi`
             }
           });
           console.log("Notification created:", notification);
@@ -2087,17 +2092,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Gönderen firma bilgisi:", fromCompany);
         console.log("Alıcı firma bilgisi:", receiverCompany);
         
+        // Get sender user info for real name
+        const senderUser = await storage.getUser(userId);
+        const senderName = senderUser ? `${senderUser.firstName || ''} ${senderUser.lastName || ''}`.trim() : fromCompany?.contactPerson || 'Bilinmeyen Kullanıcı';
+        
         // Alıcı için bildirim oluştur
         const notification = {
           userId: receiverCompany.userId, // Alıcı firmanın sahibi
           type: "NEW_MESSAGE" as const,
           title: "Yeni Mesaj",
-          content: `${fromCompany?.companyName || 'Bilinmeyen Firma'} size mesaj gönderdi`,
+          content: `${senderName} size mesaj gönderdi`,
           payload: {
             fromCompanyId: fromCompanyId,
             toCompanyId: req.body.receiverFirmId,
             messageId: message.id,
-            fromCompanyName: fromCompany?.companyName || 'Bilinmeyen Firma'
+            fromCompanyName: fromCompany?.companyName || 'Bilinmeyen Firma',
+            fromUserName: senderName
           }
         };
         
