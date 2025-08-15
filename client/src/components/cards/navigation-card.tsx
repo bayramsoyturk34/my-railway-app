@@ -17,10 +17,10 @@ export default function NavigationCard({
   return (
     <button
       onClick={onClick}
-      className="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent"
+      className="bg-white dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-gray-200 dark:border-dark-accent"
     >
       <Icon className={cn("text-2xl", iconColor)} />
-      <span className="text-white font-medium text-center">{label}</span>
+      <span className="text-gray-800 dark:text-white font-medium text-center">{label}</span>
     </button>
   );
 }

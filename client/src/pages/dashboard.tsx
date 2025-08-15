@@ -165,7 +165,7 @@ export default function Dashboard() {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="text-white hover:bg-dark-accent relative"
+                className="text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent relative"
                 onClick={() => setShowNotifications(!showNotifications)}
               >
                 <Bell className="h-5 w-5" />
@@ -177,10 +177,10 @@ export default function Dashboard() {
               </Button>
                 
                 {showNotifications && (
-                  <div className="absolute top-full right-0 mt-2 w-80 bg-dark-secondary border border-dark-accent rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-                    <div className="p-4 border-b border-dark-accent">
+                  <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-dark-accent rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                    <div className="p-4 border-b border-gray-200 dark:border-dark-accent">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-white font-semibold">Bildirimler</h3>
+                        <h3 className="text-gray-800 dark:text-white font-semibold">Bildirimler</h3>
                         <div className="flex items-center gap-2">
                           {notifications.filter(n => !n.isRead).length > 0 && (
                             <Button
@@ -200,7 +200,7 @@ export default function Dashboard() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setShowNotifications(false)}
-                            className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                            className="h-6 w-6 p-0 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -209,14 +209,14 @@ export default function Dashboard() {
                     </div>
                     <div className="max-h-64 overflow-y-auto">
                       {notifications.length === 0 ? (
-                        <div className="p-4 text-center text-gray-400">
+                        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                           Henüz bildirim yok
                         </div>
                       ) : (
                         notifications.map((notification) => (
                           <div 
                             key={notification.id} 
-                            className={`p-4 border-b border-dark-accent/50 hover:bg-dark-primary/50 cursor-pointer ${
+                            className={`p-4 border-b border-gray-200/50 dark:border-dark-accent/50 hover:bg-gray-100/50 dark:hover:bg-dark-primary/50 cursor-pointer ${
                               !notification.isRead ? 'bg-blue-600/10' : ''
                             }`}
                             onClick={() => {
@@ -323,7 +323,7 @@ export default function Dashboard() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-dark-accent"
+              className="text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent"
               onClick={() => {
                 localStorage.removeItem('sessionId');
                 queryClient.clear();
@@ -398,9 +398,9 @@ export default function Dashboard() {
         </div>
 
         {/* Analytics Section */}
-        <Card className="bg-dark-secondary border-dark-accent">
+        <Card className="bg-white dark:bg-dark-secondary border-gray-200 dark:border-dark-accent">
           <CardHeader className="pb-4">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-gray-800 dark:text-white flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-blue-400" />
               Veri Analizi ve Raporlar
             </CardTitle>
@@ -411,9 +411,9 @@ export default function Dashboard() {
         </Card>
 
         {/* Notes Section */}
-        <div className="bg-dark-secondary rounded-xl p-4 border border-dark-accent">
+        <div className="bg-white dark:bg-dark-secondary rounded-xl p-4 border border-gray-200 dark:border-dark-accent">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-white">Notlar</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Notlar</h3>
             <Button
               size="icon"
               className="bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-full"
@@ -423,7 +423,7 @@ export default function Dashboard() {
             </Button>
           </div>
           
-          <div className="text-center text-gray-400 py-8">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
             <p>Henüz not eklenmemiş.</p>
             <p className="text-sm">Yeni not eklemek için + butonuna tıklayın.</p>
           </div>
