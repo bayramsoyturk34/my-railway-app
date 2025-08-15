@@ -45,7 +45,7 @@ import {
   smsHistory, smsTemplates, paymentNotifications, adminLogs, systemSettings, announcements, userSessions, systemMetrics, adminNotes, paymentSettings
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, inArray, desc, sql } from "drizzle-orm";
+import { eq, and, or, inArray, desc, sql, isNull, ne } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -1483,7 +1483,46 @@ export class DatabaseStorage implements IStorage {
       whereConditions = and(...conditions);
     }
 
-    return await db.select().from(companyDirectory).where(whereConditions);
+    // Join with users table to exclude admin users
+    return await db
+      .select({
+        id: companyDirectory.id,
+        userId: companyDirectory.userId,
+        companyName: companyDirectory.companyName,
+        contactPerson: companyDirectory.contactPerson,
+        phone: companyDirectory.phone,
+        email: companyDirectory.email,
+        address: companyDirectory.address,
+        city: companyDirectory.city,
+        industry: companyDirectory.industry,
+        website: companyDirectory.website,
+        description: companyDirectory.description,
+        bio: companyDirectory.bio,
+        logoUrl: companyDirectory.logoUrl,
+        isActive: companyDirectory.isActive,
+        isProVisible: companyDirectory.isProVisible,
+        isVerified: companyDirectory.isVerified,
+        subscriptionStatus: companyDirectory.subscriptionStatus,
+        profileImage: companyDirectory.profileImage,
+        verifiedAt: companyDirectory.verifiedAt,
+        lastSeen: companyDirectory.lastSeen,
+        createdAt: companyDirectory.createdAt,
+      })
+      .from(companyDirectory)
+      .innerJoin(users, eq(companyDirectory.userId, users.id))
+      .where(and(
+        whereConditions,
+        // Exclude admin users by checking both isAdmin flag and role field
+        or(
+          eq(users.isAdmin, false),
+          isNull(users.isAdmin)
+        ),
+        or(
+          ne(users.role, 'ADMIN'),
+          ne(users.role, 'SUPER_ADMIN'),
+          isNull(users.role)
+        )
+      ));
   }
 
   async getCompanyDirectoryByUserId(userId: string): Promise<CompanyDirectory[]> {
