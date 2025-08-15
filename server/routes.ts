@@ -3241,6 +3241,75 @@ puantropls Admin Sistemi
     }
   });
 
+  // Payment Notification Admin Endpoints
+  app.get("/api/admin/payment-notifications", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { status } = req.query;
+      let notifications;
+      
+      if (status) {
+        notifications = await storage.getPaymentNotificationsByStatus(status as string);
+      } else {
+        notifications = await storage.getPaymentNotifications();
+      }
+      
+      // Get user details for each notification
+      const notificationsWithUsers = await Promise.all(
+        notifications.map(async (notification) => {
+          const user = await storage.getUser(notification.userId);
+          return {
+            ...notification,
+            user: user ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName } : null
+          };
+        })
+      );
+      
+      res.json(notificationsWithUsers);
+    } catch (error) {
+      console.error('Error fetching payment notifications:', error);
+      res.status(500).json({ error: "Failed to fetch payment notifications" });
+    }
+  });
+
+  app.put("/api/admin/payment-notifications/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { status, adminNote } = req.body;
+      const adminUserId = req.user.id;
+      
+      if (!['approved', 'rejected', 'pending'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      const updatedNotification = await storage.updatePaymentNotificationStatus(
+        id, 
+        status, 
+        adminUserId, 
+        adminNote
+      );
+      
+      if (!updatedNotification) {
+        return res.status(404).json({ error: "Payment notification not found" });
+      }
+      
+      // Log admin action
+      await storage.createAdminLog({
+        adminUserId,
+        action: `PAYMENT_NOTIFICATION_${status.toUpperCase()}`,
+        targetEntity: "PaymentNotification",
+        targetId: id,
+        details: { status, adminNote },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json(updatedNotification);
+    } catch (error) {
+      console.error('Error updating payment notification:', error);
+      res.status(500).json({ error: "Failed to update payment notification" });
+    }
+  });
+
   // SUPER_ADMIN Exclusive Routes
   
   // Role Management (USER ⇄ ADMIN)

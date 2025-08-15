@@ -253,6 +253,7 @@ export interface IStorage {
   // Payment Notifications
   createPaymentNotification(userId: string, notification: InsertPaymentNotification): Promise<PaymentNotification>;
   getPaymentNotifications(): Promise<PaymentNotification[]>;
+  getPaymentNotificationsByStatus(status: string): Promise<PaymentNotification[]>;
   getPaymentNotificationsByUser(userId: string): Promise<PaymentNotification[]>;
   updatePaymentNotificationStatus(id: string, status: string, adminNote?: string, processedBy?: string): Promise<PaymentNotification | undefined>;
 
@@ -2109,6 +2110,12 @@ export class DatabaseStorage implements IStorage {
 
   async getPaymentNotifications(): Promise<PaymentNotification[]> {
     return await db.select().from(paymentNotifications)
+      .orderBy(desc(paymentNotifications.createdAt));
+  }
+
+  async getPaymentNotificationsByStatus(status: string): Promise<PaymentNotification[]> {
+    return await db.select().from(paymentNotifications)
+      .where(eq(paymentNotifications.status, status))
       .orderBy(desc(paymentNotifications.createdAt));
   }
 

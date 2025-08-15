@@ -127,6 +127,13 @@ export default function AdminDashboard() {
       color: "bg-indigo-500",
       route: "/admin/sessions" 
     },
+    { 
+      title: "Ödeme Bildirimleri", 
+      description: "Kullanıcı ödeme bildirimlerini onayla/reddet",
+      icon: DollarSign, 
+      color: "bg-cyan-500",
+      route: "/admin/payment-notifications" 
+    },
   ];
 
   return (
