@@ -365,21 +365,20 @@ export async function setupAuth(app: Express) {
         return res.status(400).json({ message: "Dosya seçilmedi" });
       }
       
-      // For now, we'll simulate a successful upload and return a placeholder URL
-      // In production, you would integrate with a file storage service like AWS S3, Cloudinary, etc.
-      const timestamp = Date.now();
-      const fileExtension = req.file.originalname.split('.').pop();
-      const simulatedUrl = `/uploads/profile-${userId}-${timestamp}.${fileExtension}`;
+      // Convert image to base64 data URL for storage
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      
+      console.log('Image converted to base64, length:', base64Image.length);
       
       // Update user's profile image URL in database
       await storage.updateUser(userId, {
-        profileImageUrl: simulatedUrl,
+        profileImageUrl: base64Image,
         updatedAt: new Date()
       });
       
       res.json({ 
         success: true, 
-        profileImageUrl: simulatedUrl,
+        profileImageUrl: base64Image,
         message: "Profil fotoğrafı başarıyla güncellendi" 
       });
     } catch (error) {
