@@ -70,10 +70,44 @@ export default function Account() {
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
-  // User preferences state
-  const [compactView, setCompactView] = useState(false);
-  const [autoSave, setAutoSave] = useState(true);
-  const [darkTheme, setDarkTheme] = useState(true);
+  // User preferences state - Load from localStorage
+  const [compactView, setCompactView] = useState(() => {
+    const saved = localStorage.getItem('compactView');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [autoSave, setAutoSave] = useState(() => {
+    const saved = localStorage.getItem('autoSave');
+    return saved ? JSON.parse(saved) : true;
+  });
+  const [darkTheme, setDarkTheme] = useState(() => {
+    const saved = localStorage.getItem('darkTheme');
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  // Apply theme and compact view effects
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkTheme) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('darkTheme', JSON.stringify(darkTheme));
+  }, [darkTheme]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (compactView) {
+      root.classList.add('compact');
+    } else {
+      root.classList.remove('compact');
+    }
+    localStorage.setItem('compactView', JSON.stringify(compactView));
+  }, [compactView]);
+
+  useEffect(() => {
+    localStorage.setItem('autoSave', JSON.stringify(autoSave));
+  }, [autoSave]);
 
   // Fetch payment settings for normal users
   const { data: paymentSettings } = useQuery({

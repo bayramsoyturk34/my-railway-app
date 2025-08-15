@@ -65,6 +65,35 @@
   --ring: hsl(202.8169 89.1213% 53.1373%);
 }
 
+/* Compact view styles */
+.compact .card {
+  @apply p-3;
+}
+
+.compact .btn, .compact button {
+  @apply py-1 px-2 text-sm;
+}
+
+.compact .space-y-4 > * + * {
+  margin-top: 0.75rem !important;
+}
+
+.compact .space-y-6 > * + * {
+  margin-top: 1rem !important;
+}
+
+.compact input, .compact select, .compact textarea {
+  @apply py-1.5 px-2 text-sm;
+}
+
+.compact h1 { @apply text-xl; }
+.compact h2 { @apply text-lg; }
+.compact h3 { @apply text-base; }
+
+.compact .table tr {
+  @apply h-8;
+}
+
 @layer base {
   * {
     @apply border-border;
