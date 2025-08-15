@@ -24,15 +24,8 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       localStorage.removeItem('sessionId');
       queryClient.clear();
       
-      toast({
-        title: "Başarıyla çıkış yapıldı",
-        description: "Güle güle!",
-      });
-      
-      // Redirect to landing page
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 500);
+      // Immediate redirect without waiting
+      window.location.href = "/";
     },
     onError: (error: any) => {
       toast({
