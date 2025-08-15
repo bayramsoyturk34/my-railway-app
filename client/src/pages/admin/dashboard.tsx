@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { 
   Shield, Users, MessageSquare, Database, TrendingUp, 
   Activity, Settings, Bell, Calendar, BarChart3,
-  UserCheck, UserX, HardDrive, Zap, RefreshCw, AlertTriangle
+  UserCheck, UserX, HardDrive, Zap, RefreshCw, AlertTriangle, DollarSign
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
