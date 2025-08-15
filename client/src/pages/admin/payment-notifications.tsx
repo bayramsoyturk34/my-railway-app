@@ -8,9 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Clock, User, Calendar, DollarSign } from 'lucide-react';
+import { Check, X, Clock, User, Calendar, DollarSign, ArrowLeft, Home } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useLocation } from 'wouter';
 
 interface PaymentNotification {
   id: string;
@@ -37,6 +38,7 @@ export default function PaymentNotifications() {
   const [adminNote, setAdminNote] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: statusFilter === 'all' ? ['/api/admin/payment-notifications'] : ['/api/admin/payment-notifications', { status: statusFilter }],
@@ -110,7 +112,27 @@ export default function PaymentNotifications() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Ödeme Bildirimleri</h1>
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.history.back()}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Geri</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLocation('/')}
+            className="flex items-center space-x-2"
+          >
+            <Home className="w-4 h-4" />
+            <span>Anasayfa</span>
+          </Button>
+          <h1 className="text-2xl font-bold">Ödeme Bildirimleri</h1>
+        </div>
         <div className="flex items-center space-x-4">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[200px]">
