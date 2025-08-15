@@ -3292,6 +3292,27 @@ puantropls Admin Sistemi
         return res.status(404).json({ error: "Payment notification not found" });
       }
       
+      // If payment is approved, upgrade user to PRO
+      if (status === 'approved' && updatedNotification) {
+        try {
+          await storage.updateUserSubscriptionType(updatedNotification.userId, 'PRO');
+          
+          // Log the subscription upgrade
+          await storage.createAdminLog({
+            adminUserId,
+            action: `USER_UPGRADED_TO_PRO`,
+            targetEntity: "User",
+            targetId: updatedNotification.userId,
+            details: { reason: 'Payment approved', paymentNotificationId: id },
+            ipAddress: req.ip,
+            userAgent: req.get('User-Agent'),
+          });
+        } catch (upgradeError) {
+          console.error('Error upgrading user to PRO:', upgradeError);
+          // Continue even if upgrade fails - payment is still approved
+        }
+      }
+      
       // Log admin action
       await storage.createAdminLog({
         adminUserId,
