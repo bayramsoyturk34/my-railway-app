@@ -3650,18 +3650,21 @@ puantropls Admin Sistemi
       const data = insertPaymentSettingsSchema.parse(req.body);
       const settings = await storage.updatePaymentSettings(data);
       
-      // Log admin action
-      await storage.createAdminLog({
-        adminId: req.user.id,
-        action: "UPDATE_PAYMENT_SETTINGS",
-        targetType: "PAYMENT_SETTINGS",
-        details: `Updated payment settings: ${data.bankName}, ${data.amount}`,
-      });
-
       res.json(settings);
     } catch (error) {
       console.error("Error updating payment settings:", error);
       res.status(500).json({ error: "Failed to update payment settings" });
+    }
+  });
+
+  // Payment info for regular users
+  app.get("/api/payment-info", isAuthenticated, async (req: any, res) => {
+    try {
+      const settings = await storage.getPaymentSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching payment info:", error);
+      res.status(500).json({ error: "Failed to fetch payment info" });
     }
   });
 
