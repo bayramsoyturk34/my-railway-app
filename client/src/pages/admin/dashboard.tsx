@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { 
   Shield, Users, MessageSquare, Database, TrendingUp, 
   Activity, Settings, Bell, Calendar, BarChart3, Home,
-  UserCheck, UserX, HardDrive, Zap, RefreshCw, AlertTriangle, DollarSign
+  UserCheck, UserX, HardDrive, Zap, RefreshCw, AlertTriangle, DollarSign, Trash2
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
 import MaintenanceBanner from "@/components/maintenance-banner";
 import AdminLayout from "@/components/admin/admin-layout";
@@ -14,11 +15,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast();
+  const queryClientInstance = useQueryClient();
+  const { user } = useAuth();
 
   // Admin dashboard stats with enhanced auto-refresh
   const { data: dashboardStats, isLoading } = useQuery({
@@ -43,6 +51,29 @@ export default function AdminDashboard() {
   const { data: systemSettings } = useQuery({
     queryKey: ["/api/admin/settings"],
     refetchInterval: autoRefresh ? 30000 : false, // 30 seconds when enabled
+  });
+
+  // Delete all users except super admin mutation
+  const deleteAllUsersMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/admin/users/delete-all-except-super");
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Başarılı",
+        description: `${data.deletedCount} kullanıcı başarıyla silindi (süper admin korundu)`,
+      });
+      queryClientInstance.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClientInstance.invalidateQueries({ queryKey: ["/api/admin/dashboard-stats"] });
+      setShowDeleteDialog(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Kullanıcıları silerken bir hata oluştu",
+        variant: "destructive",
+      });
+    },
   });
 
   const settingsMap = systemSettings?.reduce((acc: any, setting: any) => {
@@ -154,6 +185,59 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Delete All Users Button - Only for SUPER_ADMIN */}
+            {user?.role === 'SUPER_ADMIN' && (
+              <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="flex items-center gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Tüm Kullanıcıları Sil
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="h-5 w-5" />
+                      Tehlikeli İşlem
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-600">
+                      Bu işlem süper admin hariç <strong>TÜM KULLANICILAR</strong>ı ve onlara ait 
+                      <strong> TÜM VERİLERİ</strong> kalıcı olarak silecektir.
+                      <br/><br/>
+                      Bu işlem <strong>GERİ ALINAMAZ</strong>. Emin misiniz?
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowDeleteDialog(false)}
+                      disabled={deleteAllUsersMutation.isPending}
+                    >
+                      İptal
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => deleteAllUsersMutation.mutate()}
+                      disabled={deleteAllUsersMutation.isPending}
+                      className="flex items-center gap-2"
+                    >
+                      {deleteAllUsersMutation.isPending ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Siliniyor...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4" />
+                          Evet, Tümünü Sil
+                        </>
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+            
             <Button 
               variant="outline" 
               size="sm"
