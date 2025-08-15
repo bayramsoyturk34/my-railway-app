@@ -3644,6 +3644,56 @@ puantropls Admin Sistemi
     }
   });
 
+  // Delete all users except super admin
+  app.post("/api/admin/users/delete-all-except-super", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const currentUser = await storage.getUser(currentUserId);
+      
+      // Only SUPER_ADMIN can delete all users
+      if (currentUser?.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Only SUPER_ADMIN can delete all users" });
+      }
+
+      // Get all users except super admin
+      const allUsers = await storage.getAllUsers();
+      const usersToDelete = allUsers.filter(user => user.role !== 'SUPER_ADMIN');
+      
+      console.log(`Found ${usersToDelete.length} users to delete (excluding super admin)`);
+      
+      let deletedCount = 0;
+      for (const user of usersToDelete) {
+        try {
+          // Delete all user-related data first
+          await storage.deleteAllUserData(user.id);
+          deletedCount++;
+          console.log(`Deleted user: ${user.email} (${user.id})`);
+        } catch (error) {
+          console.error(`Error deleting user ${user.email}:`, error);
+        }
+      }
+      
+      // Log this action
+      await storage.createAdminLog({
+        action: `Deleted ${deletedCount} users (excluding super admin)`,
+        adminUserId: req.user.id,
+        targetEntity: "System",
+        targetEntityId: "bulk_delete",
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json({ 
+        success: true, 
+        deletedCount,
+        message: `Successfully deleted ${deletedCount} users (super admin preserved)`
+      });
+    } catch (error) {
+      console.error("Error deleting all users:", error);
+      res.status(500).json({ error: "Failed to delete users" });
+    }
+  });
+
   // Payment settings endpoints
   app.get("/api/admin/payment-settings", isAuthenticated, isAdmin, async (req: any, res) => {
     try {

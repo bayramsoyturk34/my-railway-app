@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Users, 
   UserCheck, 
@@ -15,14 +16,21 @@ import {
   Calendar,
   Mail,
   Shield,
-  Activity
+  Activity,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch all users and admin stats
   const { data: adminData, isLoading } = useQuery({
@@ -31,6 +39,29 @@ export default function AdminDashboard() {
 
   const { data: allUsers, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
+  });
+
+  // Delete all users except super admin mutation
+  const deleteAllUsersMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/admin/users/delete-all-except-super");
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Başarılı",
+        description: `${data.deletedCount} kullanıcı başarıyla silindi (süper admin korundu)`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      setShowDeleteDialog(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Kullanıcıları silerken bir hata oluştu",
+        variant: "destructive",
+      });
+    },
   });
 
   // Filter users based on search
@@ -127,10 +158,56 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users">Kullanıcı Listesi</TabsTrigger>
-          <TabsTrigger value="analytics">Analitik</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="users">Kullanıcı Listesi</TabsTrigger>
+            <TabsTrigger value="analytics">Analitik</TabsTrigger>
+          </TabsList>
+          
+          {/* Delete All Users Button - Only for SUPER_ADMIN */}
+          <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <DialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="flex items-center gap-2">
+                <Trash2 className="h-4 w-4" />
+                Tüm Kullanıcıları Sil
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-red-600">
+                  <AlertTriangle className="h-5 w-5" />
+                  Tehlikeli İşlem
+                </DialogTitle>
+                <DialogDescription className="text-gray-600">
+                  Bu işlem süper admin hariç <strong>TÜM KULLANICILAR</strong>ı ve onlara ait 
+                  <strong> TÜM VERİLERİ</strong> kalıcı olarak silecektir.
+                  <br/><br/>
+                  Bu işlem <strong>GERİ ALINAMAZ</strong>. Emin misiniz?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowDeleteDialog(false)}
+                  disabled={deleteAllUsersMutation.isPending}
+                >
+                  İptal
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => deleteAllUsersMutation.mutate()}
+                  disabled={deleteAllUsersMutation.isPending}
+                  className="flex items-center gap-2"
+                >
+                  {deleteAllUsersMutation.isPending && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  Evet, Tüm Kullanıcıları Sil
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <TabsContent value="users" className="space-y-4">
           <Card>
