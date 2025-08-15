@@ -20,12 +20,21 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       return await apiRequest("/api/auth/logout", "POST", {});
     },
     onSuccess: () => {
-      // Clear localStorage and cache
-      localStorage.removeItem('sessionId');
-      queryClient.clear();
+      // Clear all local storage
+      localStorage.clear();
+      sessionStorage.clear();
       
-      // Immediate redirect without waiting
-      window.location.href = "/";
+      // Clear all query cache
+      queryClient.clear();
+      queryClient.invalidateQueries();
+      
+      // Clear cookies
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      });
+      
+      // Force reload to completely reset app state
+      window.location.replace("/");
     },
     onError: (error: any) => {
       toast({

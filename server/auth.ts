@@ -273,13 +273,24 @@ export async function setupAuth(app: Express) {
         sessionId = sessionId.substring(2).split('.')[0];
       }
       
+      console.log("Logout attempt for session:", sessionId);
+      
       if (sessionId) {
         await deleteSession(sessionId);
         console.log("Session removed from database:", sessionId);
       }
       
-      res.clearCookie('session');
-      res.json({ success: true });
+      // Clear all cookies
+      res.clearCookie('session', { path: '/' });
+      res.clearCookie('connect.sid', { path: '/' });
+      
+      // Add cache control headers to prevent caching
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      console.log("Logout successful");
+      res.json({ success: true, message: "Logout successful" });
     } catch (error) {
       console.error("Logout error:", error);
       res.json({ success: true }); // Still return success even if cleanup fails
