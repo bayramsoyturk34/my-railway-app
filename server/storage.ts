@@ -244,6 +244,12 @@ export interface IStorage {
   getSMSTemplates(userId: string): Promise<SMSTemplate[]>;
   createSMSTemplate(userId: string, template: InsertSMSTemplate): Promise<SMSTemplate>;
 
+  // Payment notification operations
+  createPaymentNotification(userId: string, notificationData: InsertPaymentNotification): Promise<PaymentNotification>;
+  getPaymentNotifications(): Promise<PaymentNotification[]>;
+  getPaymentNotificationsByStatus(status: string): Promise<PaymentNotification[]>;
+  updatePaymentNotificationStatus(id: string, status: string, processedBy?: string, adminNote?: string): Promise<PaymentNotification | undefined>;
+
   // Payment Notifications
   createPaymentNotification(userId: string, notification: InsertPaymentNotification): Promise<PaymentNotification>;
   getPaymentNotifications(): Promise<PaymentNotification[]>;
@@ -2454,6 +2460,44 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(adminLogs)
       .orderBy(desc(adminLogs.createdAt))
       .limit(50);
+  }
+
+  // Payment notification methods
+  async createPaymentNotification(userId: string, notificationData: InsertPaymentNotification): Promise<PaymentNotification> {
+    const [result] = await db.insert(paymentNotifications).values({
+      ...notificationData,
+      userId,
+    }).returning();
+    return result;
+  }
+
+  async getPaymentNotifications(): Promise<PaymentNotification[]> {
+    return await db.select().from(paymentNotifications)
+      .orderBy(desc(paymentNotifications.createdAt));
+  }
+
+  async getPaymentNotificationsByStatus(status: string): Promise<PaymentNotification[]> {
+    return await db.select().from(paymentNotifications)
+      .where(eq(paymentNotifications.status, status))
+      .orderBy(desc(paymentNotifications.createdAt));
+  }
+
+  async updatePaymentNotificationStatus(
+    id: string, 
+    status: string, 
+    processedBy?: string, 
+    adminNote?: string
+  ): Promise<PaymentNotification | undefined> {
+    const [result] = await db.update(paymentNotifications)
+      .set({
+        status,
+        processedBy,
+        adminNote,
+        processedAt: new Date(),
+      })
+      .where(eq(paymentNotifications.id, id))
+      .returning();
+    return result;
   }
 }
 
