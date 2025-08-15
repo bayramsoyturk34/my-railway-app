@@ -195,13 +195,18 @@ export default function Account() {
       const formData = new FormData();
       formData.append('profileImage', file);
       
+      const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/auth/upload-profile-image', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
       });
       
       if (!response.ok) {
-        throw new Error('Fotoğraf yüklenirken hata oluştu');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Fotoğraf yüklenirken hata oluştu');
       }
       
       return response.json();

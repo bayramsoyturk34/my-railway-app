@@ -3,6 +3,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { sessions } from "@shared/schema";
 import { eq, and, lt, gt } from "drizzle-orm";
+import multer from "multer";
 
 // Database-based session management
 const createSession = async (userId: string): Promise<string> => {
@@ -335,15 +336,32 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // Profile image upload
-  app.post("/api/auth/upload-profile-image", isAuthenticated, async (req, res) => {
+  // Profile image upload with multer middleware
+  const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.match(/^image\/(jpeg|jpg|png)$/)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Sadece JPG ve PNG formatları desteklenmektedir.'), false);
+      }
+    }
+  });
+
+  app.post("/api/auth/upload-profile-image", upload.single('profileImage'), isAuthenticated, async (req, res) => {
     try {
       const userId = (req as any).user.id;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "Dosya seçilmedi" });
+      }
       
       // For now, we'll simulate a successful upload and return a placeholder URL
       // In production, you would integrate with a file storage service like AWS S3, Cloudinary, etc.
       const timestamp = Date.now();
-      const simulatedUrl = `/uploads/profile-${userId}-${timestamp}.jpg`;
+      const fileExtension = req.file.originalname.split('.').pop();
+      const simulatedUrl = `/uploads/profile-${userId}-${timestamp}.${fileExtension}`;
       
       // Update user's profile image URL in database
       await storage.updateUser(userId, {
@@ -358,7 +376,11 @@ export async function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error("Error uploading profile image:", error);
-      res.status(500).json({ message: "Fotoğraf yüklenirken hata oluştu" });
+      if (error instanceof Error && error.message.includes('formatları')) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Fotoğraf yüklenirken hata oluştu" });
+      }
     }
   });
 }
