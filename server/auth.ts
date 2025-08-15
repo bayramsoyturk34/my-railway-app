@@ -341,10 +341,18 @@ export async function setupAuth(app: Express) {
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
-      if (file.mimetype.match(/^image\/(jpeg|jpg|png)$/)) {
+      console.log('File upload - mimetype:', file.mimetype);
+      console.log('File upload - originalname:', file.originalname);
+      
+      // Accept common image formats
+      if (file.mimetype === 'image/jpeg' || 
+          file.mimetype === 'image/jpg' || 
+          file.mimetype === 'image/png' ||
+          file.mimetype === 'image/gif' ||
+          file.mimetype === 'image/webp') {
         cb(null, true);
       } else {
-        cb(new Error('Sadece JPG ve PNG formatları desteklenmektedir.'), false);
+        cb(new Error('Sadece JPG, PNG, GIF ve WebP formatları desteklenmektedir.'), false);
       }
     }
   });
