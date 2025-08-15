@@ -25,12 +25,14 @@ import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Fetch all users and admin stats
   const { data: adminData, isLoading } = useQuery({
@@ -165,13 +167,14 @@ export default function AdminDashboard() {
           </TabsList>
           
           {/* Delete All Users Button - Only for SUPER_ADMIN */}
-          <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-            <DialogTrigger asChild>
-              <Button variant="destructive" size="sm" className="flex items-center gap-2">
-                <Trash2 className="h-4 w-4" />
-                Tüm Kullanıcıları Sil
-              </Button>
-            </DialogTrigger>
+          {user?.isAdmin && (
+            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="flex items-center gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Tüm Kullanıcıları Sil
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-red-600">
@@ -207,6 +210,7 @@ export default function AdminDashboard() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </div>
 
         <TabsContent value="users" className="space-y-4">
