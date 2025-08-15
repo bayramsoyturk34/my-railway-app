@@ -70,9 +70,9 @@ export default function Account() {
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Fetch payment settings
+  // Fetch payment settings for normal users
   const { data: paymentSettings } = useQuery({
-    queryKey: ["/api/admin/payment-settings"],
+    queryKey: ["/api/payment-info"],
     retry: false,
   });
 
