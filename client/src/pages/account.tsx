@@ -532,11 +532,13 @@ export default function Account() {
                   <div className="flex items-center justify-between p-4 bg-dark-primary rounded-lg">
                     <div>
                       <p className="text-white font-medium">
-                        Mevcut Plan: <span className="text-yellow-400">{(user as any)?.subscriptionType === 'PRO' ? 'PRO' : 'DEMO'}</span>
+                        Mevcut Plan: <span className={`${(user as any)?.subscriptionType === 'PRO' ? 'text-green-400' : 'text-yellow-400'}`}>
+                          {(user as any)?.subscriptionType === 'PRO' ? 'PRO Plan' : 'DEMO'}
+                        </span>
                       </p>
                       <p className="text-gray-400 text-sm">
                         {(user as any)?.subscriptionType === 'PRO' 
-                          ? 'Tüm özelliklere erişiminiz var' 
+                          ? 'Tüm özelliklere erişim var' 
                           : 'Sınırlı özelliklere erişiminiz var'
                         }
                       </p>
