@@ -9,6 +9,7 @@ import {
 import { queryClient } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
 import MaintenanceBanner from "@/components/maintenance-banner";
+import AdminLayout from "@/components/admin/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,17 +54,14 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark-primary">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4 animate-spin" />
-              <p className="text-gray-400">Admin panel yükleniyor...</p>
-            </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4 animate-spin" />
+            <p className="text-gray-400">Admin panel yükleniyor...</p>
           </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
@@ -137,10 +135,8 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-dark-primary">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-8">
+    <AdminLayout>
+      <div className="space-y-6">
         {/* Maintenance Mode Banner */}
         {isMaintenanceMode && <MaintenanceBanner isAdmin={true} />}
         
@@ -389,6 +385,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
