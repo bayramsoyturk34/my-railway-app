@@ -920,7 +920,17 @@ export default function Account() {
                     <Switch 
                       checked={darkTheme} 
                       onCheckedChange={(checked) => {
+                        console.log('🎨 Dark theme changing to:', checked);
                         setDarkTheme(checked);
+                        // Manual immediate effect
+                        const root = document.documentElement;
+                        if (checked) {
+                          root.classList.add('dark');
+                          console.log('✅ Added dark class');
+                        } else {
+                          root.classList.remove('dark');
+                          console.log('✅ Removed dark class');
+                        }
                         if (autoSave) {
                           toast({
                             title: "Tema Değiştirildi",
@@ -939,7 +949,17 @@ export default function Account() {
                     <Switch 
                       checked={compactView} 
                       onCheckedChange={(checked) => {
+                        console.log('📏 Compact view changing to:', checked);
                         setCompactView(checked);
+                        // Manual immediate effect
+                        const root = document.documentElement;
+                        if (checked) {
+                          root.classList.add('compact');
+                          console.log('✅ Added compact class');
+                        } else {
+                          root.classList.remove('compact');
+                          console.log('✅ Removed compact class');
+                        }
                         if (autoSave) {
                           toast({
                             title: "Görünüm Değiştirildi",
