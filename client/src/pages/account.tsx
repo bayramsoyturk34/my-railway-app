@@ -180,10 +180,14 @@ export default function Account() {
       const formData = new FormData();
       formData.append('profileImage', file);
       
-      // Use credentials to send cookies automatically
+      // Use the same authentication mechanism as other API calls
+      const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/auth/upload-profile-image', {
         method: 'POST',
-        credentials: 'include', // This sends cookies automatically
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type for FormData - browser will set it with boundary
+        },
         body: formData,
       });
       
