@@ -553,14 +553,15 @@ export default function Account() {
                 </CardContent>
               </Card>
 
-              {/* Payment Method */}
-              <Card className="bg-dark-secondary border-dark-accent">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    PRO Abonelik Satın Al
-                  </CardTitle>
-                </CardHeader>
+              {/* Payment Method - Only show for DEMO users */}
+              {(user as any)?.subscriptionType !== 'PRO' && (
+                <Card className="bg-dark-secondary border-dark-accent">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <CreditCard className="h-5 w-5" />
+                      PRO Abonelik Satın Al
+                    </CardTitle>
+                  </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 rounded-lg border border-blue-500/30">
                     <h3 className="text-white font-bold text-xl mb-2">PRO Üyelik - 99 TL/Ay</h3>
@@ -713,6 +714,7 @@ export default function Account() {
                   </div>
                 </CardContent>
               </Card>
+              )}
             </div>
           </TabsContent>
 
