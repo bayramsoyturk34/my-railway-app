@@ -66,33 +66,64 @@
 }
 
 /* Compact view styles */
-.compact .card {
-  @apply p-3;
+.compact {
+  font-size: 0.875rem;
 }
 
-.compact .btn, .compact button {
-  @apply py-1 px-2 text-sm;
+.compact .card,
+.compact [class*="card"] {
+  padding: 0.75rem !important;
 }
 
-.compact .space-y-4 > * + * {
+.compact .btn, 
+.compact button,
+.compact [class*="button"] {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  height: auto !important;
+  min-height: 2rem !important;
+}
+
+.compact .space-y-4 > * + *,
+.compact [class*="space-y-4"] > * + * {
+  margin-top: 0.5rem !important;
+}
+
+.compact .space-y-6 > * + *,
+.compact [class*="space-y-6"] > * + * {
   margin-top: 0.75rem !important;
 }
 
-.compact .space-y-6 > * + * {
-  margin-top: 1rem !important;
+.compact input, 
+.compact select, 
+.compact textarea,
+.compact [class*="input"],
+.compact [class*="select"],
+.compact [class*="textarea"] {
+  padding: 0.375rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  height: 2rem !important;
 }
 
-.compact input, .compact select, .compact textarea {
-  @apply py-1.5 px-2 text-sm;
+.compact h1 { font-size: 1.25rem !important; }
+.compact h2 { font-size: 1.125rem !important; }
+.compact h3 { font-size: 1rem !important; }
+.compact h4 { font-size: 0.875rem !important; }
+
+.compact .table tr,
+.compact tr {
+  height: 2rem !important;
 }
 
-.compact h1 { @apply text-xl; }
-.compact h2 { @apply text-lg; }
-.compact h3 { @apply text-base; }
+.compact .p-4 { padding: 0.5rem !important; }
+.compact .p-6 { padding: 0.75rem !important; }
+.compact .py-2 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+.compact .px-4 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
 
-.compact .table tr {
-  @apply h-8;
-}
+.compact .text-xl { font-size: 1.125rem !important; }
+.compact .text-lg { font-size: 1rem !important; }
+.compact .text-base { font-size: 0.875rem !important; }
+.compact .text-sm { font-size: 0.75rem !important; }
 
 @layer base {
   * {

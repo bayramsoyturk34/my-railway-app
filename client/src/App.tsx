@@ -6,6 +6,31 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import MaintenanceCheck from "@/components/maintenance-check";
+
+// Global theme management
+function useGlobalTheme() {
+  useEffect(() => {
+    // Apply saved theme on app load
+    const savedDarkTheme = localStorage.getItem('darkTheme');
+    const savedCompactView = localStorage.getItem('compactView');
+    
+    const root = document.documentElement;
+    
+    // Apply dark theme
+    if (savedDarkTheme === 'true' || savedDarkTheme === null) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
+    // Apply compact view
+    if (savedCompactView === 'true') {
+      root.classList.add('compact');
+    } else {
+      root.classList.remove('compact');
+    }
+  }, []);
+}
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -39,6 +64,9 @@ function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const hasSessionId = !!localStorage.getItem('sessionId');
   const [location] = useLocation();
+  
+  // Apply global theme settings
+  useGlobalTheme();
 
   // Debug removed - routing now stable
 
