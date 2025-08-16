@@ -92,7 +92,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           size="icon"
           className="text-white hover:bg-dark-accent"
           onClick={handleLogout}
-          disabled={logoutMutation.isPending}
+
           title="Çıkış Yap"
         >
           <LogOut className="h-6 w-6" />
