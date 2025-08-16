@@ -37,15 +37,12 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const unreadCount = finalNotifications?.filter((n: any) => !n.isRead)?.length || 0;
 
   // Debug log for notifications
-  console.log("🔔 Auth loading:", authLoading);
-  console.log("🔔 Is authenticated:", isAuthenticated);
-  console.log("🔔 User:", user);
-  console.log("🔔 Query enabled:", !authLoading && isAuthenticated && !!user);
-  console.log("🔔 Query loading:", notificationsLoading);
-  console.log("🔔 API Notifications:", notifications);
-  console.log("🔔 Error:", notificationError);
-  console.log("🔔 Final Notifications:", finalNotifications);
+  console.log("🔔 All notifications:", notifications);
+  console.log("🔔 Notifications count:", finalNotifications?.length || 0);
+  console.log("🔔 First notification:", finalNotifications?.[0] || null);
   console.log("🔔 Unread Count:", unreadCount);
+  console.log("🔔 Should show badge:", unreadCount > 0);
+  console.log("🔔 User exists:", !!user);
   
   // Force check notifications immediately when user changes
   React.useEffect(() => {
@@ -132,6 +129,22 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           </Button>
         )}
 
+        {/* Test - Bildirim ikonunu zorla göster */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-red-500 hover:bg-dark-accent relative border-2 border-red-500"
+          title="TEST - Bildirim Butonu"
+        >
+          <Bell className="h-8 w-8" />
+          <Badge 
+            variant="destructive" 
+            className="absolute -top-1 -right-1 h-6 w-6 p-0 flex items-center justify-center text-xs bg-red-500"
+          >
+            1
+          </Badge>
+        </Button>
+
         {/* Notifications */}
         {user && (
           <DropdownMenu>
@@ -140,6 +153,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-dark-accent relative"
+                title={`Bildirimler (${unreadCount} okunmamış)`}
               >
                 <Bell className="h-6 w-6" />
                 {unreadCount > 0 && (
