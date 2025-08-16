@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +24,9 @@ export default function Login() {
       });
     },
     onSuccess: (data) => {
-      // Cookie automatically set by server, reload to refresh auth
       if (data.success) {
-        setTimeout(() => window.location.reload(), 100);
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        setTimeout(() => window.location.href = '/', 200);
       }
     },
     onError: (error: Error) => {
@@ -43,9 +43,9 @@ export default function Login() {
       return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
     onSuccess: (data) => {
-      // Cookie automatically set by server, reload to refresh auth
       if (data.success) {
-        setTimeout(() => window.location.reload(), 100);
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        setTimeout(() => window.location.href = '/', 200);
       }
     },
     onError: (error: Error) => {
