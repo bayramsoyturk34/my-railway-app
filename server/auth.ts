@@ -96,6 +96,14 @@ export async function setupAuth(app: Express) {
       // Generate database session
       const sessionId = await createSession(user.id);
       
+      // Set HTTP-only cookie for session
+      res.cookie('session', sessionId, {
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        httpOnly: true,
+        secure: false, // Set to true in production with HTTPS
+        sameSite: 'lax'
+      });
+      
       console.log("User registered:", user.email, "Session:", sessionId);
       
       res.json({ success: true, user, sessionId });
@@ -144,7 +152,15 @@ export async function setupAuth(app: Express) {
       // Generate database session
       const sessionId = await createSession(user.id);
       
-
+      // Set HTTP-only cookie for session
+      res.cookie('session', sessionId, {
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        httpOnly: true,
+        secure: false, // Set to true in production with HTTPS
+        sameSite: 'lax'
+      });
+      
+      console.log("🔐 Login successful - Setting cookie with sessionId:", sessionId);
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
@@ -158,26 +174,30 @@ export async function setupAuth(app: Express) {
     try {
       // Try to get session ID from Authorization header or cookie
       const authHeader = req.headers.authorization;
-      let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'];
+      let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['session'];
       
-      // Handle signed cookies format: s:sessionId.signature
+      // Handle signed cookies format: s:sessionId.signature  
       if (sessionId && sessionId.startsWith('s:')) {
         sessionId = sessionId.substring(2).split('.')[0];
       }
       
-      // Session authentication successful
+      console.log("🔐 Auth debug - Raw sessionId:", sessionId);
+      console.log("🔐 Auth debug - Cookies:", req.cookies);
       
       if (!sessionId) {
-
+        console.log("🔐 Auth debug - No sessionId found");
         return res.status(401).json({ message: "Unauthorized" });
       }
 
       const user = await getSession(sessionId);
       
       if (!user) {
-
+        console.log("🔐 Auth debug - User not found for sessionId");
         return res.status(401).json({ message: "Unauthorized" });
       }
+      
+      console.log("🔐 Auth debug - User found:", !!user);
+      console.log("🔐 Auth debug - Authentication successful for user:", user.id);
 
       // Auto-create company profile if user doesn't have one
       try {
@@ -218,7 +238,7 @@ export async function setupAuth(app: Express) {
   // Logout endpoint
   app.post("/api/auth/logout", async (req, res) => {
     try {
-      let sessionId = req.headers.authorization?.replace('Bearer ', '') || req.cookies['connect.sid'];
+      let sessionId = req.headers.authorization?.replace('Bearer ', '') || req.cookies['session'];
       
       // Handle signed cookies format: s:sessionId.signature
       if (sessionId && sessionId.startsWith('s:')) {

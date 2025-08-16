@@ -40,8 +40,8 @@ export default function Register() {
       });
     },
     onSuccess: (data) => {
-      if (data.sessionId) {
-        localStorage.setItem('sessionId', data.sessionId);
+      // Cookie automatically set by server, just redirect
+      if (data.success) {
         window.location.replace('/');
       }
     },

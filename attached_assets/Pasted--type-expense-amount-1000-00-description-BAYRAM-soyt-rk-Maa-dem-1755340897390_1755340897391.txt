@@ -1,0 +1,188 @@
+ },
+  {
+    type: 'expense',
+    amount: '1000.00',
+    description: 'BAYRAM soytürk - Maaş Ödemesi (salary)'
+  }
+]
+Financial summary: {
+  totalIncome: 5500,
+  totalExpenses: 1000,
+  netBalance: 4500,
+  customerTasks: { total: 18660, pending: 2, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 9500,
+    pending: 0,
+    approvedCount: 1,
+    pendingCount: 0
+  },
+  customerPayments: { total: 5500, thisMonth: 5500, count: 1 }
+}
+10:35:49 AM [express] GET /api/financial-summary 304 in 611ms :: {"totalIncome":5500,"totalExpenses":…
+10:40:08 AM [express] GET /api/auth/user 304 in 232ms :: {"id":"11148tiqroz","email":"bayramsoyturk61…
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+10:40:09 AM [express] GET /api/admin/settings 403 in 118ms :: {"error":"Admin access required"}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+10:40:09 AM [express] GET /api/personnel 304 in 241ms :: [{"id":"9a0a4f02-2f78-4189-b663-ab3d1da4c14c…
+10:40:09 AM [express] GET /api/customers 304 in 240ms :: [{"id":"5f827d2b-7a28-4ef7-8cc5-6358843f5515…
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+10:40:09 AM [express] GET /api/analytics/dashboard 304 in 305ms :: {"monthlyRevenue":[{"month":"Ocak"…
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+All transactions: [
+  {
+    type: 'income',
+    amount: '5500.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: asd'
+  },
+  {
+    type: 'expense',
+    amount: '1000.00',
+    description: 'BAYRAM soytürk - Maaş Ödemesi (salary)'
+  }
+]
+Financial summary: {
+  totalIncome: 5500,
+  totalExpenses: 1000,
+  netBalance: 4500,
+  customerTasks: { total: 18660, pending: 2, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 9500,
+    pending: 0,
+    approvedCount: 1,
+    pendingCount: 0
+  },
+  customerPayments: { total: 5500, thisMonth: 5500, count: 1 }
+}
+10:40:10 AM [express] GET /api/financial-summary 304 in 819ms :: {"totalIncome":5500,"totalExpenses":…
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+10:40:15 AM [express] GET /api/company-directory 304 in 240ms :: [{"id":"9ae914f1-9331-4b43-9388-6449…
+10:40:15 AM [express] GET /api/company-directory/my-companies 304 in 237ms :: [{"id":"9ae914f1-9331-4…
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and 9f10750c-1347-4762-8fe6-05720eae587d
+Found 0 messages
+10:40:21 AM [express] GET /api/messages/9f10750c-1347-4762-8fe6-05720eae587d 304 in 301ms :: []
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Creating message with data: {
+  fromCompanyId: '9ae914f1-9331-4b43-9388-6449ac27adfa',
+  toCompanyId: '9f10750c-1347-4762-8fe6-05720eae587d',
+  message: 'nerde',
+  fromUserId: '11148tiqroz',
+  toUserId: '11148tiqroz'
+}
+Gönderen firma bilgisi: {
+  id: '9ae914f1-9331-4b43-9388-6449ac27adfa',
+  userId: '11148tiqroz',
+  companyName: 'ms konsept',
+  contactPerson: 'mustafa  soytürk',
+  phone: '0553 187 6854',
+  email: 'bayramsoyturk6154@gmail.com',
+  address: '',
+  city: 'ümraniye',
+  industry: 'mobilya tasarım uygulama',
+  website: '',
+  description: 'Kayıt sırasında oluşturulan firma profili',
+  bio: null,
+  logoUrl: null,
+  isActive: true,
+  isProVisible: true,
+  isVerified: false,
+  subscriptionStatus: 'FREE',
+  profileImage: null,
+  verifiedAt: null,
+  lastSeen: null,
+  createdAt: 2025-08-16T07:19:44.455Z
+}
+Alıcı firma bilgisi: {
+  id: '9f10750c-1347-4762-8fe6-05720eae587d',
+  userId: 'ty2nsnn9f9q',
+  companyName: 'nuri kalyon',
+  contactPerson: 'nuri kalyon',
+  phone: '',
+  email: 'info@istanbulhirdavatcisi.com',
+  address: '',
+  city: null,
+  industry: null,
+  website: '',
+  description: 'Otomatik oluşturulan firma profili',
+  bio: null,
+  logoUrl: null,
+  isActive: true,
+  isProVisible: true,
+  isVerified: false,
+  subscriptionStatus: 'FREE',
+  profileImage: null,
+  verifiedAt: null,
+  lastSeen: null,
+  createdAt: 2025-08-16T08:41:50.387Z
+}
+Creating notification for receiver: {
+  userId: 'ty2nsnn9f9q',
+  type: 'NEW_MESSAGE',
+  title: 'Yeni Mesaj',
+  content: 'mustafa  soytürk size mesaj gönderdi',
+  payload: {
+    fromCompanyId: '9ae914f1-9331-4b43-9388-6449ac27adfa',
+    toCompanyId: '9f10750c-1347-4762-8fe6-05720eae587d',
+    messageId: '9f2b53b4-6ea1-4a75-92b4-e9aaebeb0e23',
+    fromCompanyName: 'ms konsept',
+    fromUserName: 'mustafa  soytürk'
+  }
+}
+10:40:36 AM [express] POST /api/messages 201 in 666ms :: {"id":"9f2b53b4-6ea1-4a75-92b4-e9aaebeb0e23"…
+🔐 Auth debug - Raw sessionId: xkby1ns3nb
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and 9f10750c-1347-4762-8fe6-05720eae587d
+Found 1 messages
+10:40:36 AM [express] GET /api/messages/9f10750c-1347-4762-8fe6-05720eae587d 200 in 291ms :: [{"id":"…
+10:40:39 AM [express] GET /api/analytics/dashboard 304 in 292ms :: {"monthlyRevenue":[{"month":"Ocak"…
+10:40:40 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+🔐 Auth debug - Raw sessionId: undefined
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - No sessionId found
+10:40:41 AM [express] GET /api/customers 401 in 246ms :: {"message":"Unauthorized"}
+🔐 Auth debug - Raw sessionId: undefined
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - No sessionId found
+10:40:41 AM [express] GET /api/personnel 401 in 249ms :: {"message":"Unauthorized"}
+🔐 Auth debug - Raw sessionId: undefined
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - No sessionId found
+10:40:41 AM [express] GET /api/financial-summary 401 in 244ms :: {"message":"Unauthorized"}
+10:40:41 AM [express] GET /api/analytics/dashboard 304 in 303ms :: {"monthlyRevenue":[{"month":"Ocak"…
+10:40:47 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+10:40:53 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+10:40:59 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+10:41:05 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+10:41:11 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+10:41:17 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+10:41:23 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+10:41:29 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}

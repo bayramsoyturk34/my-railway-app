@@ -24,8 +24,8 @@ export default function Login() {
       });
     },
     onSuccess: (data) => {
-      if (data.sessionId) {
-        localStorage.setItem('sessionId', data.sessionId);
+      // Cookie automatically set by server, just redirect
+      if (data.success) {
         window.location.href = '/';
       }
     },
@@ -43,8 +43,8 @@ export default function Login() {
       return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
     onSuccess: (data) => {
-      if (data.sessionId) {
-        localStorage.setItem('sessionId', data.sessionId);
+      // Cookie automatically set by server, just redirect
+      if (data.success) {
         window.location.href = '/';
       }
     },
