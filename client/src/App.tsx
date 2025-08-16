@@ -70,26 +70,14 @@ function Router() {
 
   // Debug removed - routing now stable
 
-  // Show loading while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
-        <div className="text-white">Giriş kontrol ediliyor...</div>
-      </div>
-    );
-  }
-
-  // Show authenticated routes if user is authenticated
-  const shouldShowAuthenticatedRoutes = isAuthenticated && user;
-
-  // Direct rendering for unauthenticated users
-  if (!shouldShowAuthenticatedRoutes) {
+  // Always show login page as default for unauthenticated users
+  if (!isAuthenticated) {
     return (
       <Switch>
-        <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/api/auth/logout" component={Logout} />
-        <Route component={Landing} />
+        <Route path="/landing" component={Landing} />
+        <Route component={Login} />
       </Switch>
     );
   }

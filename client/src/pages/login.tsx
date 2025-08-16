@@ -73,6 +73,10 @@ export default function Login() {
           <CardTitle className="text-2xl font-bold text-white">Giriş Yap</CardTitle>
           <CardDescription className="text-gray-400">
             puantropls hesabınıza giriş yapın
+            <br />
+            <span className="text-xs text-green-400">
+              Test Admin: bayramsoyturk6154@gmail.com / 14535454
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent>
