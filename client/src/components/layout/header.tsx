@@ -16,21 +16,13 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { toast } = useToast();
 
   const handleLogout = () => {
-    // Clear all local storage
+    // Clear everything and redirect
     localStorage.clear();
     sessionStorage.clear();
-    
-    // Clear all query cache
     queryClient.clear();
-    queryClient.invalidateQueries();
     
-    // Clear cookies
-    document.cookie.split(";").forEach(function(c) { 
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-    });
-    
-    // Direct redirect to logout endpoint
-    window.location.href = "/api/auth/logout";
+    // Force reload to login page
+    window.location.replace("/");
   };
 
   return (
