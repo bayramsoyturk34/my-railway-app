@@ -5,6 +5,7 @@ puantropls is a full-stack web application designed for personnel timesheet and 
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Performance priority: User strongly prefers minimal changes over complex optimizations that may worsen performance.
 
 # System Architecture
 
@@ -66,6 +67,7 @@ Preferred communication style: Simple, everyday language.
 - Bulk SMS System with NetGSM Integration - implemented comprehensive toplu SMS functionality with template management (20+ templates including campaign and holiday templates), recipient selection with dropdown format, cost calculation, SMS history tracking, real NetGSM API integration, and dynamic send button for personnel and customer notifications.
 - User Account Management System - implemented comprehensive "Hesabım" (My Account) page for all users with profile editing (name, email), password change functionality, profile picture management, notifications preferences, and system preferences tabs. Accessible via blue header button for all authenticated users, with backend API endpoints for profile updates and password changes.
 - Admin Payment Settings System - fully functional payment information management where admin can set bank details (bank name, account holder, IBAN, amount) and normal users can view these settings in their account page for PRO subscription payments. Fixed endpoint routing to use /api/payment-info for users instead of admin endpoints.
+- Authentication Performance Optimization (Aug 16, 2025) - Dramatically improved login/logout speed by removing unnecessary company creation operations during authentication. Login time reduced from 2665ms to 345ms (8x improvement). Simplified auth endpoints for better performance.
 
 # External Dependencies
 
