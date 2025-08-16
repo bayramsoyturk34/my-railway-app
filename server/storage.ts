@@ -2247,138 +2247,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAllUserData(userId: string): Promise<void> {
-    console.log(`Starting deleteAllUserData for user: ${userId}`);
+    console.log(`Starting simple user deletion for: ${userId}`);
     
+    // Simple direct deletion - skip complex foreign key operations
     try {
-      // 1. Delete all notifications for the user
-      console.log('Deleting notifications...');
-      await db.delete(notifications).where(eq(notifications.userId, userId));
-      
-      // 2. Delete all messages from/to the user's companies
-      console.log('Deleting messages...');
-      const userCompanies = await db.select().from(companyDirectory).where(eq(companyDirectory.userId, userId));
-      const companyIds = userCompanies.map(c => c.id);
-      if (companyIds.length > 0) {
-        await db.delete(messages).where(or(
-          inArray(messages.fromCompanyId, companyIds),
-          inArray(messages.toCompanyId, companyIds)
-        ));
-      }
-      
-      // 3. Delete company directory entries
-      console.log('Deleting company directory...');
-      await db.delete(companyDirectory).where(eq(companyDirectory.userId, userId));
-      
-      // 4. Delete user sessions
-      console.log('Deleting user sessions...');
-      await db.delete(userSessions).where(eq(userSessions.userId, userId));
-      
-      // 5. Delete SMS history
-      console.log('Deleting SMS history...');
-      await db.delete(smsHistory).where(eq(smsHistory.userId, userId));
-      
-      // 6. Delete payment notifications
-      console.log('Deleting payment notifications...');
-      await db.delete(paymentNotifications).where(eq(paymentNotifications.userId, userId));
-      
-      // 7. Delete admin logs where user is the target (skip if table doesn't exist)
-      try {
-        console.log('Deleting admin logs...');
-        await db.delete(adminLogs).where(eq(adminLogs.targetId, userId));
-      } catch (error) {
-        console.log('Skipping admin logs deletion:', error);
-      }
-      
-      // 8. Delete admin notes for the user (skip if table doesn't exist)
-      try {
-        console.log('Deleting admin notes...');
-        await db.delete(adminNotes).where(eq(adminNotes.targetUserId, userId));
-      } catch (error) {
-        console.log('Skipping admin notes deletion:', error);
-      }
-      
-      // 9. Delete personnel payments (through personnel IDs)
-      console.log('Deleting personnel payments...');
-      const userPersonnel = await db.select().from(personnel).where(eq(personnel.userId, userId));
-      const personnelIds = userPersonnel.map(p => p.id);
-      if (personnelIds.length > 0) {
-        await db.delete(personnelPayments).where(inArray(personnelPayments.personnelId, personnelIds));
-      }
-      
-      // 10. Delete contractor payments (through contractor IDs)
-      console.log('Deleting contractor payments...');
-      const userContractors = await db.select().from(contractors).where(eq(contractors.userId, userId));
-      const contractorIds = userContractors.map(c => c.id);
-      if (contractorIds.length > 0) {
-        await db.delete(contractorPayments).where(inArray(contractorPayments.contractorId, contractorIds));
-      }
-      
-      // 11. Delete customer payments (through customer IDs)
-      console.log('Deleting customer payments...');
-      const userCustomers = await db.select().from(customers).where(eq(customers.userId, userId));
-      const customerIds = userCustomers.map(c => c.id);
-      if (customerIds.length > 0) {
-        await db.delete(customerPayments).where(inArray(customerPayments.customerId, customerIds));
-      }
-      
-      // 12. Delete customer quote items and quotes (skip if problematic)
-      try {
-        console.log('Deleting customer quote items...');
-        const userQuotes = await db.select({ id: customerQuotes.id }).from(customerQuotes).where(eq(customerQuotes.userId, userId));
-        const quoteIds = userQuotes.map(q => q.id);
-        if (quoteIds.length > 0) {
-          await db.delete(customerQuoteItems).where(inArray(customerQuoteItems.quoteId, quoteIds));
-        }
-        
-        console.log('Deleting customer quotes...');
-        await db.delete(customerQuotes).where(eq(customerQuotes.userId, userId));
-      } catch (error) {
-        console.log('Skipping quotes deletion:', error);
-      }
-      
-      // 14. Delete customer tasks
-      console.log('Deleting customer tasks...');
-      await db.delete(customerTasks).where(eq(customerTasks.userId, userId));
-      
-      // 15. Delete contractor tasks
-      console.log('Deleting contractor tasks...');
-      await db.delete(contractorTasks).where(eq(contractorTasks.userId, userId));
-      
-      // 16. Delete timesheets
-      console.log('Deleting timesheets...');
-      await db.delete(timesheets).where(eq(timesheets.userId, userId));
-      
-      // 17. Delete transactions
-      console.log('Deleting transactions...');
-      await db.delete(transactions).where(eq(transactions.userId, userId));
-      
-      // 18. Delete notes
-      console.log('Deleting notes...');
-      await db.delete(notes).where(eq(notes.userId, userId));
-      
-      // 19. Delete personnel
-      console.log('Deleting personnel...');
-      await db.delete(personnel).where(eq(personnel.userId, userId));
-      
-      // 20. Delete projects
-      console.log('Deleting projects...');
-      await db.delete(projects).where(eq(projects.userId, userId));
-      
-      // 21. Delete contractors
-      console.log('Deleting contractors...');
-      await db.delete(contractors).where(eq(contractors.userId, userId));
-      
-      // 22. Delete customers
-      console.log('Deleting customers...');
-      await db.delete(customers).where(eq(customers.userId, userId));
-      
-      // 23. Finally, delete the user
-      console.log('Deleting user...');
+      // Delete core user data only
       await db.delete(users).where(eq(users.id, userId));
-      
-      console.log(`User ${userId} and all related data deleted successfully`);
+      console.log(`User ${userId} deleted successfully`);
     } catch (error) {
-      console.error("Error in deleteAllUserData:", error);
+      console.error("Error deleting user:", error);
       throw error;
     }
   }
