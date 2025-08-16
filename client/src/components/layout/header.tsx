@@ -229,20 +229,20 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="text-white hover:bg-dark-accent"
+          className="text-yellow-500 hover:bg-dark-accent border-2 border-yellow-500"
           onClick={onSettingsClick}
+          title="TEST AYARLAR"
         >
-          <Settings className="h-6 w-6" />
+          <Settings className="h-8 w-8" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="text-white hover:bg-dark-accent"
+          className="text-green-500 hover:bg-dark-accent border-2 border-green-500"
           onClick={handleLogout}
-
-          title="Çıkış Yap"
+          title="TEST ÇIKIŞ"
         >
-          <LogOut className="h-6 w-6" />
+          <LogOut className="h-8 w-8" />
         </Button>
       </div>
     </header>
