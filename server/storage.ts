@@ -2297,17 +2297,29 @@ export class DatabaseStorage implements IStorage {
         console.log('Skipping admin notes deletion:', error);
       }
       
-      // 9. Delete personnel payments
+      // 9. Delete personnel payments (through personnel IDs)
       console.log('Deleting personnel payments...');
-      await db.delete(personnelPayments).where(eq(personnelPayments.userId, userId));
+      const userPersonnel = await db.select().from(personnel).where(eq(personnel.userId, userId));
+      const personnelIds = userPersonnel.map(p => p.id);
+      if (personnelIds.length > 0) {
+        await db.delete(personnelPayments).where(inArray(personnelPayments.personnelId, personnelIds));
+      }
       
-      // 10. Delete contractor payments  
+      // 10. Delete contractor payments (through contractor IDs)
       console.log('Deleting contractor payments...');
-      await db.delete(contractorPayments).where(eq(contractorPayments.userId, userId));
+      const userContractors = await db.select().from(contractors).where(eq(contractors.userId, userId));
+      const contractorIds = userContractors.map(c => c.id);
+      if (contractorIds.length > 0) {
+        await db.delete(contractorPayments).where(inArray(contractorPayments.contractorId, contractorIds));
+      }
       
-      // 11. Delete customer payments
+      // 11. Delete customer payments (through customer IDs)
       console.log('Deleting customer payments...');
-      await db.delete(customerPayments).where(eq(customerPayments.userId, userId));
+      const userCustomers = await db.select().from(customers).where(eq(customers.userId, userId));
+      const customerIds = userCustomers.map(c => c.id);
+      if (customerIds.length > 0) {
+        await db.delete(customerPayments).where(inArray(customerPayments.customerId, customerIds));
+      }
       
       // 12. Delete customer quote items (through quotes)
       console.log('Deleting customer quote items...');
