@@ -38,6 +38,13 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           <div className="flex items-center gap-2 text-gray-700 dark:text-white text-sm">
             <User className="h-4 w-4" />
             <span>{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
+            <span className={`px-2 py-1 rounded text-xs font-semibold ${
+              (user as any).subscriptionType === 'PRO' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-blue-500 text-white'
+            }`}>
+              {(user as any).subscriptionType || 'DEMO'}
+            </span>
           </div>
         )}
         

@@ -55,6 +55,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(id: string, user: Partial<UpsertUser>): Promise<User | undefined>;
   updateUserSubscriptionType(userId: string, subscriptionType: string): Promise<void>;
+  updateUserSubscription(userId: string, subscription: { subscriptionType: string, subscriptionStatus: string, subscriptionEndDate?: Date }): Promise<User | undefined>;
   
   // Admin operations
   getAllUsers(): Promise<User[]>;
@@ -2639,6 +2640,19 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId));
+  }
+
+  async updateUserSubscription(userId: string, subscription: { subscriptionType: string, subscriptionStatus: string, subscriptionEndDate?: Date }): Promise<User | undefined> {
+    const [result] = await db.update(users)
+      .set({ 
+        subscriptionType: subscription.subscriptionType,
+        subscriptionStatus: subscription.subscriptionStatus,
+        subscriptionEndDate: subscription.subscriptionEndDate,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result;
   }
 
   // Payment settings methods

@@ -79,7 +79,7 @@ export async function setupAuth(app: Express) {
         return res.status(400).json({ message: "Bu email adresi zaten kullanılıyor" });
       }
       
-      // Create new user
+      // Create new user with DEMO subscription
       const newUser = {
         id: Math.random().toString(36).substring(2, 15),
         email,
@@ -87,6 +87,8 @@ export async function setupAuth(app: Express) {
         firstName,
         lastName,
         profileImageUrl: null,
+        subscriptionType: "DEMO",
+        subscriptionStatus: "ACTIVE",
       };
 
       const user = await storage.upsertUser(newUser);
@@ -111,13 +113,15 @@ export async function setupAuth(app: Express) {
       let user;
       
       if (isDemo) {
-        // Demo user login - fast and simple
+        // Demo user login - fast and simple with DEMO subscription
         const demoUser = {
           id: "demo-user-1",
           email: "demo@puantajpro.com",
           firstName: "Demo",
           lastName: "User",
           profileImageUrl: null,
+          subscriptionType: "DEMO",
+          subscriptionStatus: "ACTIVE",
         };
         user = await storage.upsertUser(demoUser);
       } else {

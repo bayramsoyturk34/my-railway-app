@@ -180,6 +180,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Apply maintenance mode check to all routes except auth and admin
   app.use(checkMaintenanceMode);
 
+  // Subscription upgrade endpoint
+  app.post("/api/auth/upgrade-to-pro", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { paymentConfirmed } = req.body;
+      
+      if (!paymentConfirmed) {
+        return res.status(400).json({ message: "Ödeme onayı gereklidir" });
+      }
+      
+      // Update user to PRO subscription
+      const updatedUser = await storage.updateUserSubscription(userId, {
+        subscriptionType: "PRO",
+        subscriptionStatus: "ACTIVE",
+        subscriptionEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Hesabınız PRO'ya yükseltildi!",
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error("PRO upgrade error:", error);
+      res.status(500).json({ message: "PRO yükseltme başarısız" });
+    }
+  });
+
   // Auth endpoints handled in auth.ts
   // Personnel routes
   app.get("/api/personnel", isAuthenticated, async (req, res) => {

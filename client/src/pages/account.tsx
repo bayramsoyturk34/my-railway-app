@@ -356,7 +356,7 @@ export default function Account() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-dark-secondary">
+          <TabsList className="grid w-full grid-cols-6 bg-dark-secondary">
             <TabsTrigger value="profile" className="text-white data-[state=active]:bg-dark-accent">
               <User className="h-4 w-4 mr-2" />
               Profil
@@ -364,6 +364,10 @@ export default function Account() {
             <TabsTrigger value="security" className="text-white data-[state=active]:bg-dark-accent">
               <Lock className="h-4 w-4 mr-2" />
               Güvenlik
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="text-white data-[state=active]:bg-dark-accent">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Abonelik
             </TabsTrigger>
             <TabsTrigger value="notifications" className="text-white data-[state=active]:bg-dark-accent">
               <Bell className="h-4 w-4 mr-2" />
@@ -621,6 +625,131 @@ export default function Account() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Subscription Tab */}
+          <TabsContent value="subscription">
+            <div className="grid gap-6">
+              {/* Subscription Status */}
+              <Card className="bg-dark-secondary border-dark-accent">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Abonelik Durumu
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-dark-primary rounded-lg">
+                    <div>
+                      <p className="text-white font-medium">
+                        Mevcut Plan: <span className={`${(user as any)?.subscriptionType === 'PRO' ? 'text-green-400' : 'text-yellow-400'}`}>
+                          {(user as any)?.subscriptionType === 'PRO' ? 'PRO Plan' : 'DEMO'}
+                        </span>
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        {(user as any)?.subscriptionType === 'PRO' 
+                          ? 'Tüm özelliklere erişim var' 
+                          : 'Sınırlı özelliklere erişiminiz var'
+                        }
+                      </p>
+                    </div>
+                    {(user as any)?.subscriptionType === 'DEMO' && (
+                      <div className="flex items-center gap-2 text-orange-400">
+                        <AlertCircle className="h-5 w-5" />
+                        <span>Demo Kullanıcı</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PRO Upgrade Section - Only for DEMO users */}
+                  {(user as any)?.subscriptionType !== 'PRO' && (
+                    <div className="mt-6 p-6 bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/20 rounded-lg">
+                      <div className="text-center space-y-4">
+                        <h3 className="text-xl font-bold text-white">PRO Plan'a Yükselt</h3>
+                        <p className="text-gray-300">Tüm özelliklere sınırsız erişim, gelişmiş raporlar ve öncelikli destek</p>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="text-left space-y-2 text-gray-300">
+                            <h4 className="font-semibold text-white">PRO Özellikleri:</h4>
+                            <ul className="space-y-1">
+                              <li>✓ Sınırsız personel kaydı</li>
+                              <li>✓ Gelişmiş raporlama</li>
+                              <li>✓ Excel/PDF export</li>
+                              <li>✓ Toplu SMS gönderimi</li>
+                            </ul>
+                          </div>
+                          <div className="text-left space-y-2 text-gray-300">
+                            <h4 className="font-semibold text-white">DEMO Sınırları:</h4>
+                            <ul className="space-y-1">
+                              <li>• Maksimum 5 personel</li>
+                              <li>• Temel raporlar</li>
+                              <li>• Sınırlı export</li>
+                              <li>• SMS limiti var</li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-green-400 mb-2">₺99/yıl</p>
+                          <p className="text-gray-400 text-sm mb-4">PyTR ile güvenli ödeme</p>
+                          <Button 
+                            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                            onClick={() => {
+                              window.open('https://pytr.com/payment-link', '_blank');
+                            }}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            PRO'ya Yükselt
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment confirmation for DEMO users */}
+                  {(user as any)?.subscriptionType !== 'PRO' && (
+                    <div className="mt-6 p-4 bg-dark-primary border border-gray-600 rounded-lg">
+                      <h4 className="text-white font-medium mb-3">Ödeme Yaptınız mı?</h4>
+                      <p className="text-gray-400 text-sm mb-4">
+                        PyTR üzerinden ödeme yaptıysanız, hesabınızı hemen PRO'ya yükseltmek için aşağıdaki butona tıklayın.
+                      </p>
+                      <Button 
+                        variant="outline"
+                        className="bg-blue-600 hover:bg-blue-700 border-blue-500"
+                        onClick={() => {
+                          // Simulate payment confirmation for demo
+                          const upgradeData = { paymentConfirmed: true };
+                          fetch('/api/auth/upgrade-to-pro', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(upgradeData),
+                          })
+                          .then(res => res.json())
+                          .then(data => {
+                            if (data.success) {
+                              toast({
+                                title: "Başarılı!",
+                                description: data.message,
+                              });
+                              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+                            }
+                          })
+                          .catch(() => {
+                            toast({
+                              title: "Hata",
+                              description: "Yükseltme işlemi başarısız",
+                              variant: "destructive",
+                            });
+                          });
+                        }}
+                      >
+                        Ödeme Onayladım - PRO'ya Yükselt
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Notifications Tab */}
