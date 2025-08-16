@@ -36,13 +36,10 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const finalNotifications = Array.isArray(notifications) ? notifications : [];
   const unreadCount = finalNotifications?.filter((n: any) => !n.isRead)?.length || 0;
 
-  // Debug log for notifications
-  console.log("🔔 All notifications:", notifications);
-  console.log("🔔 Notifications count:", finalNotifications?.length || 0);
-  console.log("🔔 First notification:", finalNotifications?.[0] || null);
-  console.log("🔔 Unread Count:", unreadCount);
-  console.log("🔔 Should show badge:", unreadCount > 0);
-  console.log("🔔 User exists:", !!user);
+  // Debug bilgileri temizlendi - sadece önemli log'lar
+  if (finalNotifications.length > 0) {
+    console.log(`🔔 ${finalNotifications.length} bildirim var, ${unreadCount} okunmamış`);
+  }
   
   // Force check notifications immediately when user changes
   React.useEffect(() => {
@@ -129,22 +126,6 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Test - Bildirim ikonunu zorla göster */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-red-500 hover:bg-dark-accent relative border-2 border-red-500"
-          title="TEST - Bildirim Butonu"
-        >
-          <Bell className="h-8 w-8" />
-          <Badge 
-            variant="destructive" 
-            className="absolute -top-1 -right-1 h-6 w-6 p-0 flex items-center justify-center text-xs bg-red-500"
-          >
-            1
-          </Badge>
-        </Button>
-
         {/* Notifications */}
         {user && (
           <DropdownMenu>
@@ -229,20 +210,19 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="text-yellow-500 hover:bg-dark-accent border-2 border-yellow-500"
+          className="text-white hover:bg-dark-accent"
           onClick={onSettingsClick}
-          title="TEST AYARLAR"
         >
-          <Settings className="h-8 w-8" />
+          <Settings className="h-6 w-6" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="text-green-500 hover:bg-dark-accent border-2 border-green-500"
+          className="text-white hover:bg-dark-accent"
           onClick={handleLogout}
-          title="TEST ÇIKIŞ"
+          title="Çıkış Yap"
         >
-          <LogOut className="h-8 w-8" />
+          <LogOut className="h-6 w-6" />
         </Button>
       </div>
     </header>
