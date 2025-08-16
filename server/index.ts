@@ -5,17 +5,14 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// CORS middleware for cookie sharing - development specific
+// CORS middleware for cookie sharing - Replit HTTPS
 app.use((req, res, next) => {
-  // Use specific origin for credentials to work
-  const origin = req.headers.origin || 'http://localhost:5000';
+  // Allow Replit domain for production
+  const origin = req.headers.origin || 'https://2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev';
   res.header('Access-Control-Allow-Origin', origin);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  
-  console.log('🔧 CORS Debug - Origin:', req.headers.origin);
-  console.log('🔧 CORS Debug - Cookie header:', req.headers.cookie);
   
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
