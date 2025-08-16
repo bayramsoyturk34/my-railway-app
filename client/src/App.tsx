@@ -59,6 +59,7 @@ import AdminSessions from "@/pages/admin/sessions";
 import AdminPaymentNotifications from "@/pages/admin/payment-notifications";
 import AdminPaymentSettings from "@/pages/admin/payment-settings";
 import Account from "@/pages/account";
+import Logout from "@/pages/logout";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -88,6 +89,7 @@ function Router() {
       <Switch>
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
+        <Route path="/api/auth/logout" component={Logout} />
         <Route component={Landing} />
       </Switch>
     );
@@ -121,6 +123,7 @@ function Router() {
       <Route path="/admin/payment-notifications" component={AdminPaymentNotifications} />
       <Route path="/admin/payment-settings" component={AdminPaymentSettings} />
       <Route path="/account" component={Account} />
+      <Route path="/api/auth/logout" component={Logout} />
       <Route component={Dashboard} />
       </Switch>
     </>
