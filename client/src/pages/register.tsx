@@ -40,17 +40,9 @@ export default function Register() {
       });
     },
     onSuccess: (data) => {
-      console.log("Register success:", data);
-      
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
-        console.log("Register Session ID stored:", data.sessionId);
-        
-        // Set user in cache for faster loading
-        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
-        
-        // Redirect immediately
-        window.location.href = '/';
+        window.location.replace('/');
       }
     },
     onError: (error: Error) => {

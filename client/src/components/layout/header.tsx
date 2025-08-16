@@ -16,10 +16,9 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { toast } = useToast();
 
   const handleLogout = () => {
-    // Clear auth data only and redirect
+    // Immediate logout - no delays
     localStorage.removeItem('sessionId');
-    queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
-    window.location.href = "/";
+    window.location.replace("/");
   };
 
   return (

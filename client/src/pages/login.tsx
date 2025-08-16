@@ -24,17 +24,9 @@ export default function Login() {
       });
     },
     onSuccess: (data) => {
-      console.log("Login success:", data);
-      
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
-        console.log("Session ID stored:", data.sessionId);
-        
-        // Set user in cache for faster loading
-        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
-        
-        // Redirect immediately
-        window.location.href = '/';
+        window.location.replace('/');
       }
     },
     onError: (error: Error) => {
@@ -52,17 +44,9 @@ export default function Login() {
       return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
     onSuccess: (data) => {
-      console.log("Demo login success:", data);
-      
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
-        console.log("Demo Session ID stored:", data.sessionId);
-        
-        // Set user in cache for faster loading
-        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
-        
-        // Redirect immediately
-        window.location.href = '/';
+        window.location.replace('/');
       }
     },
     onError: (error: Error) => {
