@@ -408,9 +408,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'] || req.cookies['session'];
     
-    // Debug: Log cookies and headers
-    console.log("Auth debug - cookies:", req.cookies);
-    console.log("Auth debug - headers:", req.headers.authorization);
+
     
     // Handle signed cookies format: s:sessionId.signature
     if (sessionId && sessionId.startsWith('s:')) {
@@ -420,8 +418,6 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     // Authentication middleware processing
     
     if (!sessionId) {
-      // No session found
-      console.log("No session ID found");
       return res.status(401).json({ message: "Unauthorized" });
     }
 

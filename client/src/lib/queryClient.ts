@@ -30,7 +30,7 @@ export async function apiRequest(
   method: string,
   data?: unknown | undefined,
 ): Promise<any> {
-  console.log(`API Request: ${method} ${url}`, data);
+
   
   // Removed client-side session expiry check - only server validates sessions
   
@@ -52,31 +52,31 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  console.log(`API Response: ${res.status} ${res.statusText}`);
+
 
   // Check for errors first
   if (!res.ok) {
-    console.log("❌ Response not OK, throwing error");
+
     await throwIfResNotOk(res);
     return;
   }
 
   // Handle successful responses
-  console.log("✅ Response OK, processing...");
+
   
   // Handle 204 No Content
   if (res.status === 204) {
-    console.log("✅ No Content Success (204)");
+
     return {};
   }
   
   // Try to parse JSON for other success statuses
   try {
     const jsonResponse = await res.json();
-    console.log(`✅ JSON Response Success:`, jsonResponse);
+
     return jsonResponse;
   } catch (parseError) {
-    console.log("⚠️ Could not parse JSON, returning empty object");
+
     return {};
   }
 }
@@ -90,11 +90,11 @@ export const getQueryFn: <T>(options: {
     const sessionId = localStorage.getItem('sessionId');
     const headers: Record<string, string> = {};
     
-    console.log("Query fetch - Session ID from localStorage:", sessionId);
+
     
     if (sessionId) {
       headers["Authorization"] = `Bearer ${sessionId}`;
-      console.log("Query fetch - Added Authorization header");
+
     }
     
     const res = await fetch(queryKey.join("") as string, {
