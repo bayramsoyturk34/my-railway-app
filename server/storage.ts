@@ -2246,6 +2246,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
+  async deleteUserSession(sessionId: string): Promise<void> {
+    try {
+      await db.delete(userSessions).where(eq(userSessions.sessionId, sessionId));
+      console.log(`Session ${sessionId} deleted`);
+    } catch (error) {
+      console.error("Error deleting session:", error);
+    }
+  }
+
   async deleteAllUserData(userId: string): Promise<void> {
     console.log(`Starting simple user deletion for: ${userId}`);
     
