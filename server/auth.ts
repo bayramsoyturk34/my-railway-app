@@ -96,15 +96,15 @@ export async function setupAuth(app: Express) {
       // Generate database session
       const sessionId = await createSession(user.id);
       
-      // Set HTTP-only cookie for session
+      // Set cookie for session - development mode
       res.cookie('session', sessionId, {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        httpOnly: true,
-        secure: false, // Set to true in production with HTTPS
+        httpOnly: false, // Allow JavaScript access for debugging
+        secure: false, // HTTP allowed in development
         sameSite: 'lax'
       });
       
-      console.log("User registered:", user.email, "Session:", sessionId);
+      console.log("🔐 Register successful - Setting cookie with sessionId:", sessionId);
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
@@ -152,11 +152,11 @@ export async function setupAuth(app: Express) {
       // Generate database session
       const sessionId = await createSession(user.id);
       
-      // Set HTTP-only cookie for session
+      // Set cookie for session - development mode
       res.cookie('session', sessionId, {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        httpOnly: true,
-        secure: false, // Set to true in production with HTTPS
+        httpOnly: false, // Allow JavaScript access for debugging
+        secure: false, // HTTP allowed in development
         sameSite: 'lax'
       });
       
