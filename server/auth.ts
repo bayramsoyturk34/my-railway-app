@@ -91,32 +91,6 @@ export async function setupAuth(app: Express) {
 
       const user = await storage.upsertUser(newUser);
       
-      // Auto-create company profile for new user
-      try {
-        const defaultCompany = {
-          companyName: companyName || `${firstName} ${lastName}`,
-          contactPerson: `${firstName} ${lastName}`,
-          email,
-          phone: phone || "",
-          address: "",
-          city: city || "",
-          industry: industry || "",
-          description: "Kayıt sırasında oluşturulan firma profili",
-          sector: industry || "",
-          website: "",
-          hasPROAccess: false,
-          isVerified: false,
-          isBlocked: false,
-          isActive: true
-        };
-        
-        await storage.createCompany(defaultCompany, user.id);
-        console.log("Auto-created company profile for new user:", user.id);
-      } catch (error) {
-        console.error("Error auto-creating company profile during registration:", error);
-        // Don't fail registration if company creation fails
-      }
-      
       // Generate database session
       const sessionId = await createSession(user.id);
       
@@ -137,7 +111,7 @@ export async function setupAuth(app: Express) {
       let user;
       
       if (isDemo) {
-        // Demo user login
+        // Demo user login - fast and simple
         const demoUser = {
           id: "demo-user-1",
           email: "demo@puantajpro.com",
@@ -146,32 +120,6 @@ export async function setupAuth(app: Express) {
           profileImageUrl: null,
         };
         user = await storage.upsertUser(demoUser);
-        
-        // Auto-create company profile for demo user if not exists
-        try {
-          const userCompanies = await storage.getCompanyDirectoryByUserId(user.id);
-          if (userCompanies.length === 0) {
-            const demoCompany = {
-              companyName: "Demo Firma",
-              contactPerson: "Demo User",
-              email: "demo@puantajpro.com",
-              phone: "0555 123 4567",
-              address: "Demo Adres",
-              description: "Demo kullanıcı firma profili",
-              sector: "Teknoloji",
-              website: "https://demo.com",
-              hasPROAccess: true,
-              isVerified: true,
-              isBlocked: false,
-              isActive: true
-            };
-            
-            await storage.createCompany(demoCompany, user.id);
-  
-          }
-        } catch (error) {
-          console.error("Error auto-creating demo company profile:", error);
-        }
       } else {
         // Regular user login
         if (!email || !password) {
