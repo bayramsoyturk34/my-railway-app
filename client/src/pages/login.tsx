@@ -24,8 +24,10 @@ export default function Login() {
       });
     },
     onSuccess: (data) => {
-      // Cookie automatically set by server, just redirect
-      if (data.success) {
+      // Save sessionId to localStorage for dev environment (CORS fallback) 
+      if (data.success && data.sessionId) {
+        localStorage.setItem('sessionId', data.sessionId);
+        console.log('🔐 Login successful, sessionId saved:', data.sessionId);
         window.location.href = '/';
       }
     },
@@ -43,8 +45,10 @@ export default function Login() {
       return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
     onSuccess: (data) => {
-      // Cookie automatically set by server, just redirect
-      if (data.success) {
+      // Save sessionId to localStorage for dev environment (CORS fallback)
+      if (data.success && data.sessionId) {
+        localStorage.setItem('sessionId', data.sessionId);
+        console.log('🔐 Demo login successful, sessionId saved:', data.sessionId);
         window.location.href = '/';
       }
     },

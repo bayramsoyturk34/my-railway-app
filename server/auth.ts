@@ -183,6 +183,7 @@ export async function setupAuth(app: Express) {
       
       console.log("🔐 Auth debug - Raw sessionId:", sessionId);
       console.log("🔐 Auth debug - Cookies:", req.cookies);
+      console.log("🔐 Auth debug - Auth header:", authHeader);
       
       if (!sessionId) {
         console.log("🔐 Auth debug - No sessionId found");

@@ -21,6 +21,12 @@ export async function apiRequest(
 ): Promise<any> {
   const headers: Record<string, string> = {};
   
+  // Add sessionId from localStorage as Authorization header for dev environment
+  const sessionId = localStorage.getItem('sessionId');
+  if (sessionId) {
+    headers["Authorization"] = `Bearer ${sessionId}`;
+  }
+  
   if (data) {
     headers["Content-Type"] = "application/json";
   }
