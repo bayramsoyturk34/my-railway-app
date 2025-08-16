@@ -167,7 +167,7 @@ export async function setupAuth(app: Express) {
             };
             
             await storage.createCompany(demoCompany, user.id);
-            console.log("Auto-created demo company profile");
+  
           }
         } catch (error) {
           console.error("Error auto-creating demo company profile:", error);
@@ -192,7 +192,7 @@ export async function setupAuth(app: Express) {
       // Generate database session
       const sessionId = await createSession(user.id);
       
-      console.log("User logged in:", user.email, "Session:", sessionId);
+
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
@@ -216,14 +216,14 @@ export async function setupAuth(app: Express) {
       // Session authentication successful
       
       if (!sessionId) {
-        console.log("No session ID found");
+
         return res.status(401).json({ message: "Unauthorized" });
       }
 
       const user = await getSession(sessionId);
       
       if (!user) {
-        console.log("Session not found or expired");
+
         return res.status(401).json({ message: "Unauthorized" });
       }
 
@@ -248,14 +248,14 @@ export async function setupAuth(app: Express) {
           };
           
           await storage.createCompany(defaultCompany, user.id);
-          console.log("Auto-created company profile for user:", user.id);
+
         }
       } catch (error) {
         console.error("Error auto-creating company profile:", error);
         // Don't fail authentication if company creation fails
       }
 
-      console.log("Auth successful for user:", user.id);
+
       res.json(user);
     } catch (error) {
       console.error("Auth check error:", error);
@@ -273,11 +273,11 @@ export async function setupAuth(app: Express) {
         sessionId = sessionId.substring(2).split('.')[0];
       }
       
-      console.log("Logout attempt for session:", sessionId);
+
       
       if (sessionId) {
         await deleteSession(sessionId);
-        console.log("Session removed from database:", sessionId);
+
       }
       
       // Clear all cookies
@@ -289,7 +289,7 @@ export async function setupAuth(app: Express) {
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
       
-      console.log("Logout successful");
+
       res.json({ success: true, message: "Logout successful" });
     } catch (error) {
       console.error("Logout error:", error);

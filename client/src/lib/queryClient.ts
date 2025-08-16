@@ -15,10 +15,9 @@ async function throwIfResNotOk(res: Response) {
     
     // Handle 401 Unauthorized - session expired
     if (res.status === 401) {
-      console.log('Session expired, clearing localStorage');
       localStorage.removeItem('sessionId');
-      // Trigger a re-render by dispatching a storage event
-      window.dispatchEvent(new Event('storage'));
+      localStorage.removeItem('sessionExpiry');
+      window.location.href = '/';
     }
     
     throw new Error(`${res.status}: ${text}`);

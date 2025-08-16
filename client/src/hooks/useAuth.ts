@@ -24,9 +24,11 @@ export function useAuth() {
     },
     enabled: !!sessionId,
     retry: false,
-    staleTime: 1000 * 60 * 10, // 10 minutes - longer cache
-    refetchOnWindowFocus: false, // Don't refetch on focus
-    refetchOnMount: false, // Don't refetch on mount if data exists
+    staleTime: 1000 * 60 * 30, // 30 minutes - much longer cache
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchInterval: false,
+    refetchIntervalInBackground: false
   });
 
   const isAuthenticated = !!user && !!sessionId;
