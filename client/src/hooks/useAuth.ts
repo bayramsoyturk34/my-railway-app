@@ -2,6 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 export function useAuth() {
+  // Basit bir sessionId kontrolü - cookie'de varsa
+  const sessionId = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('session='))
+    ?.split('=')[1];
+
   const { data: user, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
@@ -16,20 +22,21 @@ export function useAuth() {
       }
     },
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 dakika cache
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
-    refetchOnMount: true, // Mount'da fetch et - cookie var mı kontrol et
+    refetchOnMount: !!sessionId, // Sadece sessionId varsa API çağrısı yap
     refetchInterval: false,
     refetchIntervalInBackground: false,
-    throwOnError: false
+    throwOnError: false,
+    enabled: !!sessionId // SessionId yoksa query'yi devre dışı bırak
   });
 
-  // user varsa authenticated
-  const isAuthenticated = !!user;
+  // sessionId yoksa direkt false döner
+  const isAuthenticated = sessionId ? !!user : false;
 
   return {
     user,
-    isLoading,
+    isLoading: sessionId ? isLoading : false, // sessionId yoksa loading yok
     isAuthenticated,
     error,
     refetch,

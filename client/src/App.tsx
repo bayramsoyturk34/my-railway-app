@@ -62,21 +62,36 @@ import Account from "@/pages/account";
 import Logout from "@/pages/logout";
 
 function Router() {
-  const { isAuthenticated, isLoading, user } = useAuth();
-  const [location] = useLocation();
-  
-  // Apply global theme settings
   useGlobalTheme();
+  
+  try {
+    const { isAuthenticated, isLoading, user } = useAuth();
+    
+    // Show loading while checking auth
+    if (isLoading) {
+      return (
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+          <div className="text-white text-xl">Yükleniyor...</div>
+        </div>
+      );
+    }
 
-  // Debug removed - routing now stable
-
-  // Always show login page as default for unauthenticated users
-  if (!isAuthenticated) {
+    // Show login page for unauthenticated users
+    if (!isAuthenticated) {
+      return (
+        <Switch>
+          <Route path="/register" component={Register} />
+          <Route path="/api/auth/logout" component={Logout} />
+          <Route path="/landing" component={Landing} />
+          <Route component={Login} />
+        </Switch>
+      );
+    }
+  } catch (error) {
+    // Error fallback - show login
     return (
       <Switch>
         <Route path="/register" component={Register} />
-        <Route path="/api/auth/logout" component={Logout} />
-        <Route path="/landing" component={Landing} />
         <Route component={Login} />
       </Switch>
     );
