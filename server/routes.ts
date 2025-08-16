@@ -124,7 +124,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.clearCookie('sessionId');
       res.clearCookie('connect.sid');
       
-      res.status(200).json({ message: "Logout successful" });
+      // Redirect to home page instead of JSON response
+      res.redirect('/');
     } catch (error) {
       console.error('Logout error:', error);
       res.status(500).json({ message: "Logout failed" });
