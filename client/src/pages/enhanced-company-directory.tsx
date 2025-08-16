@@ -64,7 +64,8 @@ export default function EnhancedCompanyDirectory() {
   const { data: conversations = [] } = useQuery({
     queryKey: ["/api/threads"],
     enabled: activeTab === "messages",
-    refetchInterval: 3000, // Poll every 3 seconds when on messages tab
+    staleTime: 1000 * 60 * 10, // 10 min cache
+    refetchOnWindowFocus: false,
   });
 
   // Messages for active conversation
@@ -76,7 +77,8 @@ export default function EnhancedCompanyDirectory() {
       return Array.isArray(response) ? response : [];
     },
     enabled: !!activeConversation,
-    refetchInterval: 2000, // Poll every 2 seconds for active conversation
+    staleTime: 1000 * 60 * 10, // 10 min cache
+    refetchOnWindowFocus: false,
   });
 
   const form = useForm<InsertCompanyDirectory>({

@@ -109,13 +109,8 @@ export default function Dashboard() {
     refetchOnWindowFocus: false,
   });
 
-  // Notifications query - no polling for speed
-  const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ["/api/notifications"],
-    staleTime: 1000 * 60 * 60, // 1 hour cache
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
+  // Notifications query - disabled for speed
+  const notifications = [];
 
   // Mark notification as read mutation
   const markNotificationAsReadMutation = useMutation({

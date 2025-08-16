@@ -62,10 +62,9 @@ export default function Messages() {
   // Aktif thread için mesajları al
   const { data: messages = [] } = useQuery<DirectMessage[]>({
     queryKey: [`/api/messages/${activeThread}`],
-    refetchInterval: 3000,
     enabled: !!activeThread,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 1000 * 60 * 10, // 10 min cache
+    refetchOnWindowFocus: false,
   });
 
   // Mesaj gönderme
