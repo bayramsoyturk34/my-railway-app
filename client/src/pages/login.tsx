@@ -24,9 +24,9 @@ export default function Login() {
       });
     },
     onSuccess: (data) => {
-      // Cookie automatically set by server, just redirect
+      // Cookie automatically set by server, reload to refresh auth
       if (data.success) {
-        window.location.href = '/';
+        setTimeout(() => window.location.reload(), 100);
       }
     },
     onError: (error: Error) => {
@@ -43,9 +43,9 @@ export default function Login() {
       return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
     onSuccess: (data) => {
-      // Cookie automatically set by server, just redirect
+      // Cookie automatically set by server, reload to refresh auth
       if (data.success) {
-        window.location.href = '/';
+        setTimeout(() => window.location.reload(), 100);
       }
     },
     onError: (error: Error) => {
