@@ -32,22 +32,8 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
     retry: false,
   });
 
-  // Debug - her zaman test bildirimini göster
-  const fallbackNotifications = user ? [
-    {
-      id: "test-notification",
-      type: "NEW_MESSAGE",
-      title: "Test Bildirimi",
-      content: "Bildirim sistemi çalışıyor",
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      payload: {
-        fromCompanyName: "Test Şirketi"
-      }
-    }
-  ] : [];
-  
-  const finalNotifications = Array.isArray(notifications) && notifications.length > 0 ? notifications : fallbackNotifications;
+  // Gerçek API verilerini kullan - fallback test verileri kaldırıldı
+  const finalNotifications = Array.isArray(notifications) ? notifications : [];
   const unreadCount = finalNotifications?.filter((n: any) => !n.isRead)?.length || 0;
 
   // Debug log for notifications
