@@ -105,12 +105,16 @@ export default function Dashboard() {
 
   const { data: summary } = useQuery<FinancialSummary>({
     queryKey: ["/api/financial-summary"],
+    staleTime: 1000 * 60 * 30, // 30 min cache
+    refetchOnWindowFocus: false,
   });
 
-  // Notifications query
+  // Notifications query - no polling for speed
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
-    refetchInterval: 5000, // Poll every 5 seconds
+    staleTime: 1000 * 60 * 60, // 1 hour cache
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   // Mark notification as read mutation
@@ -143,11 +147,8 @@ export default function Dashboard() {
     }).format(amount);
   };
 
-  console.log("Dashboard component location:", location);
-  
   // Don't render if not on exact root path
   if (location !== "/") {
-    console.log("Dashboard: Not rendering, wrong location:", location);
     return null;
   }
 

@@ -56,7 +56,8 @@ export default function EnhancedCompanyDirectory() {
   // Notifications query
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
-    refetchInterval: 5000, // Poll every 5 seconds
+    staleTime: 1000 * 60 * 30, // 30 min cache
+    refetchOnWindowFocus: false, // Poll every 5 seconds
   });
 
   // Conversations query

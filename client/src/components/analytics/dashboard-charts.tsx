@@ -20,7 +20,7 @@ export default function DashboardCharts() {
     refetchOnMount: true,
   });
 
-  console.log("Chart data:", chartData);
+
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/analytics/dashboard"] });
