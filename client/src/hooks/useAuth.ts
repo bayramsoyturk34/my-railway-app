@@ -18,14 +18,16 @@ export function useAuth() {
         throw error;
       }
     },
-    // Cookie tabanlı auth - her zaman dene
+    // Cookie tabanlı auth - sessionId yoksa da dene
     enabled: true,
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 dakika cache
+    staleTime: 1000 * 30, // 30 saniye cache (kısa tutuldu)
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchInterval: false,
-    refetchIntervalInBackground: false
+    refetchIntervalInBackground: false,
+    // 401 hatası geldiğinde hemen tamamla, loading'de kalmasın
+    throwOnError: false
   });
 
   // sessionId veya cookie ile authenticated

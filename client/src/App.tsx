@@ -63,7 +63,8 @@ import Logout from "@/pages/logout";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
-  const hasSessionId = !!localStorage.getItem('sessionId');
+  const sessionId = localStorage.getItem('sessionId');
+  const hasSessionId = !!sessionId;
   const [location] = useLocation();
   
   // Apply global theme settings
@@ -71,11 +72,11 @@ function Router() {
 
   // Debug removed - routing now stable
 
-  // Show loading while checking authentication
-  if (isLoading) {
+  // Show loading only if we have sessionId but checking user
+  if (isLoading && hasSessionId) {
     return (
       <div className="min-h-screen bg-dark-primary flex items-center justify-center">
-        <div className="text-white">Sistemi kontrol ediyoruz...</div>
+        <div className="text-white">Giriş kontrol ediliyor...</div>
       </div>
     );
   }
