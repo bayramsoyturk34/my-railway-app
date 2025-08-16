@@ -26,12 +26,14 @@ export default function Login() {
     onSuccess: (data) => {
       console.log("Login success:", data);
       
-      // Store session ID and redirect immediately
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Session ID stored:", data.sessionId);
         
-        // Quick redirect without delays
+        // Set user in cache for faster loading
+        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
+        
+        // Redirect immediately
         window.location.href = '/';
       }
     },
@@ -52,12 +54,14 @@ export default function Login() {
     onSuccess: (data) => {
       console.log("Demo login success:", data);
       
-      // Store session ID and redirect immediately
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Demo Session ID stored:", data.sessionId);
         
-        // Quick redirect without delays
+        // Set user in cache for faster loading
+        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
+        
+        // Redirect immediately
         window.location.href = '/';
       }
     },

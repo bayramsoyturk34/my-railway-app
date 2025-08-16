@@ -42,12 +42,14 @@ export default function Register() {
     onSuccess: (data) => {
       console.log("Register success:", data);
       
-      // Store session ID and redirect immediately
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Register Session ID stored:", data.sessionId);
         
-        // Quick redirect without delays
+        // Set user in cache for faster loading
+        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
+        
+        // Redirect immediately
         window.location.href = '/';
       }
     },

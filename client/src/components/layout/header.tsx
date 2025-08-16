@@ -16,10 +16,10 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { toast } = useToast();
 
   const handleLogout = () => {
-    // Quick logout - clear storage and redirect immediately
-    localStorage.clear();
-    queryClient.clear();
-    window.location.replace("/");
+    // Clear auth data only and redirect
+    localStorage.removeItem('sessionId');
+    queryClient.removeQueries({ queryKey: ["/api/auth/user"] });
+    window.location.href = "/";
   };
 
   return (

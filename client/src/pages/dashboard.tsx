@@ -105,8 +105,9 @@ export default function Dashboard() {
 
   const { data: summary } = useQuery<FinancialSummary>({
     queryKey: ["/api/financial-summary"],
-    staleTime: 1000 * 60 * 30, // 30 min cache
+    staleTime: 1000 * 60 * 60, // 1 hour cache
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   // Notifications query - disabled for speed
