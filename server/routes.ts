@@ -109,42 +109,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   
   // Logout endpoint
-  app.get("/api/auth/logout", async (req, res) => {
+  app.post("/api/auth/logout", async (req, res) => {
     try {
-      console.log('Logout request received');
+      const sessionId = req.headers.authorization?.replace('Bearer ', '');
       
-      // Clear session if it exists
-      if (req.session) {
-        req.session.destroy((err) => {
-          if (err) {
-            console.error('Session destroy error:', err);
-          }
-        });
+      if (sessionId) {
+        // Delete session from database
+        await storage.deleteUserSession(sessionId);
       }
       
-      // Clear cookies
-      res.clearCookie('sessionId');
-      res.clearCookie('connect.sid');
-      
-      console.log('Session and cookies cleared, redirecting to home');
-      
-      // Send HTML response that redirects to home
-      res.send(`
-        <html>
-          <head>
-            <title>Çıkış Yapılıyor...</title>
-            <meta http-equiv="refresh" content="0;url=/">
-          </head>
-          <body>
-            <p>Çıkış yapılıyor, ana sayfaya yönlendiriliyorsunuz...</p>
-            <script>
-              localStorage.clear();
-              sessionStorage.clear();
-              window.location.href = '/';
-            </script>
-          </body>
-        </html>
-      `);
+      res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
       console.error('Logout error:', error);
       res.status(500).json({ message: "Logout failed" });
