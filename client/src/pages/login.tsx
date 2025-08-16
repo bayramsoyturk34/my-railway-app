@@ -23,29 +23,16 @@ export default function Login() {
         isDemo: false,
       });
     },
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       console.log("Login success:", data);
       
-      // Store session ID in localStorage (30 days server-side expiry)
+      // Store session ID and redirect immediately
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Session ID stored:", data.sessionId);
         
-        // Set auth data in cache with sessionId
-        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
-        
-        // Force refresh of auth query
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        
-        toast({
-          title: "Başarıyla giriş yapıldı!",
-          description: "Dashboard'a yönlendiriliyorsunuz...",
-        });
-        
-        // Redirect after short delay
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+        // Quick redirect without delays
+        window.location.href = '/';
       }
     },
     onError: (error: Error) => {
@@ -62,29 +49,16 @@ export default function Login() {
     mutationFn: async () => {
       return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       console.log("Demo login success:", data);
       
-      // Store session ID in localStorage (30 days server-side expiry)
+      // Store session ID and redirect immediately
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Demo Session ID stored:", data.sessionId);
         
-        // Set auth data in cache with sessionId
-        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
-        
-        // Force refresh of auth query
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        
-        toast({
-          title: "Demo hesabına giriş yapıldı!",
-          description: "Dashboard'a yönlendiriliyorsunuz...",
-        });
-        
-        // Redirect after short delay
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+        // Quick redirect without delays
+        window.location.href = '/';
       }
     },
     onError: (error: Error) => {

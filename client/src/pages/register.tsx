@@ -39,30 +39,17 @@ export default function Register() {
         industry: data.industry,
       });
     },
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       console.log("Register success:", data);
       
-      // Store session ID in localStorage (30 days server-side expiry)
+      // Store session ID and redirect immediately
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
         console.log("Register Session ID stored:", data.sessionId);
         
-        // Set auth data in cache with sessionId
-        queryClient.setQueryData(["/api/auth/user", data.sessionId], data.user);
-        
-        // Force refresh of auth query
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        
-        // Redirect after short delay
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+        // Quick redirect without delays
+        window.location.href = '/';
       }
-      
-      toast({
-        title: "Başarıyla kayıt olundu!",
-        description: "PuantajPro'ya hoş geldiniz.",
-      });
     },
     onError: (error: Error) => {
       console.error("Register error:", error);

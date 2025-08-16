@@ -15,20 +15,10 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleLogout = async () => {
-    try {
-      // Call logout API to clear server session
-      await apiRequest("POST", "/api/auth/logout");
-    } catch (error) {
-      // Ignore errors, continue with logout
-    }
-    
-    // Clear everything and redirect
+  const handleLogout = () => {
+    // Quick logout - clear storage and redirect immediately
     localStorage.clear();
-    sessionStorage.clear();
     queryClient.clear();
-    
-    // Force reload to login page
     window.location.replace("/");
   };
 
