@@ -53,6 +53,12 @@ export default function AdminDashboard() {
     refetchInterval: autoRefresh ? 30000 : false, // 30 seconds when enabled
   });
 
+  // Payment notifications with real-time updates
+  const { data: paymentNotifications } = useQuery({
+    queryKey: ["/api/admin/payment-notifications"],
+    refetchInterval: autoRefresh ? 12000 : false, // 12 seconds when enabled
+  });
+
   // Delete all users except super admin mutation
   const deleteAllUsersMutation = useMutation({
     mutationFn: async () => {
@@ -301,6 +307,105 @@ export default function AdminDashboard() {
             </Card>
           ))}
         </div>
+
+        {/* Payment Notifications Summary */}
+        <Card className="bg-dark-secondary border-dark-accent mb-6">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-cyan-400" />
+              Ödeme Bildirimleri
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Pending Payments */}
+              <div className="p-4 bg-dark-accent rounded-lg border border-yellow-500/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-yellow-400 text-sm font-medium">Bekleyen</p>
+                    <p className="text-2xl font-bold text-white">
+                      {paymentNotifications?.filter((p: any) => p.status === 'PENDING').length || 0}
+                    </p>
+                  </div>
+                  <AlertTriangle className="h-8 w-8 text-yellow-400" />
+                </div>
+              </div>
+
+              {/* Approved Payments */}
+              <div className="p-4 bg-dark-accent rounded-lg border border-green-500/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-400 text-sm font-medium">Onaylı</p>
+                    <p className="text-2xl font-bold text-white">
+                      {paymentNotifications?.filter((p: any) => p.status === 'APPROVED').length || 0}
+                    </p>
+                  </div>
+                  <UserCheck className="h-8 w-8 text-green-400" />
+                </div>
+              </div>
+
+              {/* Rejected Payments */}
+              <div className="p-4 bg-dark-accent rounded-lg border border-red-500/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-400 text-sm font-medium">Reddedilen</p>
+                    <p className="text-2xl font-bold text-white">
+                      {paymentNotifications?.filter((p: any) => p.status === 'REJECTED').length || 0}
+                    </p>
+                  </div>
+                  <UserX className="h-8 w-8 text-red-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Payment Notifications */}
+            <div className="mt-6">
+              <h4 className="text-white font-medium mb-3">Son Ödeme Bildirimleri</h4>
+              <div className="space-y-3">
+                {paymentNotifications && paymentNotifications.length > 0 ? (
+                  paymentNotifications.slice(0, 3).map((payment: any) => (
+                    <div key={payment.id} className="flex items-center justify-between p-3 bg-dark-primary rounded border border-gray-600">
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium">{payment.senderName}</p>
+                        <p className="text-gray-400 text-xs">
+                          {payment.amount} TL - {payment.senderBank}
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(payment.createdAt).toLocaleString('tr-TR')}
+                        </p>
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={`${
+                          payment.status === 'PENDING' ? 'text-yellow-400 border-yellow-400' :
+                          payment.status === 'APPROVED' ? 'text-green-400 border-green-400' :
+                          'text-red-400 border-red-400'
+                        }`}
+                      >
+                        {payment.status === 'PENDING' ? 'Bekleyen' :
+                         payment.status === 'APPROVED' ? 'Onaylı' : 'Reddedilen'}
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">
+                    <DollarSign className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-400 text-sm">Henüz ödeme bildirimi yok</p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-600">
+                <Button 
+                  variant="outline" 
+                  className="w-full border-gray-600 text-gray-300 hover:bg-dark-accent"
+                  onClick={() => setLocation("/admin/payment-notifications")}
+                >
+                  Tüm Ödeme Bildirimlerini Görüntüle
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Recent Activity & System Status */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
