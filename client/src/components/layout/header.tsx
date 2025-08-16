@@ -32,6 +32,16 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
     retry: false,
   });
 
+  // Debug notification query status
+  console.log("🔔 Notification query debug:", {
+    authLoading,
+    isAuthenticated, 
+    user: !!user,
+    enabled: !authLoading && isAuthenticated && !!user,
+    notificationError: notificationError?.message,
+    notificationsLoading
+  });
+
   // Gerçek API verilerini kullan - fallback test verileri kaldırıldı
   const finalNotifications = Array.isArray(notifications) ? notifications : [];
   const unreadCount = finalNotifications?.filter((n: any) => !n.isRead)?.length || 0;
