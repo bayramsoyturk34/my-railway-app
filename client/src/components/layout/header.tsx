@@ -74,10 +74,12 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
     }
 
     // Handle navigation based on notification type
-    if (notification.type === 'NEW_MESSAGE') {
+    if (notification.type === 'NEW_MESSAGE' || notification.type === 'NEW_DM') {
       const payload = notification.payload;
+      console.log("🔔 Navigation - payload:", payload);
       if (payload?.fromCompanyId) {
-        setLocation(`/messages?thread=${payload.fromCompanyId}`);
+        console.log("🔔 Navigating to company directory with thread:", payload.fromCompanyId);
+        setLocation(`/enhanced-company-directory?activeThread=${payload.fromCompanyId}`);
       }
     }
   };

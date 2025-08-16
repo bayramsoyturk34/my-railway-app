@@ -38,6 +38,26 @@ export default function EnhancedCompanyDirectory() {
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Handle URL parameters for direct thread navigation
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const threadId = urlParams.get('activeThread');
+    
+    if (threadId) {
+      console.log("🔔 Found activeThread in URL:", threadId);
+      setActiveConversation(threadId);
+      setActiveTab("messages");
+      
+      // Clear URL parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('activeThread');
+      window.history.replaceState({}, '', newUrl.toString());
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
+    }
+  }, [queryClient]);
+
   // Enhanced PRO Company Directory query with filters
   const { data: companies = [], isLoading } = useQuery<CompanyDirectory[]>({
     queryKey: ["/api/directory/firms", { searchTerm, cityFilter, industryFilter, verifiedFilter }],
