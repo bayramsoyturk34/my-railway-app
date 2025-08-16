@@ -67,7 +67,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const handleNotificationClick = async (notification: any) => {
     // Mark as read
     try {
-      await apiRequest("PATCH", `/api/notifications/${notification.id}/read`);
+      await apiRequest(`/api/notifications/${notification.id}/read`, "PATCH");
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
     } catch (error) {
       console.error("Error marking notification as read:", error);

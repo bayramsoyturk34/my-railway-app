@@ -1962,10 +1962,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/notifications/:id/read", isAuthenticated, async (req, res) => {
     try {
       const notificationId = req.params.id;
+      console.log("🔔 Marking notification as read:", notificationId);
       const success = await storage.markNotificationAsRead(notificationId);
+      console.log("🔔 Mark as read success:", success);
       res.json({ success });
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      console.error("🔔 Error marking notification as read:", error);
       res.status(500).json({ error: "Failed to mark notification as read" });
     }
   });
