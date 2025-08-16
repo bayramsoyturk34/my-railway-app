@@ -117,13 +117,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.send(`
         <html>
-          <head><title>Çıkış</title></head>
-          <body>
+          <head>
+            <title>Çıkış</title>
             <script>
               localStorage.clear();
               sessionStorage.clear();
-              window.location.replace('/');
+              window.location.href = '/';
             </script>
+          </head>
+          <body>
+            <p>Çıkış yapılıyor...</p>
           </body>
         </html>
       `);
