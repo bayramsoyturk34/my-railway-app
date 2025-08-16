@@ -1,0 +1,44 @@
+
+> rest-express@1.0.0 dev
+9:34:54 AM [express] serving on port 5000s
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+9:55:55 AM [express] POST /api/auth/login 200 in 681ms :: {"success":true,"user":{"id":"0z8icvm811ie…
+9:56:02 AM [express] GET /api/auth/user 200 in 193ms :: {"id":"0z8icvm811ie","email":"modacizimtasar…
+🔐 Auth debug - Raw sessionId: jhr4rfpdkg7
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: jhr4rfpdkg7
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: jhr4rfpdkg7
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: jhr4rfpdkg7
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 0z8icvm811ie
+9:56:02 AM [express] GET /api/admin/settings 403 in 118ms :: {"error":"Admin access required"}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 0z8icvm811ie
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 0z8icvm811ie
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 0z8icvm811ie
+9:56:02 AM [express] GET /api/customers 200 in 247ms :: [{"id":"b58cbe03-6f02-43e5-8f2d-9c28ac49ace2…
+9:56:02 AM [express] GET /api/personnel 200 in 250ms :: []
+9:56:02 AM [express] GET /api/analytics/dashboard 304 in 311ms :: {"monthlyRevenue":[{"month":"Ocak"…
+All transactions: []
+Financial summary: {
+  totalIncome: 0,
+  totalExpenses: 0,
+  netBalance: 0,
+  customerTasks: { total: 0, pending: 0, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 0,
+    pending: 0,
+    approvedCount: 0,
+    pendingCount: 0
+  },
+  customerPayments: { total: 0, thisMonth: 0, count: 0 }
+}
+9:56:03 AM [express] GET /api/financial-summary 200 in 604ms :: {"totalIncome":0,"totalExpenses":0,"…
