@@ -111,6 +111,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Logout endpoint
   app.get("/api/auth/logout", async (req, res) => {
     try {
+      console.log('Logout request received');
+      
       // Clear session if it exists
       if (req.session) {
         req.session.destroy((err) => {
@@ -124,8 +126,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.clearCookie('sessionId');
       res.clearCookie('connect.sid');
       
-      // Redirect to home page instead of JSON response
-      res.redirect('/');
+      console.log('Session and cookies cleared, redirecting to home');
+      
+      // Send HTML response that redirects to home
+      res.send(`
+        <html>
+          <head>
+            <title>Çıkış Yapılıyor...</title>
+            <meta http-equiv="refresh" content="0;url=/">
+          </head>
+          <body>
+            <p>Çıkış yapılıyor, ana sayfaya yönlendiriliyorsunuz...</p>
+            <script>
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.href = '/';
+            </script>
+          </body>
+        </html>
+      `);
     } catch (error) {
       console.error('Logout error:', error);
       res.status(500).json({ message: "Logout failed" });
