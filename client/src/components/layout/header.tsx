@@ -15,38 +15,22 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("GET", "/api/auth/logout");
-    },
-    onSuccess: () => {
-      // Clear all local storage
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Clear all query cache
-      queryClient.clear();
-      queryClient.invalidateQueries();
-      
-      // Clear cookies
-      document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-      });
-      
-      // Force reload to completely reset app state
-      window.location.replace("/");
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Çıkış hatası",
-        description: error.message || "Çıkış yapılırken bir hata oluştu.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleLogout = () => {
-    logoutMutation.mutate();
+    // Clear all local storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear all query cache
+    queryClient.clear();
+    queryClient.invalidateQueries();
+    
+    // Clear cookies
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    // Direct redirect to logout endpoint
+    window.location.href = "/api/auth/logout";
   };
 
   return (
