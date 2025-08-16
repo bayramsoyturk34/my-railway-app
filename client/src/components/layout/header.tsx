@@ -1,10 +1,17 @@
-import { Menu, Settings, LogOut, User, Shield, UserCircle } from "lucide-react";
+import { Menu, Settings, LogOut, User, Shield, UserCircle, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -14,10 +21,38 @@ interface HeaderProps {
 export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  // Fetch notifications for authenticated users
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["/api/notifications"],
+    enabled: !!user,
+    refetchInterval: 3000, // Check every 3 seconds
+  });
+
+  const unreadCount = notifications?.filter((n: any) => !n.isRead)?.length || 0;
 
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/";
+  };
+
+  const handleNotificationClick = async (notification: any) => {
+    // Mark as read
+    try {
+      await apiRequest("PATCH", `/api/notifications/${notification.id}/read`);
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+
+    // Handle navigation based on notification type
+    if (notification.type === 'NEW_MESSAGE') {
+      const payload = notification.payload;
+      if (payload?.fromCompanyId) {
+        setLocation(`/messages?thread=${payload.fromCompanyId}`);
+      }
+    }
   };
 
   return (
@@ -72,6 +107,86 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           >
             <Shield className="h-6 w-6" />
           </Button>
+        )}
+
+        {/* Notifications */}
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-dark-accent relative"
+              >
+                <Bell className="h-6 w-6" />
+                {unreadCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 bg-dark-secondary border-dark-accent">
+              <div className="p-3 border-b border-dark-accent">
+                <h3 className="font-semibold text-white">Bildirimler</h3>
+                {unreadCount > 0 && (
+                  <p className="text-sm text-gray-400">{unreadCount} okunmamış bildirim</p>
+                )}
+              </div>
+              
+              {notifications && notifications.length > 0 ? (
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.slice(0, 10).map((notification: any) => (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className="p-3 cursor-pointer hover:bg-dark-accent border-b border-dark-accent last:border-b-0"
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <div className="flex items-start gap-3 w-full">
+                        <div className={`w-2 h-2 rounded-full mt-2 ${
+                          notification.isRead ? 'bg-gray-500' : 'bg-blue-500'
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-medium truncate">
+                            {notification.type === 'NEW_MESSAGE' ? 'Yeni Mesaj' : notification.title}
+                          </p>
+                          <p className="text-gray-400 text-xs truncate">
+                            {notification.type === 'NEW_MESSAGE' 
+                              ? `${notification.payload?.fromCompanyName || 'Bilinmeyen'} size mesaj gönderdi`
+                              : notification.content
+                            }
+                          </p>
+                          <p className="text-gray-500 text-xs">
+                            {new Date(notification.createdAt).toLocaleString('tr-TR')}
+                          </p>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <Bell className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-400 text-sm">Henüz bildirim yok</p>
+                </div>
+              )}
+              
+              {notifications && notifications.length > 10 && (
+                <div className="p-3 border-t border-dark-accent">
+                  <Button
+                    variant="ghost"
+                    className="w-full text-blue-400 hover:bg-dark-accent"
+                    onClick={() => setLocation("/notifications")}
+                  >
+                    Tüm bildirimleri görüntüle
+                  </Button>
+                </div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
         
         <Button
