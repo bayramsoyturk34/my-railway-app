@@ -108,7 +108,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   
-  // Logout endpoint
+  // Logout endpoint - support both GET and POST
+  app.get("/api/auth/logout", async (req, res) => {
+    try {
+      // Clear all cookies and redirect
+      res.clearCookie('sessionId');
+      res.clearCookie('connect.sid');
+      
+      res.send(`
+        <html>
+          <head><title>Çıkış</title></head>
+          <body>
+            <script>
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.replace('/');
+            </script>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).send('Logout failed');
+    }
+  });
+
   app.post("/api/auth/logout", async (req, res) => {
     try {
       const sessionId = req.headers.authorization?.replace('Bearer ', '');
