@@ -1,0 +1,139 @@
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+24The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+24The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+24The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+/account:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+/account:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+/account:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+_app-15dea0b614f2a790.js:13 If you do not provide children, you must specify an aria-label for accessibility
+(anonymous) @ _app-15dea0b614f2a790.js:13Understand this warning
+_app-15dea0b614f2a790.js:13 [LaunchDarkly] LaunchDarkly client initialized
+3_app-15dea0b614f2a790.js:13 If you do not provide children, you must specify an aria-label for accessibility
+(anonymous) @ _app-15dea0b614f2a790.js:13Understand this warning
+/account:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+8Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'battery'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+framework-a13a900cf5efc667.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-a13a900cf5efc667.js:1Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar47g%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+VM1295 eruda.js:2  GET https://2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user 401 (Unauthorized)
+window.fetch @ VM1295 eruda.js:2
+apply @ VM1296 injected.js:253
+apiRequest @ VM1357 queryClient.ts:16
+queryFn @ VM1373 useAuth.ts:8
+fetchFn @ VM1352 @tanstack_react-query.js:840
+run @ VM1352 @tanstack_react-query.js:494
+start @ VM1352 @tanstack_react-query.js:536
+fetch @ VM1352 @tanstack_react-query.js:926
+executeFetch_fn @ VM1352 @tanstack_react-query.js:2211
+onSubscribe @ VM1352 @tanstack_react-query.js:1898
+subscribe @ VM1352 @tanstack_react-query.js:24
+(anonymous) @ VM1352 @tanstack_react-query.js:3022
+subscribeToStore @ VM1341 chunk-RPCDYKBN.js:11984
+commitHookEffectListMount @ VM1341 chunk-RPCDYKBN.js:16915
+commitPassiveMountOnFiber @ VM1341 chunk-RPCDYKBN.js:18156
+commitPassiveMountEffects_complete @ VM1341 chunk-RPCDYKBN.js:18129
+commitPassiveMountEffects_begin @ VM1341 chunk-RPCDYKBN.js:18119
+commitPassiveMountEffects @ VM1341 chunk-RPCDYKBN.js:18109
+flushPassiveEffectsImpl @ VM1341 chunk-RPCDYKBN.js:19490
+flushPassiveEffects @ VM1341 chunk-RPCDYKBN.js:19447
+performSyncWorkOnRoot @ VM1341 chunk-RPCDYKBN.js:18868
+flushSyncCallbacks @ VM1341 chunk-RPCDYKBN.js:9119
+commitRootImpl @ VM1341 chunk-RPCDYKBN.js:19432
+commitRoot @ VM1341 chunk-RPCDYKBN.js:19277
+finishConcurrentRender @ VM1341 chunk-RPCDYKBN.js:18805
+performConcurrentWorkOnRoot @ VM1341 chunk-RPCDYKBN.js:18718
+workLoop @ VM1341 chunk-RPCDYKBN.js:197
+flushWork @ VM1341 chunk-RPCDYKBN.js:176
+performWorkUntilDeadline @ VM1341 chunk-RPCDYKBN.js:384Understand this error
+VM1501 eruda.js:2  GET https://2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev/api/auth/user 401 (Unauthorized)
+window.fetch @ VM1501 eruda.js:2
+apply @ VM1502 injected.js:253
+apiRequest @ VM1566 queryClient.ts:16
+queryFn @ VM1565 useAuth.ts:8
+fetchFn @ VM1560 @tanstack_react-query.js:840
+run @ VM1560 @tanstack_react-query.js:494
+start @ VM1560 @tanstack_react-query.js:536
+fetch @ VM1560 @tanstack_react-query.js:926
+executeFetch_fn @ VM1560 @tanstack_react-query.js:2211
+onSubscribe @ VM1560 @tanstack_react-query.js:1898
+subscribe @ VM1560 @tanstack_react-query.js:24
+(anonymous) @ VM1560 @tanstack_react-query.js:3022
+subscribeToStore @ VM1548 chunk-RPCDYKBN.js:11984
+commitHookEffectListMount @ VM1548 chunk-RPCDYKBN.js:16915
+commitPassiveMountOnFiber @ VM1548 chunk-RPCDYKBN.js:18156
+commitPassiveMountEffects_complete @ VM1548 chunk-RPCDYKBN.js:18129
+commitPassiveMountEffects_begin @ VM1548 chunk-RPCDYKBN.js:18119
+commitPassiveMountEffects @ VM1548 chunk-RPCDYKBN.js:18109
+flushPassiveEffectsImpl @ VM1548 chunk-RPCDYKBN.js:19490
+flushPassiveEffects @ VM1548 chunk-RPCDYKBN.js:19447
+performSyncWorkOnRoot @ VM1548 chunk-RPCDYKBN.js:18868
+flushSyncCallbacks @ VM1548 chunk-RPCDYKBN.js:9119
+commitRootImpl @ VM1548 chunk-RPCDYKBN.js:19432
+commitRoot @ VM1548 chunk-RPCDYKBN.js:19277
+finishConcurrentRender @ VM1548 chunk-RPCDYKBN.js:18805
+performConcurrentWorkOnRoot @ VM1548 chunk-RPCDYKBN.js:18718
+workLoop @ VM1548 chunk-RPCDYKBN.js:197
+flushWork @ VM1548 chunk-RPCDYKBN.js:176
+performWorkUntilDeadline @ VM1548 chunk-RPCDYKBN.js:384Understand this error
