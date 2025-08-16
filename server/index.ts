@@ -5,13 +5,11 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// CORS middleware for cookie sharing - Replit HTTPS
+// CORS middleware for cookie sharing
 app.use((req, res, next) => {
-  // Allow Replit domain for production
-  const origin = req.headers.origin || 'https://2af43202-00bc-4d02-92ec-170baa053391-00-2ol7argfl1jle.spock.replit.dev';
-  res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   
   if (req.method === 'OPTIONS') {
@@ -21,7 +19,7 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(cookieParser()); // No secret for debugging
+app.use(cookieParser('puantajpro-secret-key'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

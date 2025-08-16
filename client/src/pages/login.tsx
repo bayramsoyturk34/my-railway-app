@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +24,9 @@ export default function Login() {
       });
     },
     onSuccess: (data) => {
+      // Cookie automatically set by server, just redirect
       if (data.success) {
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        setTimeout(() => window.location.href = '/', 200);
+        window.location.href = '/';
       }
     },
     onError: (error: Error) => {
@@ -43,9 +43,9 @@ export default function Login() {
       return await apiRequest("/api/auth/login", "POST", { isDemo: true });
     },
     onSuccess: (data) => {
+      // Cookie automatically set by server, just redirect
       if (data.success) {
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        setTimeout(() => window.location.href = '/', 200);
+        window.location.href = '/';
       }
     },
     onError: (error: Error) => {
@@ -73,10 +73,6 @@ export default function Login() {
           <CardTitle className="text-2xl font-bold text-white">Giriş Yap</CardTitle>
           <CardDescription className="text-gray-400">
             puantropls hesabınıza giriş yapın
-            <br />
-            <span className="text-xs text-green-400">
-              Test Admin: bayramsoyturk6154@gmail.com / 14535454
-            </span>
           </CardDescription>
         </CardHeader>
         <CardContent>

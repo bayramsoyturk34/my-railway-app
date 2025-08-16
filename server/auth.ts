@@ -96,15 +96,15 @@ export async function setupAuth(app: Express) {
       // Generate database session
       const sessionId = await createSession(user.id);
       
-      // Set cookie for session - Replit HTTPS
+      // Set HTTP-only cookie for session
       res.cookie('session', sessionId, {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        httpOnly: false, // Allow JavaScript access for debugging
-        secure: true, // HTTPS required for Replit
-        sameSite: 'none' // Cross-site required for Replit
+        httpOnly: true,
+        secure: false, // Set to true in production with HTTPS
+        sameSite: 'lax'
       });
       
-      console.log("🔐 Register successful - Setting cookie with sessionId:", sessionId);
+      console.log("User registered:", user.email, "Session:", sessionId);
       
       res.json({ success: true, user, sessionId });
     } catch (error) {
@@ -152,12 +152,12 @@ export async function setupAuth(app: Express) {
       // Generate database session
       const sessionId = await createSession(user.id);
       
-      // Set cookie for session - Replit HTTPS
+      // Set HTTP-only cookie for session
       res.cookie('session', sessionId, {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        httpOnly: false, // Allow JavaScript access for debugging
-        secure: true, // HTTPS required for Replit
-        sameSite: 'none' // Cross-site required for Replit
+        httpOnly: true,
+        secure: false, // Set to true in production with HTTPS
+        sameSite: 'lax'
       });
       
       console.log("🔐 Login successful - Setting cookie with sessionId:", sessionId);

@@ -16,16 +16,21 @@ export function useAuth() {
       }
     },
     retry: false,
-    staleTime: 0, // No caching - always fresh
-    refetchOnWindowFocus: true,
-    refetchOnMount: true, 
+    staleTime: 1000 * 60 * 5, // 5 dakika cache
+    refetchOnWindowFocus: false,
+    refetchOnMount: true, // Mount'da fetch et - cookie var mı kontrol et
+    refetchInterval: false,
+    refetchIntervalInBackground: false,
     throwOnError: false
   });
+
+  // user varsa authenticated
+  const isAuthenticated = !!user;
 
   return {
     user,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated,
     error,
     refetch,
   };

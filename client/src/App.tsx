@@ -62,37 +62,34 @@ import Account from "@/pages/account";
 import Logout from "@/pages/logout";
 
 function Router() {
-  useGlobalTheme();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const [location] = useLocation();
   
-  try {
-    const { isAuthenticated, isLoading, user } = useAuth();
-    
-    // Show loading while checking auth
-    if (isLoading) {
-      return (
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-white text-xl">Yükleniyor...</div>
-        </div>
-      );
-    }
+  // Apply global theme settings
+  useGlobalTheme();
 
-    // Show login page for unauthenticated users
-    if (!isAuthenticated) {
-      return (
-        <Switch>
-          <Route path="/register" component={Register} />
-          <Route path="/api/auth/logout" component={Logout} />
-          <Route path="/landing" component={Landing} />
-          <Route component={Login} />
-        </Switch>
-      );
-    }
-  } catch (error) {
-    // Error fallback - show login
+  // Debug removed - routing now stable
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
+        <div className="text-white">Giriş kontrol ediliyor...</div>
+      </div>
+    );
+  }
+
+  // Show authenticated routes if user is authenticated
+  const shouldShowAuthenticatedRoutes = isAuthenticated && user;
+
+  // Direct rendering for unauthenticated users
+  if (!shouldShowAuthenticatedRoutes) {
     return (
       <Switch>
+        <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
-        <Route component={Login} />
+        <Route path="/api/auth/logout" component={Logout} />
+        <Route component={Landing} />
       </Switch>
     );
   }
