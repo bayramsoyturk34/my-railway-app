@@ -1942,7 +1942,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/notifications", isAuthenticated, async (req, res) => {
     try {
       const userId = (req as any).user.id;
+      console.log("🔔 Fetching notifications for user:", userId);
       const notifications = await storage.getNotificationsByUserId(userId);
+      console.log("🔔 Found notifications:", notifications?.length || 0);
       res.json(notifications);
     } catch (error) {
       console.error("Error fetching notifications:", error);

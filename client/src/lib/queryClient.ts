@@ -40,6 +40,8 @@ export async function apiRequest(
     headers["Content-Type"] = "application/json";
   }
   
+  // Cookie-based auth için Authorization header'ı gereksiz
+  // sessionId yoksa da credentials: "include" yeterli
   if (sessionId) {
     headers["Authorization"] = `Bearer ${sessionId}`;
   }

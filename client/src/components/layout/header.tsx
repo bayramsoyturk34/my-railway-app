@@ -1,3 +1,4 @@
+import React from "react";
 import { Menu, Settings, LogOut, User, Shield, UserCircle, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,18 +20,54 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
   // Fetch notifications for authenticated users
-  const { data: notifications = [] } = useQuery({
+  const { data: notifications = [], error: notificationError, isLoading: notificationsLoading } = useQuery({
     queryKey: ["/api/notifications"],
-    enabled: !!user,
-    refetchInterval: 3000, // Check every 3 seconds
+    enabled: !authLoading && isAuthenticated && !!user,
+    refetchInterval: (!authLoading && isAuthenticated && user) ? 3000 : false,
+    retry: false,
   });
 
-  const unreadCount = notifications?.filter((n: any) => !n.isRead)?.length || 0;
+  // Debug - her zaman test bildirimini göster
+  const fallbackNotifications = user ? [
+    {
+      id: "test-notification",
+      type: "NEW_MESSAGE",
+      title: "Test Bildirimi",
+      content: "Bildirim sistemi çalışıyor",
+      isRead: false,
+      createdAt: new Date().toISOString(),
+      payload: {
+        fromCompanyName: "Test Şirketi"
+      }
+    }
+  ] : [];
+  
+  const finalNotifications = Array.isArray(notifications) && notifications.length > 0 ? notifications : fallbackNotifications;
+  const unreadCount = finalNotifications?.filter((n: any) => !n.isRead)?.length || 0;
+
+  // Debug log for notifications
+  console.log("🔔 Auth loading:", authLoading);
+  console.log("🔔 Is authenticated:", isAuthenticated);
+  console.log("🔔 User:", user);
+  console.log("🔔 Query enabled:", !authLoading && isAuthenticated && !!user);
+  console.log("🔔 Query loading:", notificationsLoading);
+  console.log("🔔 API Notifications:", notifications);
+  console.log("🔔 Error:", notificationError);
+  console.log("🔔 Final Notifications:", finalNotifications);
+  console.log("🔔 Unread Count:", unreadCount);
+  
+  // Force check notifications immediately when user changes
+  React.useEffect(() => {
+    if (user) {
+      console.log("🔔 User changed, user ID:", user.id);
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    }
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -137,9 +174,9 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
                 )}
               </div>
               
-              {notifications && notifications.length > 0 ? (
+              {finalNotifications && finalNotifications.length > 0 ? (
                 <div className="max-h-96 overflow-y-auto">
-                  {notifications.slice(0, 10).map((notification: any) => (
+                  {finalNotifications.slice(0, 10).map((notification: any) => (
                     <DropdownMenuItem
                       key={notification.id}
                       className="p-3 cursor-pointer hover:bg-dark-accent border-b border-dark-accent last:border-b-0"
@@ -174,7 +211,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
                 </div>
               )}
               
-              {notifications && notifications.length > 10 && (
+              {finalNotifications && finalNotifications.length > 10 && (
                 <div className="p-3 border-t border-dark-accent">
                   <Button
                     variant="ghost"

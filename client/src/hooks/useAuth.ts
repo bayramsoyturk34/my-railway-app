@@ -5,12 +5,8 @@ export function useAuth() {
   const sessionId = localStorage.getItem('sessionId');
   
   const { data: user, isLoading, error, refetch } = useQuery({
-    queryKey: ["/api/auth/user", sessionId],
+    queryKey: ["/api/auth/user"],
     queryFn: async () => {
-      if (!sessionId) {
-        return null;
-      }
-      
       try {
         const result = await apiRequest("/api/auth/user", "GET");
         return result;
@@ -22,16 +18,18 @@ export function useAuth() {
         throw error;
       }
     },
-    enabled: !!sessionId,
+    // Cookie tabanlı auth - her zaman dene
+    enabled: true,
     retry: false,
-    staleTime: 1000 * 60 * 30, // 30 minutes - much longer cache
+    staleTime: 1000 * 60 * 5, // 5 dakika cache
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
     refetchInterval: false,
     refetchIntervalInBackground: false
   });
 
-  const isAuthenticated = !!user && !!sessionId;
+  // sessionId veya cookie ile authenticated
+  const isAuthenticated = !!user;
 
   return {
     user,

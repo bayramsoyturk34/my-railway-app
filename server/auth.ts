@@ -360,27 +360,33 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'] || req.cookies['session'];
     
-
+    console.log("🔐 Auth debug - Raw sessionId:", sessionId);
+    console.log("🔐 Auth debug - Cookies:", req.cookies);
     
     // Handle signed cookies format: s:sessionId.signature
     if (sessionId && sessionId.startsWith('s:')) {
       sessionId = sessionId.substring(2).split('.')[0];
+      console.log("🔐 Auth debug - Cleaned sessionId:", sessionId);
     }
     
     // Authentication middleware processing
     
     if (!sessionId) {
+      console.log("🔐 Auth debug - No sessionId found");
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     const user = await getSession(sessionId);
+    console.log("🔐 Auth debug - User found:", !!user);
     
     if (!user) {
       // Session expired or not found
+      console.log("🔐 Auth debug - No user found for session");
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     // Authentication successful
+    console.log("🔐 Auth debug - Authentication successful for user:", user.id);
     (req as any).user = user;
     next();
   } catch (error) {
