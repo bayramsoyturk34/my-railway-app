@@ -1,0 +1,447 @@
+
+> rest-express@1.0.0 dev
+9:11:26 AM [express] serving on port 5000s
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+9:11:32 AM [express] GET /api/auth/user 401 in 3ms :: {"message":"Unauthorized"}
+9:11:33 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+9:11:34 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+9:11:35 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+9:11:36 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+9:11:37 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+9:11:39 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+9:11:42 AM [express] GET /api/auth/user 304 in 179ms :: {"id":"11148tiqroz","email":"bayramsoyturk61…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:11:42 AM [express] GET /api/admin/settings 403 in 124ms :: {"error":"Admin access required"}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+9:11:42 AM [express] GET /api/personnel 304 in 237ms :: [{"id":"9a0a4f02-2f78-4189-b663-ab3d1da4c14c…
+9:11:42 AM [express] GET /api/analytics/dashboard 304 in 289ms :: {"monthlyRevenue":[{"month":"Ocak"…
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:11:43 AM [express] GET /api/customers 304 in 232ms :: [{"id":"5f827d2b-7a28-4ef7-8cc5-6358843f5515…
+9:11:43 AM [express] GET /api/auth/user 304 in 174ms :: {"id":"11148tiqroz","email":"bayramsoyturk61…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+All transactions: [
+  {
+    type: 'income',
+    amount: '5500.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: asd'
+  },
+  {
+    type: 'expense',
+    amount: '1000.00',
+    description: 'BAYRAM soytürk - Maaş Ödemesi (salary)'
+  }
+]
+Financial summary: {
+  totalIncome: 5500,
+  totalExpenses: 1000,
+  netBalance: 4500,
+  customerTasks: { total: 18660, pending: 2, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 9500,
+    pending: 0,
+    approvedCount: 1,
+    pendingCount: 0
+  },
+  customerPayments: { total: 5500, thisMonth: 5500, count: 1 }
+}
+9:11:43 AM [express] GET /api/financial-summary 304 in 587ms :: {"totalIncome":5500,"totalExpenses":…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:11:43 AM [express] GET /api/admin/settings 403 in 115ms :: {"error":"Admin access required"}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:11:43 AM [express] GET /api/personnel 304 in 233ms :: [{"id":"9a0a4f02-2f78-4189-b663-ab3d1da4c14c…
+9:11:43 AM [express] GET /api/customers 304 in 244ms :: [{"id":"5f827d2b-7a28-4ef7-8cc5-6358843f5515…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+9:11:43 AM [express] GET /api/analytics/dashboard 304 in 291ms :: {"monthlyRevenue":[{"month":"Ocak"…
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+All transactions: [
+  {
+    type: 'income',
+    amount: '5500.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: asd'
+  },
+  {
+    type: 'expense',
+    amount: '1000.00',
+    description: 'BAYRAM soytürk - Maaş Ödemesi (salary)'
+  }
+]
+Financial summary: {
+  totalIncome: 5500,
+  totalExpenses: 1000,
+  netBalance: 4500,
+  customerTasks: { total: 18660, pending: 2, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 9500,
+    pending: 0,
+    approvedCount: 1,
+    pendingCount: 0
+  },
+  customerPayments: { total: 5500, thisMonth: 5500, count: 1 }
+}
+9:11:44 AM [express] GET /api/financial-summary 304 in 580ms :: {"totalIncome":5500,"totalExpenses":…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:23:02 AM [express] GET /api/company-directory 304 in 873ms :: [{"id":"9ae914f1-9331-4b43-9388-6449…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:23:03 AM [express] GET /api/company-directory/my-companies 200 in 1524ms :: [{"id":"9ae914f1-9331-…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and 9ae914f1-9331-4b43-9388-6449ac27adfa
+Found 0 messages
+9:23:05 AM [express] GET /api/messages/9ae914f1-9331-4b43-9388-6449ac27adfa 200 in 295ms :: []
+9:23:16 AM [express] GET /api/auth/user 304 in 412ms :: {"id":"11148tiqroz","email":"bayramsoyturk61…
+9:23:17 AM [express] GET /api/analytics/dashboard 304 in 532ms :: {"monthlyRevenue":[{"month":"Ocak"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:22 AM [express] GET /api/notifications 200 in 238ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:26 AM [express] GET /api/notifications 304 in 233ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+Found 1 messages
+9:23:27 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 200 in 293ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:29 AM [express] GET /api/notifications 304 in 233ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+Found 1 messages
+9:23:31 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 304 in 291ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:33 AM [express] GET /api/notifications 304 in 233ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+Found 1 messages
+9:23:34 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 304 in 291ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:36 AM [express] GET /api/notifications 304 in 231ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+Found 1 messages
+9:23:38 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 304 in 291ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Creating message with data: {
+  fromCompanyId: '9ae914f1-9331-4b43-9388-6449ac27adfa',
+  toCompanyId: 'c9be844f-0ca8-4fe1-ae62-a9b5f5049e32',
+  message: 'adddddddd',
+  fromUserId: '11148tiqroz',
+  toUserId: '11148tiqroz'
+}
+Gönderen firma bilgisi: {
+  id: '9ae914f1-9331-4b43-9388-6449ac27adfa',
+  userId: '11148tiqroz',
+  companyName: 'ms konsept',
+  contactPerson: 'mustafa  soytürk',
+  phone: '0553 187 6854',
+  email: 'bayramsoyturk6154@gmail.com',
+  address: '',
+  city: 'ümraniye',
+  industry: 'mobilya tasarım uygulama',
+  website: '',
+  description: 'Kayıt sırasında oluşturulan firma profili',
+  bio: null,
+  logoUrl: null,
+  isActive: true,
+  isProVisible: true,
+  isVerified: false,
+  subscriptionStatus: 'FREE',
+  profileImage: null,
+  verifiedAt: null,
+  lastSeen: null,
+  createdAt: 2025-08-16T07:19:44.455Z
+}
+Alıcı firma bilgisi: {
+  id: 'c9be844f-0ca8-4fe1-ae62-a9b5f5049e32',
+  userId: 'm05b9i5nnem',
+  companyName: 'ahmet turan',
+  contactPerson: 'ahmet turan',
+  phone: '',
+  email: 'eldepazarcom@gmail.com',
+  address: '',
+  city: null,
+  industry: null,
+  website: '',
+  description: 'Otomatik oluşturulan firma profili',
+  bio: null,
+  logoUrl: null,
+  isActive: true,
+  isProVisible: true,
+  isVerified: false,
+  subscriptionStatus: 'FREE',
+  profileImage: null,
+  verifiedAt: null,
+  lastSeen: null,
+  createdAt: 2025-08-16T08:24:49.885Z
+}
+Creating notification for receiver: {
+  userId: 'm05b9i5nnem',
+  type: 'NEW_MESSAGE',
+  title: 'Yeni Mesaj',
+  content: 'mustafa  soytürk size mesaj gönderdi',
+  payload: {
+    fromCompanyId: '9ae914f1-9331-4b43-9388-6449ac27adfa',
+    toCompanyId: 'c9be844f-0ca8-4fe1-ae62-a9b5f5049e32',
+    messageId: '0b45ce03-8d7b-4711-9384-4763d80ee046',
+    fromCompanyName: 'ms konsept',
+    fromUserName: 'mustafa  soytürk'
+  }
+}
+9:23:39 AM [express] POST /api/messages 201 in 478ms :: {"id":"0b45ce03-8d7b-4711-9384-4763d80ee046"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+Found 2 messages
+9:23:39 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 200 in 291ms :: [{"id":"…
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:39 AM [express] GET /api/notifications 304 in 419ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+Found 2 messages
+9:23:43 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 304 in 295ms :: [{"id":"…
+🔔 Found notifications: 3
+9:23:43 AM [express] GET /api/notifications 304 in 235ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+Found 2 messages
+9:23:46 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 304 in 292ms :: [{"id":"…
+🔔 Found notifications: 3
+9:23:46 AM [express] GET /api/notifications 304 in 232ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and db333668-a840-4247-ac87-5ed60d99b749
+9:23:47 AM [express] PATCH /api/notifications/467217a0-476e-4557-bf17-c3c924da3ca5/read 200 in 238ms…
+Found 3 messages
+9:23:47 AM [express] GET /api/messages/db333668-a840-4247-ac87-5ed60d99b749 200 in 298ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:47 AM [express] GET /api/notifications 200 in 236ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and db333668-a840-4247-ac87-5ed60d99b749
+Found 3 messages
+9:23:50 AM [express] GET /api/messages/db333668-a840-4247-ac87-5ed60d99b749 304 in 292ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:50 AM [express] GET /api/notifications 304 in 236ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+9:23:53 AM [express] PATCH /api/notifications/3ca44a04-d34f-4db8-a7c8-c20149d57865/read 200 in 233ms…
+Found 2 messages
+9:23:53 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 304 in 294ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:54 AM [express] GET /api/notifications 200 in 233ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+Found 2 messages
+9:23:57 AM [express] GET /api/messages/c9be844f-0ca8-4fe1-ae62-a9b5f5049e32 304 in 296ms :: [{"id":"…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔔 Fetching notifications for user: 11148tiqroz
+🔔 Found notifications: 3
+9:23:57 AM [express] GET /api/notifications 304 in 234ms :: [{"id":"467217a0-476e-4557-bf17-c3c924da…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+Fetching messages between 9ae914f1-9331-4b43-9388-6449ac27adfa and c9be844f-0ca8-4fe1-ae62-a9b5f5049e32
+Found 2 messages
+9:24:06 AM [express] GET /api/auth/user 304 in 180ms :: {"id":"11148tiqroz","email":"bayramsoyturk61…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:24:07 AM [express] GET /api/admin/settings 403 in 118ms :: {"error":"Admin access required"}
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+9:24:07 AM [express] GET /api/personnel 304 in 234ms :: [{"id":"9a0a4f02-2f78-4189-b663-ab3d1da4c14c…
+9:24:07 AM [express] GET /api/customers 304 in 233ms :: [{"id":"5f827d2b-7a28-4ef7-8cc5-6358843f5515…
+🔐 Auth debug - Raw sessionId: 7utoqe5k0at
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+9:24:07 AM [express] GET /api/analytics/dashboard 304 in 292ms :: {"monthlyRevenue":[{"month":"Ocak"…
+🔐 Auth debug - User found: true
+🔐 Auth debug - Authentication successful for user: 11148tiqroz
+All transactions: [
+  {
+    type: 'income',
+    amount: '5500.00',
+    description: 'BAYRAM soytürk - Müşteri Ödemesi: asd'
+  },
+  {
+    type: 'expense',
+    amount: '1000.00',
+    description: 'BAYRAM soytürk - Maaş Ödemesi (salary)'
+  }
+]
+Financial summary: {
+  totalIncome: 5500,
+  totalExpenses: 1000,
+  netBalance: 4500,
+  customerTasks: { total: 18660, pending: 2, completed: 0 },
+  customerQuotes: {
+    total: 0,
+    approved: 9500,
+    pending: 0,
+    approvedCount: 1,
+    pendingCount: 0
+  },
+  customerPayments: { total: 5500, thisMonth: 5500, count: 1 }
+}
+9:24:07 AM [express] GET /api/financial-summary 304 in 776ms :: {"totalIncome":5500,"totalExpenses":…
+9:24:12 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+🔐 Auth debug - Raw sessionId: undefined
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - No sessionId found
+9:24:12 AM [express] GET /api/customers 401 in 58ms :: {"message":"Unauthorized"}
+🔐 Auth debug - Raw sessionId: undefined
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - No sessionId found
+9:24:12 AM [express] GET /api/personnel 401 in 59ms :: {"message":"Unauthorized"}
+🔐 Auth debug - Raw sessionId: undefined
+🔐 Auth debug - Cookies: [Object: null prototype] {}
+🔐 Auth debug - No sessionId found
+9:24:12 AM [express] GET /api/financial-summary 401 in 58ms :: {"message":"Unauthorized"}
+9:24:13 AM [express] GET /api/analytics/dashboard 304 in 290ms :: {"monthlyRevenue":[{"month":"Ocak"…
+9:24:19 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+9:24:25 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+9:24:37 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+9:24:43 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+9:24:50 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+9:24:57 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+9:25:04 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+9:25:10 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+9:25:18 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
