@@ -1,22 +1,12 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-// Function to check if session is expired
-const isSessionExpired = (): boolean => {
-  const expiryStr = localStorage.getItem('sessionExpiry');
-  if (!expiryStr) return true;
-  
-  const expiryDate = new Date(expiryStr);
-  return expiryDate < new Date();
-};
-
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
     
     // Handle 401 Unauthorized - session expired
     if (res.status === 401) {
-      localStorage.removeItem('sessionId');
-      localStorage.removeItem('sessionExpiry');
+      // Cookie will be cleared by server, just redirect
       window.location.href = '/';
     }
     
@@ -29,21 +19,10 @@ export async function apiRequest(
   method: string,
   data?: unknown | undefined,
 ): Promise<any> {
-
-  
-  // Removed client-side session expiry check - only server validates sessions
-  
-  const sessionId = localStorage.getItem('sessionId');
   const headers: Record<string, string> = {};
   
   if (data) {
     headers["Content-Type"] = "application/json";
-  }
-  
-  // Cookie-based auth için Authorization header'ı gereksiz
-  // sessionId yoksa da credentials: "include" yeterli
-  if (sessionId) {
-    headers["Authorization"] = `Bearer ${sessionId}`;
   }
   
   const res = await fetch(url, {
