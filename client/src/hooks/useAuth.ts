@@ -2,6 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 export function useAuth() {
+  // SessionId var mı kontrol et - yoksa query'yi çalıştırma
+  const sessionId = typeof window !== 'undefined' ? localStorage.getItem('sessionId') : null;
+  
   const { data: user, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
@@ -15,10 +18,11 @@ export function useAuth() {
         throw error;
       }
     },
+    enabled: !!sessionId, // SessionId varsa query'yi çalıştır
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 dakika cache
     refetchOnWindowFocus: false,
-    refetchOnMount: true, // Mount'da fetch et - cookie var mı kontrol et
+    refetchOnMount: true,
     refetchInterval: false,
     refetchIntervalInBackground: false,
     throwOnError: false
