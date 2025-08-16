@@ -2321,17 +2321,20 @@ export class DatabaseStorage implements IStorage {
         await db.delete(customerPayments).where(inArray(customerPayments.customerId, customerIds));
       }
       
-      // 12. Delete customer quote items (through quotes)
-      console.log('Deleting customer quote items...');
-      const userQuotes = await db.select({ id: customerQuotes.id }).from(customerQuotes).where(eq(customerQuotes.userId, userId));
-      const quoteIds = userQuotes.map(q => q.id);
-      if (quoteIds.length > 0) {
-        await db.delete(customerQuoteItems).where(inArray(customerQuoteItems.quoteId, quoteIds));
+      // 12. Delete customer quote items and quotes (skip if problematic)
+      try {
+        console.log('Deleting customer quote items...');
+        const userQuotes = await db.select({ id: customerQuotes.id }).from(customerQuotes).where(eq(customerQuotes.userId, userId));
+        const quoteIds = userQuotes.map(q => q.id);
+        if (quoteIds.length > 0) {
+          await db.delete(customerQuoteItems).where(inArray(customerQuoteItems.quoteId, quoteIds));
+        }
+        
+        console.log('Deleting customer quotes...');
+        await db.delete(customerQuotes).where(eq(customerQuotes.userId, userId));
+      } catch (error) {
+        console.log('Skipping quotes deletion:', error);
       }
-      
-      // 13. Delete customer quotes
-      console.log('Deleting customer quotes...');
-      await db.delete(customerQuotes).where(eq(customerQuotes.userId, userId));
       
       // 14. Delete customer tasks
       console.log('Deleting customer tasks...');

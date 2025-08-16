@@ -108,6 +108,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   
+  // Logout endpoint
+  app.get("/api/auth/logout", async (req, res) => {
+    try {
+      // Clear session if it exists
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Session destroy error:', err);
+          }
+        });
+      }
+      
+      // Clear cookies
+      res.clearCookie('sessionId');
+      res.clearCookie('connect.sid');
+      
+      res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
+
   // Maintenance mode check endpoint - BEFORE middleware
   app.get("/api/maintenance/status", async (req, res) => {
     try {
