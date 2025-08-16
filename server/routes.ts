@@ -1874,11 +1874,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create notification for the receiver
       try {
+        console.log("🔔 Attempting to create notification for targetCompanyId:", targetCompanyId);
         const targetCompany = await storage.getCompany(targetCompanyId);
+        console.log("🔔 Target company found:", targetCompany);
+        
         if (targetCompany && targetCompany.userId) {
           // Get sender user info for real name
           const senderUser = await storage.getUser(userId);
           const senderName = senderUser ? `${senderUser.firstName || ''} ${senderUser.lastName || ''}`.trim() : userCompanies[0].contactPerson;
+          
+          console.log("🔔 Creating notification for userId:", targetCompany.userId, "from:", senderName);
           
           const notification = await storage.createNotification({
             userId: targetCompany.userId,
@@ -1893,10 +1898,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               message: `${senderName} size mesaj gönderdi`
             }
           });
-          console.log("Notification created:", notification);
+          console.log("🔔 Notification created successfully:", notification);
+        } else {
+          console.log("🔔 No target company or userId found - no notification created");
         }
       } catch (notificationError) {
-        console.error("Failed to create notification:", notificationError);
+        console.error("🔔 Failed to create notification:", notificationError);
       }
       
       res.json(message);
