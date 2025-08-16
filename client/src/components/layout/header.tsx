@@ -17,7 +17,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", "/api/auth/logout", {});
+      return await apiRequest("GET", "/api/auth/logout");
     },
     onSuccess: () => {
       // Clear all local storage

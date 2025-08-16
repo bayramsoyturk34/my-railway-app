@@ -2323,7 +2323,7 @@ export class DatabaseStorage implements IStorage {
       
       // 12. Delete customer quote items (through quotes)
       console.log('Deleting customer quote items...');
-      const userQuotes = await db.select().from(customerQuotes).where(eq(customerQuotes.userId, userId));
+      const userQuotes = await db.select({ id: customerQuotes.id }).from(customerQuotes).where(eq(customerQuotes.userId, userId));
       const quoteIds = userQuotes.map(q => q.id);
       if (quoteIds.length > 0) {
         await db.delete(customerQuoteItems).where(inArray(customerQuoteItems.quoteId, quoteIds));
