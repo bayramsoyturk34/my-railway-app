@@ -63,8 +63,6 @@ import Logout from "@/pages/logout";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
-  const sessionId = localStorage.getItem('sessionId');
-  const hasSessionId = !!sessionId;
   const [location] = useLocation();
   
   // Apply global theme settings
@@ -72,8 +70,8 @@ function Router() {
 
   // Debug removed - routing now stable
 
-  // Show loading only if we have sessionId but checking user
-  if (isLoading && hasSessionId) {
+  // Show loading while checking auth
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-dark-primary flex items-center justify-center">
         <div className="text-white">Giriş kontrol ediliyor...</div>
@@ -81,8 +79,8 @@ function Router() {
     );
   }
 
-  // Show authenticated routes if we have both session and user data
-  const shouldShowAuthenticatedRoutes = isAuthenticated && user && hasSessionId;
+  // Show authenticated routes if user is authenticated
+  const shouldShowAuthenticatedRoutes = isAuthenticated && user;
 
   // Direct rendering for unauthenticated users
   if (!shouldShowAuthenticatedRoutes) {
