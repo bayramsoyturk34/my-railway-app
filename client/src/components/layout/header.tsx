@@ -16,9 +16,8 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { toast } = useToast();
 
   const handleLogout = () => {
-    // Immediate logout - no delays
-    localStorage.removeItem('sessionId');
-    window.location.replace("/");
+    localStorage.clear();
+    window.location.href = "/";
   };
 
   return (

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,11 +26,10 @@ export default function Login() {
     onSuccess: (data) => {
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
-        window.location.replace('/');
+        window.location.href = '/';
       }
     },
     onError: (error: Error) => {
-      console.error("Login error:", error);
       toast({
         title: "Giriş başarısız",
         description: error.message,
@@ -46,11 +45,10 @@ export default function Login() {
     onSuccess: (data) => {
       if (data.sessionId) {
         localStorage.setItem('sessionId', data.sessionId);
-        window.location.replace('/');
+        window.location.href = '/';
       }
     },
     onError: (error: Error) => {
-      console.error("Demo login error:", error);
       toast({
         title: "Demo giriş başarısız",
         description: error.message,
@@ -86,12 +84,11 @@ export default function Login() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
+                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                placeholder="Email adresinizi girin"
                 required
-                className="bg-gray-700 border-gray-600 text-white"
-                placeholder="email@ornek.com"
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password" className="text-gray-300">Şifre</Label>
               <Input
@@ -99,33 +96,32 @@ export default function Login() {
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
+                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                placeholder="Şifrenizi girin"
                 required
-                className="bg-gray-700 border-gray-600 text-white"
-                placeholder="Şifreniz"
               />
             </div>
-            
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2"
+              className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? "Giriş yapılıyor..." : "Giriş Yap"}
             </Button>
           </form>
-          
-          <div className="mt-4">
+
+          <div className="mt-4 text-center">
             <Button
-              onClick={() => demoLoginMutation.mutate()}
               variant="outline"
-              className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+              className="w-full bg-green-600 hover:bg-green-700 text-white border-green-600"
+              onClick={() => demoLoginMutation.mutate()}
               disabled={demoLoginMutation.isPending}
             >
-              {demoLoginMutation.isPending ? "Demo giriş yapılıyor..." : "Demo Giriş Yap"}
+              {demoLoginMutation.isPending ? "Demo yükleniyor..." : "Demo Hesabı İle Giriş"}
             </Button>
           </div>
-          
-          <div className="mt-6 text-center">
+
+          <div className="mt-4 text-center">
             <p className="text-gray-400">
               Hesabınız yok mu?{" "}
               <Link href="/register" className="text-blue-400 hover:text-blue-300">
