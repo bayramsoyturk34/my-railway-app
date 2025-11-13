@@ -14,10 +14,15 @@ RUN npm ci --verbose
 COPY . .
 
 # Build client to client/dist first, then copy to dist/public
-RUN npm run build:client && npm run build:server
+RUN npm run build:client && npm run build:server && echo "Build complete, checking outputs..." && ls -la client/dist/ && ls -la dist/public/
 
-# Copy client build to expected location
-RUN mkdir -p dist/public && cp -r client/dist/* dist/public/ && ls -la dist/public/
+# Copy client build to expected location (fallback strategy)
+RUN if [ -d "client/dist" ] && [ "$(ls -A client/dist)" ]; then \
+        echo "Copying from client/dist to dist/public..."; \
+        mkdir -p dist/public && cp -r client/dist/* dist/public/; \
+    else \
+        echo "client/dist is empty, dist/public should already have files"; \
+    fi && ls -la dist/public/
 
 # Production için gereksiz dev dependencies'leri temizle
 RUN npm prune --production
