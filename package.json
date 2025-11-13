@@ -17,9 +17,9 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "heroku-postbuild": "npm run build",
     "railway:build": "npm run build",
-    "railway:start": "npm run start",
-    "postinstall": "npm run check"
+    "railway:start": "npm run start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
