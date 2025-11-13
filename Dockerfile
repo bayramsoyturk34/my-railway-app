@@ -7,14 +7,17 @@ WORKDIR /app
 # Package dosyalarını kopyala
 COPY package*.json ./
 
-# Dependencies'leri kur
-RUN npm ci --omit=dev
+# Tüm dependencies'leri kur (build için gerekli)
+RUN npm ci
 
 # Uygulama kodunu kopyala
 COPY . .
 
 # Build işlemini yap
 RUN npm run build
+
+# Production için gereksiz dev dependencies'leri temizle
+RUN npm prune --production
 
 # Port'u expose et
 EXPOSE $PORT
