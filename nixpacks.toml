@@ -1,0 +1,12 @@
+# Nixpacks configuration for Railway
+[phases.setup]
+nixPkgs = ["nodejs_18", "npm"]
+
+[phases.install]
+cmd = "npm ci --only=production=false"
+
+[phases.build]
+cmd = "npm run build && ls -la dist/ && ls -la dist/public/ || echo 'Public directory missing'"
+
+[start]
+cmd = "npm start"

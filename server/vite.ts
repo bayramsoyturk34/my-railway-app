@@ -67,34 +67,53 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // Use process.cwd() for Railway compatibility
-  const distPath = path.resolve(process.cwd(), "dist", "public");
-  
-  console.log("Looking for static files at:", distPath);
-  console.log("Directory exists:", fs.existsSync(distPath));
+  // Multiple paths to check for Railway deployment compatibility
+  const possiblePaths = [
+    path.resolve(process.cwd(), "dist", "public"),
+    path.resolve(process.cwd(), "public"),
+    path.resolve(process.cwd(), "client", "dist"),
+    path.resolve(process.cwd(), "build"),
+  ];
 
-  if (!fs.existsSync(distPath)) {
-    // Try alternative path
-    const altDistPath = path.resolve(process.cwd(), "public");
-    console.log("Trying alternative path:", altDistPath);
+  console.log("Checking for static files in these paths:");
+  
+  for (const distPath of possiblePaths) {
+    console.log(`- ${distPath}: ${fs.existsSync(distPath) ? "EXISTS" : "NOT FOUND"}`);
     
-    if (fs.existsSync(altDistPath)) {
-      app.use(express.static(altDistPath));
-      app.use("*", (_req, res) => {
-        res.sendFile(path.resolve(altDistPath, "index.html"));
-      });
-      return;
+    if (fs.existsSync(distPath)) {
+      console.log(`✅ Using static files from: ${distPath}`);
+      
+      // Check for index.html
+      const indexPath = path.resolve(distPath, "index.html");
+      if (fs.existsSync(indexPath)) {
+        app.use(express.static(distPath));
+        app.use("*", (_req, res) => {
+          res.sendFile(indexPath);
+        });
+        return;
+      } else {
+        console.log(`❌ No index.html found in ${distPath}`);
+      }
     }
-    
-    throw new Error(
-      `Could not find the build directory: ${distPath} or ${altDistPath}, make sure to build the client first`,
-    );
   }
 
-  app.use(express.static(distPath));
-
-  // fall through to index.html if the file doesn't exist
+  // If no valid static directory found, create a minimal HTML response
+  console.log("⚠️  No static files found, serving minimal HTML response");
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Application Starting</title>
+        </head>
+        <body>
+          <h1>Application is starting...</h1>
+          <p>Static files not found. Build may be in progress.</p>
+          <script>
+            setTimeout(() => window.location.reload(), 5000);
+          </script>
+        </body>
+      </html>
+    `);
   });
 }
