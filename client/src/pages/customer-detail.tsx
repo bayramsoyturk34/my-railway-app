@@ -398,7 +398,7 @@ export default function CustomerDetailPage() {
       ...quoteItems.map(item => [
         `"${item.title}"`,
         `"${item.description || ""}"`,
-        parseFloat(item.quantity).toFixed(1),
+        parseFloat(String(item.quantity)).toFixed(1),
         item.unit,
         item.unitPrice.toFixed(2),
         item.totalPrice.toFixed(2)
@@ -688,7 +688,7 @@ export default function CustomerDetailPage() {
       index + 1,
       convertTurkishChars(item.title),
       convertTurkishChars(item.description || '-'),
-      parseFloat(item.quantity).toFixed(1),
+      parseFloat(String(item.quantity)).toFixed(1),
       convertTurkishChars(item.unit),
       `${item.unitPrice.toFixed(2)} TL`,
       `${item.totalPrice.toFixed(2)} TL`
@@ -808,8 +808,8 @@ export default function CustomerDetailPage() {
       setVatRate(parseFloat(editingQuote.vatRate || "1"));
       
       // Set quote terms if they exist
-      if (editingQuote.terms) {
-        setQuoteTerms(editingQuote.terms.split('\n').filter(term => term.trim()));
+      if ((editingQuote as any).terms) {
+        setQuoteTerms((editingQuote as any).terms.split('\n').filter((term: string) => term.trim()));
       }
       
       // Load quote items if editing

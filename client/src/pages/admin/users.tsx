@@ -768,7 +768,7 @@ export default function AdminUsers() {
                         </Button>
 
                         {/* Delete User - Only for SUPER_ADMIN and not self */}
-                        {isSuperAdmin && selectedUser.role !== 'SUPER_ADMIN' && selectedUser.id !== currentUser?.id && (
+                        {isSuperAdmin && (selectedUser as any).role !== 'SUPER_ADMIN' && (selectedUser as any).id !== (currentUser as any)?.id && (
                           <Button
                             size="sm"
                             variant="destructive"

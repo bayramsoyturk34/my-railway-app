@@ -1,0 +1,395 @@
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PuantajPro - Personel Puantaj Uygulaması</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-primary': '#1a1a1a',
+                        'dark-secondary': '#2d2d2d',
+                        'dark-accent': '#404040',
+                        'orange-start': '#ff6b35',
+                        'orange-end': '#ff8a50',
+                        'teal-start': '#1dd1a1',
+                        'teal-end': '#16a085',
+                        'purple-start': '#8b5cf6',
+                        'purple-end': '#7c3aed',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gradient-orange {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8a50 100%);
+        }
+        .gradient-teal {
+            background: linear-gradient(135deg, #1dd1a1 0%, #16a085 100%);
+        }
+        .gradient-purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        .gradient-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(45, 45, 45, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-dark-primary text-white min-h-screen">
+    <!-- @COMPONENT: Header -->
+    <header class="flex justify-between items-center p-4 bg-dark-primary border-b border-dark-accent">
+        <button class="text-white text-xl" data-event="click:toggleSidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="text-xl font-bold">PuantajPro</h1>
+        <button class="text-white text-xl" data-event="click:openSettings">
+            <i class="fas fa-cog"></i>
+        </button>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: NotificationBanner -->
+    <div class="mx-4 mt-4 p-4 bg-yellow-500 text-black rounded-lg flex items-center gap-3" data-mock="true">
+        <i class="fas fa-info-circle text-lg"></i>
+        <div class="flex-1">
+            <p class="font-medium">2 Günlük kullanım süreniz kaldı.</p>
+            <p class="text-sm opacity-80">Dilediğiniz zaman satın alabilirsiniz.</p>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: NotificationBanner -->
+
+    <!-- @COMPONENT: Dashboard -->
+    <main class="p-4">
+        <!-- @COMPONENT: ProjectCards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Verilen Projeler Card -->
+            <div class="gradient-orange rounded-xl p-6 text-white relative overflow-hidden">
+                <div class="absolute top-4 right-4">
+                    <i class="fas fa-home text-white/30 text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Verilen Projeler</h3>
+                <div class="text-3xl font-bold mb-4" data-bind="projects.given.total">₺2.215,00</div>
+                <div class="flex justify-between text-sm opacity-90">
+                    <div>
+                        <span class="font-medium">Aktif</span>
+                        <div class="font-bold" data-bind="projects.given.active">1 / ₺0,00</div>
+                    </div>
+                    <div>
+                        <span class="font-medium">Pasif</span>
+                        <div class="font-bold" data-bind="projects.given.passive">5 / ₺2.215,00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yükleniciler Card -->
+            <div class="gradient-teal rounded-xl p-6 text-white relative overflow-hidden">
+                <div class="absolute top-4 right-4">
+                    <i class="fas fa-users text-white/30 text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Yükleniciler</h3>
+                <div class="text-3xl font-bold mb-4" data-bind="contractors.total">₺3.850,00</div>
+                <div class="flex justify-between text-sm opacity-90">
+                    <div>
+                        <span class="font-medium">Aktif</span>
+                        <div class="font-bold" data-bind="contractors.active">4 / ₺3.850,00</div>
+                    </div>
+                    <div>
+                        <span class="font-medium">Tamamlanan</span>
+                        <div class="font-bold" data-bind="contractors.completed">12 / ₺8.420,00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ProjectCards -->
+
+        <!-- @COMPONENT: NavigationGrid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Puantaj Yaz -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openTimesheet">
+                <i class="fas fa-edit text-blue-400 text-2xl"></i>
+                <span class="text-white font-medium">Puantaj Yaz</span>
+            </button>
+
+            <!-- Personeller -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openPersonnel">
+                <i class="fas fa-user-friends text-orange-400 text-2xl"></i>
+                <span class="text-white font-medium">Personeller</span>
+            </button>
+
+            <!-- Alınan Projeler -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openReceivedProjects">
+                <i class="fas fa-building text-yellow-400 text-2xl"></i>
+                <span class="text-white font-medium">Alınan Projeler</span>
+            </button>
+
+            <!-- Verilen Projeler -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openGivenProjects">
+                <i class="fas fa-home text-pink-400 text-2xl"></i>
+                <span class="text-white font-medium">Verilen Projeler</span>
+            </button>
+
+            <!-- Yükleniciler -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openContractors">
+                <i class="fas fa-users text-green-400 text-2xl"></i>
+                <span class="text-white font-medium">Yükleniciler</span>
+            </button>
+
+            <!-- Kasa -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openCash">
+                <i class="fas fa-wallet text-teal-400 text-2xl"></i>
+                <span class="text-white font-medium">Kasa</span>
+            </button>
+
+            <!-- Günlük İşlemleri -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openDailyOps">
+                <i class="fas fa-calendar-day text-cyan-400 text-2xl"></i>
+                <span class="text-white font-medium">Günlük İşlemleri</span>
+            </button>
+
+            <!-- Hesabım -->
+            <button class="bg-dark-secondary hover:bg-dark-accent transition-colors p-6 rounded-xl flex flex-col items-center gap-3 border border-dark-accent" data-event="click:openAccount">
+                <i class="fas fa-user-cog text-red-400 text-2xl"></i>
+                <span class="text-white font-medium">Hesabım</span>
+            </button>
+        </div>
+        <!-- @END_COMPONENT: NavigationGrid -->
+
+        <!-- @COMPONENT: NotesSection -->
+        <div class="bg-dark-secondary rounded-xl p-4 border border-dark-accent">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">Notlar</h3>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors" data-event="click:addNote">
+                    <i class="fas fa-plus text-sm"></i>
+                </button>
+            </div>
+            <div class="space-y-3" data-mock="true">
+                <div class="bg-dark-primary p-3 rounded-lg border border-dark-accent">
+                    <p class="text-white text-sm">Pazartesi ekibi için ek mesai planlandı - 4 saat</p>
+                    <span class="text-gray-400 text-xs">2 saat önce</span>
+                </div>
+                <div class="bg-dark-primary p-3 rounded-lg border border-dark-accent">
+                    <p class="text-white text-sm">Yeni proje başlangıç toplantısı: 15 Ocak</p>
+                    <span class="text-gray-400 text-xs">1 gün önce</span>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: NotesSection -->
+    </main>
+    <!-- @END_COMPONENT: Dashboard -->
+
+    <!-- @COMPONENT: Modal Overlays -->
+    <!-- Timesheet Modal -->
+    <div id="timesheetModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-dark-secondary rounded-xl w-full max-w-md p-6 border border-dark-accent">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">Puantaj Yaz</h3>
+                    <button onclick="closeModal('timesheetModal')" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form class="space-y-4" data-implementation="Handle timesheet submission">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Personel Seç</label>
+                        <select class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white">
+                            <option data-mock="true">Ahmet Yılmaz</option>
+                            <option data-mock="true">Mehmet Demir</option>
+                            <option data-mock="true">Ayşe Kaya</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Giriş Saati</label>
+                            <input type="time" class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white" value="08:00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Çıkış Saati</label>
+                            <input type="time" class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white" value="17:00">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Tarih</label>
+                        <input type="date" class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Not</label>
+                        <textarea class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white h-20" placeholder="Ek bilgiler..."></textarea>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeModal('timesheetModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors">İptal</button>
+                        <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personnel Modal -->
+    <div id="personnelModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-dark-secondary rounded-xl w-full max-w-2xl p-6 border border-dark-accent max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">Personel Yönetimi</h3>
+                    <button onclick="closeModal('personnelModal')" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Yeni Personel
+                    </button>
+                </div>
+                <div class="space-y-3" data-mock="true">
+                    <!-- @MAP: personnel.map(person => ( -->
+                    <div class="bg-dark-primary p-4 rounded-lg border border-dark-accent flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium">Ahmet Yılmaz</h4>
+                                <p class="text-gray-400 text-sm">Yazılımcı • Başlangıç: 15.01.2024</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="text-blue-400 hover:text-blue-300 p-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-400 hover:text-red-300 p-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Management Modal -->
+    <div id="cashModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-dark-secondary rounded-xl w-full max-w-md p-6 border border-dark-accent">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">Kasa Yönetimi</h3>
+                    <button onclick="closeModal('cashModal')" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Financial Summary -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-center">
+                        <div class="text-green-400 text-2xl font-bold" data-bind="finances.income">₺15.420</div>
+                        <div class="text-green-300 text-sm">Gelir</div>
+                    </div>
+                    <div class="bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-center">
+                        <div class="text-red-400 text-2xl font-bold" data-bind="finances.expense">₺8.750</div>
+                        <div class="text-red-300 text-sm">Gider</div>
+                    </div>
+                </div>
+
+                <!-- Add Transaction Form -->
+                <form class="space-y-4" data-implementation="Handle transaction submission">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">İşlem Türü</label>
+                        <select class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white">
+                            <option value="income">Gelir</option>
+                            <option value="expense">Gider</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Tutar</label>
+                        <input type="number" class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Açıklama</label>
+                        <input type="text" class="w-full bg-dark-primary border border-dark-accent rounded-lg px-3 py-2 text-white" placeholder="İşlem açıklaması">
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeModal('cashModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors">İptal</button>
+                        <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Modal Overlays -->
+
+    <script>
+        // TODO: Implement state management, API calls, and business logic
+        
+        (function() {
+            'use strict';
+            
+            // Modal Management
+            function openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            }
+            
+            function closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            }
+            
+            // Global modal functions
+            window.openModal = openModal;
+            window.closeModal = closeModal;
+            
+            // Event Handlers for Navigation
+            const navigationHandlers = {
+                openTimesheet: () => openModal('timesheetModal'),
+                openPersonnel: () => openModal('personnelModal'),
+                openCash: () => openModal('cashModal'),
+                openReceivedProjects: () => console.log('Opening Received Projects'),
+                openGivenProjects: () => console.log('Opening Given Projects'),
+                openContractors: () => console.log('Opening Contractors'),
+                openDailyOps: () => console.log('Opening Daily Operations'),
+                openAccount: () => console.log('Opening Account Settings'),
+                toggleSidebar: () => console.log('Toggle Sidebar'),
+                openSettings: () => console.log('Opening Settings'),
+                addNote: () => console.log('Adding new note')
+            };
+            
+            // Attach event listeners
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('[data-event]').forEach(element => {
+                    const eventString = element.getAttribute('data-event');
+                    const [event, handler] = eventString.split(':');
+                    
+                    if (navigationHandlers[handler]) {
+                        element.addEventListener(event, navigationHandlers[handler]);
+                    }
+                });
+                
+                // Close modals when clicking outside
+                document.querySelectorAll('[id$="Modal"]').forEach(modal => {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeModal(this.id);
+                        }
+                    });
+                });
+            });
+            
+        })();
+    </script>
+</body>
+</html>

@@ -260,7 +260,7 @@ export default function AdminAnnouncements() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Toplam Duyuru</p>
-                  <p className="text-2xl font-bold text-white">{announcements?.length || 0}</p>
+                  <p className="text-2xl font-bold text-white">{((announcements as any[]) || []).length || 0}</p>
                 </div>
                 <Megaphone className="h-8 w-8 text-yellow-400" />
               </div>
@@ -273,7 +273,7 @@ export default function AdminAnnouncements() {
                 <div>
                   <p className="text-gray-400 text-sm">Yüksek Öncelik</p>
                   <p className="text-2xl font-bold text-white">
-                    {announcements?.filter((a: any) => a.priority === "high").length || 0}
+                    {((announcements as any[]) || []).filter((a: any) => a.priority === "high").length || 0}
                   </p>
                 </div>
                 <AlertCircle className="h-8 w-8 text-red-400" />
@@ -287,7 +287,7 @@ export default function AdminAnnouncements() {
                 <div>
                   <p className="text-gray-400 text-sm">Bu Hafta</p>
                   <p className="text-2xl font-bold text-white">
-                    {announcements?.filter((a: any) => {
+                    {((announcements as any[]) || []).filter((a: any) => {
                       const weekAgo = new Date();
                       weekAgo.setDate(weekAgo.getDate() - 7);
                       return new Date(a.createdAt) >= weekAgo;
@@ -316,7 +316,7 @@ export default function AdminAnnouncements() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {announcements?.map((announcement: any) => (
+                {((announcements as any[]) || []).map((announcement: any) => (
                   <TableRow key={announcement.id} className="border-gray-600">
                     <TableCell>
                       <div>

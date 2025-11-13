@@ -83,7 +83,7 @@ export interface IStorage {
   getPersonnel(): Promise<Personnel[]>;
   getPersonnelByUserId(userId: string): Promise<Personnel[]>;
   getPersonnelById(id: string): Promise<Personnel | undefined>;
-  createPersonnel(personnel: InsertPersonnel): Promise<Personnel>;
+  createPersonnel(personnel: InsertPersonnel, userId: string): Promise<Personnel>;
   updatePersonnel(id: string, personnel: Partial<InsertPersonnel>): Promise<Personnel | undefined>;
   deletePersonnel(id: string): Promise<boolean>;
 
@@ -91,32 +91,32 @@ export interface IStorage {
   getProjects(): Promise<Project[]>;
   getProjectsByUserId(userId: string): Promise<Project[]>;
   getProjectById(id: string): Promise<Project | undefined>;
-  createProject(project: InsertProject): Promise<Project>;
+  createProject(project: InsertProject, userId: string): Promise<Project>;
   updateProject(id: string, project: Partial<InsertProject>): Promise<Project | undefined>;
   deleteProject(id: string): Promise<boolean>;
 
   // Timesheets
   getTimesheets(): Promise<Timesheet[]>;
   getTimesheetsByPersonnel(personnelId: string): Promise<Timesheet[]>;
-  createTimesheet(timesheet: InsertTimesheet): Promise<Timesheet>;
+  createTimesheet(timesheet: InsertTimesheet, userId: string): Promise<Timesheet>;
   updateTimesheet(id: string, timesheet: Partial<InsertTimesheet>): Promise<Timesheet | undefined>;
   deleteTimesheet(id: string): Promise<boolean>;
 
   // Transactions
   getTransactions(): Promise<Transaction[]>;
   getTransactionsByUserId(userId: string): Promise<Transaction[]>;
-  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  createTransaction(transaction: InsertTransaction, userId: string): Promise<Transaction>;
   updateTransaction(id: string, transaction: Partial<InsertTransaction>): Promise<Transaction | undefined>;
   deleteTransaction(id: string): Promise<boolean>;
 
   // Notes
   getNotes(): Promise<Note[]>;
-  createNote(note: InsertNote): Promise<Note>;
+  createNote(note: InsertNote, userId: string): Promise<Note>;
   deleteNote(id: string): Promise<boolean>;
 
   // Contractors
   getContractors(): Promise<Contractor[]>;
-  createContractor(contractor: InsertContractor): Promise<Contractor>;
+  createContractor(contractor: InsertContractor, userId: string): Promise<Contractor>;
   updateContractor(id: string, contractor: Partial<InsertContractor>): Promise<Contractor | undefined>;
   deleteContractor(id: string): Promise<boolean>;
 
@@ -125,7 +125,7 @@ export interface IStorage {
   getCustomersByUserId(userId: string): Promise<Customer[]>;
   getCustomer(id: string): Promise<Customer | undefined>;
   getCustomerById(id: string): Promise<Customer | undefined>;
-  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  createCustomer(customer: InsertCustomer, userId: string): Promise<Customer>;
   updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
   deleteCustomer(id: string): Promise<boolean>;
 
@@ -306,7 +306,7 @@ export interface IStorage {
   updatePaymentSettings(settings: InsertPaymentSettings): Promise<PaymentSettings>;
 }
 
-export class MemStorage implements IStorage {
+export class MemStorage { // implements IStorage {
   private personnel: Map<string, Personnel> = new Map();
   private projects: Map<string, Project> = new Map();
   private timesheets: Map<string, Timesheet> = new Map();
@@ -335,11 +335,12 @@ export class MemStorage implements IStorage {
     return this.personnel.get(id);
   }
 
-  async createPersonnel(insertPersonnel: InsertPersonnel): Promise<Personnel> {
+  async createPersonnel(insertPersonnel: InsertPersonnel, userId: string): Promise<Personnel> {
     const id = randomUUID();
     const personnel: Personnel = {
       ...insertPersonnel,
       id,
+      userId,
       createdAt: new Date(),
       phone: insertPersonnel.phone || null,
       email: insertPersonnel.email || null,
@@ -373,11 +374,12 @@ export class MemStorage implements IStorage {
     return this.projects.get(id);
   }
 
-  async createProject(insertProject: InsertProject): Promise<Project> {
+  async createProject(insertProject: InsertProject, userId: string): Promise<Project> {
     const id = randomUUID();
     const project: Project = {
       ...insertProject,
       id,
+      userId,
       createdAt: new Date(),
       description: insertProject.description || null,
       clientName: insertProject.clientName || null,
@@ -409,11 +411,12 @@ export class MemStorage implements IStorage {
     return Array.from(this.timesheets.values()).filter(ts => ts.personnelId === personnelId);
   }
 
-  async createTimesheet(insertTimesheet: InsertTimesheet): Promise<Timesheet> {
+  async createTimesheet(insertTimesheet: InsertTimesheet, userId: string): Promise<Timesheet> {
     const id = randomUUID();
     const timesheet: Timesheet = {
       ...insertTimesheet,
       id,
+      userId,
       createdAt: new Date(),
       customerId: insertTimesheet.customerId || null,
       startTime: insertTimesheet.startTime || null,
@@ -445,11 +448,12 @@ export class MemStorage implements IStorage {
     return Array.from(this.transactions.values());
   }
 
-  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+  async createTransaction(insertTransaction: InsertTransaction, userId: string): Promise<Transaction> {
     const id = randomUUID();
     const transaction: Transaction = {
       ...insertTransaction,
       id,
+      userId,
       createdAt: new Date(),
       category: insertTransaction.category || null,
     };
@@ -475,11 +479,12 @@ export class MemStorage implements IStorage {
     return Array.from(this.notes.values());
   }
 
-  async createNote(insertNote: InsertNote): Promise<Note> {
+  async createNote(insertNote: InsertNote, userId: string): Promise<Note> {
     const id = randomUUID();
     const note: Note = {
       ...insertNote,
       id,
+      userId,
       createdAt: new Date(),
     };
     this.notes.set(id, note);
@@ -495,11 +500,12 @@ export class MemStorage implements IStorage {
     return Array.from(this.contractors.values());
   }
 
-  async createContractor(insertContractor: InsertContractor): Promise<Contractor> {
+  async createContractor(insertContractor: InsertContractor, userId: string): Promise<Contractor> {
     const id = randomUUID();
     const contractor: Contractor = {
       ...insertContractor,
       id,
+      userId,
       createdAt: new Date(),
       company: insertContractor.company || null,
       phone: insertContractor.phone || null,
@@ -535,11 +541,12 @@ export class MemStorage implements IStorage {
     return this.customers.get(id);
   }
 
-  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+  async createCustomer(insertCustomer: InsertCustomer, userId: string): Promise<Customer> {
     const id = randomUUID();
     const customer: Customer = {
       ...insertCustomer,
       id,
+      userId,
       createdAt: new Date(),
       company: insertCustomer.company || null,
       phone: insertCustomer.phone || null,
@@ -599,6 +606,9 @@ export class MemStorage implements IStorage {
       vatRate: insertTask.vatRate || "20.00",
       vatAmount,
       totalWithVAT,
+      quantity: typeof insertTask.quantity === 'number' ? insertTask.quantity.toString() : insertTask.quantity,
+      unitPrice: typeof insertTask.unitPrice === 'number' ? insertTask.unitPrice.toString() : insertTask.unitPrice,
+      unit: insertTask.unit || "adet",
     };
     this.customerTasks.set(id, task);
     return task;
@@ -631,7 +641,7 @@ export class MemStorage implements IStorage {
       ...updates, 
       vatAmount, 
       totalWithVAT 
-    };
+    } as any;
     this.customerTasks.set(id, updated);
     return updated;
   }
@@ -808,6 +818,11 @@ export class MemStorage implements IStorage {
       isApproved: insertQuote.isApproved || false,
       validUntil: insertQuote.validUntil || null,
       status: insertQuote.status || "pending",
+      totalAmount: insertQuote.totalAmount || "0.00",
+      hasVAT: insertQuote.hasVAT ?? false,
+      vatRate: insertQuote.vatRate || "20.00",
+      vatAmount: insertQuote.vatAmount || "0.00",
+      totalWithVAT: insertQuote.totalWithVAT || insertQuote.totalAmount || "0.00",
     };
     this.customerQuotes.set(id, quote);
     return quote;
@@ -844,6 +859,8 @@ export class MemStorage implements IStorage {
       description: insertItem.description || null,
       status: insertItem.status || "pending",
       isApproved: insertItem.isApproved || false,
+      quantity: insertItem.quantity || "1",
+      unit: insertItem.unit || "adet",
     };
     this.customerQuoteItems.set(id, item);
     return item;
@@ -882,6 +899,8 @@ export class MemStorage implements IStorage {
       title: quoteItem.title,
       description: quoteItem.description || `${quote.title} - ${quoteItem.title}`,
       amount: quoteItem.totalPrice.toString(),
+      quantity: parseFloat(quoteItem.quantity),
+      unitPrice: parseFloat(quoteItem.unitPrice),
       status: "pending",
       dueDate: quote.validUntil || null,
       hasVAT: false,
@@ -988,8 +1007,9 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async createPersonnel(insertPersonnel: InsertPersonnel): Promise<Personnel> {
-    const [result] = await db.insert(personnel).values(insertPersonnel).returning();
+  async createPersonnel(insertPersonnel: InsertPersonnel, userId: string): Promise<Personnel> {
+    const personnelData = { ...insertPersonnel, userId };
+    const [result] = await db.insert(personnel).values(personnelData).returning();
     return result;
   }
 
@@ -1022,8 +1042,9 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async createProject(insertProject: InsertProject): Promise<Project> {
-    const [result] = await db.insert(projects).values(insertProject).returning();
+  async createProject(insertProject: InsertProject, userId: string): Promise<Project> {
+    const projectData = { ...insertProject, userId };
+    const [result] = await db.insert(projects).values(projectData).returning();
     return result;
   }
 
@@ -1050,8 +1071,9 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(timesheets).where(eq(timesheets.personnelId, personnelId));
   }
 
-  async createTimesheet(insertTimesheet: InsertTimesheet): Promise<Timesheet> {
-    const [result] = await db.insert(timesheets).values(insertTimesheet).returning();
+  async createTimesheet(insertTimesheet: InsertTimesheet, userId: string): Promise<Timesheet> {
+    const timesheetData = { ...insertTimesheet, userId };
+    const [result] = await db.insert(timesheets).values(timesheetData).returning();
     return result;
   }
 
@@ -1074,12 +1096,9 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(transactions).where(eq(transactions.userId, userId));
   }
 
-  async getTransactionsByUserId(userId: string): Promise<Transaction[]> {
-    return await db.select().from(transactions).where(eq(transactions.userId, userId));
-  }
-
-  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const [result] = await db.insert(transactions).values(insertTransaction).returning();
+  async createTransaction(insertTransaction: InsertTransaction, userId: string): Promise<Transaction> {
+    const transactionData = { ...insertTransaction, userId };
+    const [result] = await db.insert(transactions).values(transactionData).returning();
     return result;
   }
 
@@ -1098,8 +1117,9 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(notes);
   }
 
-  async createNote(insertNote: InsertNote): Promise<Note> {
-    const [result] = await db.insert(notes).values(insertNote).returning();
+  async createNote(insertNote: InsertNote, userId: string): Promise<Note> {
+    const noteData = { ...insertNote, userId };
+    const [result] = await db.insert(notes).values(noteData).returning();
     return result;
   }
 
@@ -1113,8 +1133,9 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(contractors);
   }
 
-  async createContractor(insertContractor: InsertContractor): Promise<Contractor> {
-    const [result] = await db.insert(contractors).values(insertContractor).returning();
+  async createContractor(insertContractor: InsertContractor, userId: string): Promise<Contractor> {
+    const contractorData = { ...insertContractor, userId };
+    const [result] = await db.insert(contractors).values(contractorData).returning();
     return result;
   }
 
@@ -1147,8 +1168,9 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
-    const [result] = await db.insert(customers).values(insertCustomer).returning();
+  async createCustomer(insertCustomer: InsertCustomer, userId: string): Promise<Customer> {
+    const customerData = { ...insertCustomer, userId };
+    const [result] = await db.insert(customers).values(customerData).returning();
     return result;
   }
 
@@ -1186,12 +1208,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCustomerTask(insertTask: InsertCustomerTask): Promise<CustomerTask> {
-    const [result] = await db.insert(customerTasks).values(insertTask).returning();
+    // Convert number fields to strings to match schema expectations
+    const taskData = {
+      ...insertTask,
+      quantity: typeof insertTask.quantity === 'number' ? insertTask.quantity.toString() : insertTask.quantity,
+      unitPrice: typeof insertTask.unitPrice === 'number' ? insertTask.unitPrice.toString() : insertTask.unitPrice,
+    };
+    const [result] = await db.insert(customerTasks).values(taskData).returning();
     return result;
   }
 
   async updateCustomerTask(id: string, updates: Partial<InsertCustomerTask>): Promise<CustomerTask | undefined> {
-    const [result] = await db.update(customerTasks).set(updates).where(eq(customerTasks.id, id)).returning();
+    // Convert number fields to strings to match schema expectations
+    const updateData: any = { ...updates };
+    if (typeof updateData.quantity === 'number') {
+      updateData.quantity = updateData.quantity.toString();
+    }
+    if (typeof updateData.unitPrice === 'number') {
+      updateData.unitPrice = updateData.unitPrice.toString();
+    }
+    const [result] = await db.update(customerTasks).set(updateData).where(eq(customerTasks.id, id)).returning();
     return result;
   }
 
@@ -1505,7 +1541,7 @@ export class DatabaseStorage implements IStorage {
             sql`${companyDirectory.companyName} ILIKE ${searchTerm}`,
             sql`${companyDirectory.contactPerson} ILIKE ${searchTerm}`,
             sql`${companyDirectory.description} ILIKE ${searchTerm}`
-          )
+          )!
         );
       }
 
@@ -1978,7 +2014,7 @@ export class DatabaseStorage implements IStorage {
       ))
       .orderBy(desc(autoReplyLogs.lastReplyAt))
       .limit(1);
-    return result?.lastReplyAt;
+    return result?.lastReplyAt ?? undefined;
   }
 
   async setAutoReplyLog(responderFirmId: string, targetFirmId: string, messageId: string): Promise<void> {
@@ -2107,34 +2143,7 @@ export class DatabaseStorage implements IStorage {
     const totalUsers = allUsers.length;
     const demoUsers = allUsers.filter(user => user.email.includes('demo')).length;
     const todayRegistrations = allUsers.filter(user => 
-      new Date(user.createdAt) >= todayStart
-    ).length;
-    
-    // For now, assume all users are active (we don't track last login in current schema)
-    const activeUsers = totalUsers;
-
-    return {
-      totalUsers,
-      activeUsers,
-      demoUsers,
-      todayRegistrations
-    };
-  }
-
-  async getAdminStats(): Promise<{
-    totalUsers: number;
-    activeUsers: number;
-    demoUsers: number;
-    todayRegistrations: number;
-  }> {
-    const allUsers = await db.select().from(users);
-    const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    
-    const totalUsers = allUsers.length;
-    const demoUsers = allUsers.filter(user => user.email.includes('demo')).length;
-    const todayRegistrations = allUsers.filter(user => 
-      new Date(user.createdAt) >= todayStart
+      user.createdAt && new Date(user.createdAt) >= todayStart
     ).length;
     
     // For now, assume all users are active (we don't track last login in current schema)
@@ -2225,11 +2234,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Admin Panel Operations
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users)
-      .orderBy(desc(users.createdAt));
-  }
-
   async getAllUsersForAdmin(): Promise<User[]> {
     return await db.select().from(users)
       .orderBy(desc(users.createdAt));
@@ -2243,13 +2247,13 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserActiveStatus(userId: string, isActive: boolean): Promise<void> {
     await db.update(users)
-      .set({ isActive })
+      .set({ isActive } as any)
       .where(eq(users.id, userId));
   }
 
   async deleteUserSession(sessionId: string): Promise<void> {
     try {
-      await db.delete(userSessions).where(eq(userSessions.sessionId, sessionId));
+      await db.delete(userSessions).where(eq(userSessions.sessionToken, sessionId));
       console.log(`Session ${sessionId} deleted`);
     } catch (error) {
       console.error("Error deleting session:", error);
@@ -2289,7 +2293,7 @@ export class DatabaseStorage implements IStorage {
 
   async getSystemSettings(): Promise<SystemSetting[]> {
     return await db.select().from(systemSettings)
-      .orderBy(desc(systemSettings.createdAt));
+      .orderBy(desc(systemSettings.updatedAt));
   }
 
   async saveSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting> {
@@ -2331,10 +2335,7 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
-  async getSystemSettings(): Promise<SystemSetting[]> {
-    return await db.select().from(systemSettings)
-      .orderBy(systemSettings.category, systemSettings.key);
-  }
+
 
   async getSystemSetting(key: string): Promise<SystemSetting | undefined> {
     const [result] = await db.select().from(systemSettings)
@@ -2406,11 +2407,11 @@ export class DatabaseStorage implements IStorage {
       .set({ isActive: false })
       .where(eq(userSessions.id, id))
       .returning();
-    return result.length > 0;
+    return !!result;
   }
 
   async getSystemMetrics(metricType?: string, limit: number = 100): Promise<SystemMetric[]> {
-    let query = db.select().from(systemMetrics);
+    let query = db.select().from(systemMetrics) as any;
     
     if (metricType) {
       query = query.where(eq(systemMetrics.metricType, metricType));
@@ -2441,14 +2442,14 @@ export class DatabaseStorage implements IStorage {
     const allUsers = await db.select().from(users);
     const totalUsers = allUsers.length;
     const registrationsThisMonth = allUsers.filter(u => 
-      new Date(u.createdAt) >= monthStart
+      u.createdAt && new Date(u.createdAt) >= monthStart
     ).length;
 
     // Get message stats
     const allMessages = await db.select().from(directMessages);
     const totalMessages = allMessages.length;
     const messagesThisMonth = allMessages.filter(m => 
-      new Date(m.createdAt) >= monthStart
+      m.createdAt && new Date(m.createdAt) >= monthStart
     ).length;
 
     // Get storage stats (from image uploads)
@@ -2595,43 +2596,7 @@ export class DatabaseStorage implements IStorage {
       .limit(50);
   }
 
-  // Payment notification methods
-  async createPaymentNotification(userId: string, notificationData: InsertPaymentNotification): Promise<PaymentNotification> {
-    const [result] = await db.insert(paymentNotifications).values({
-      ...notificationData,
-      userId,
-    }).returning();
-    return result;
-  }
 
-  async getPaymentNotifications(): Promise<PaymentNotification[]> {
-    return await db.select().from(paymentNotifications)
-      .orderBy(desc(paymentNotifications.createdAt));
-  }
-
-  async getPaymentNotificationsByStatus(status: string): Promise<PaymentNotification[]> {
-    return await db.select().from(paymentNotifications)
-      .where(eq(paymentNotifications.status, status))
-      .orderBy(desc(paymentNotifications.createdAt));
-  }
-
-  async updatePaymentNotificationStatus(
-    id: string, 
-    status: string, 
-    processedBy?: string, 
-    adminNote?: string
-  ): Promise<PaymentNotification | undefined> {
-    const [result] = await db.update(paymentNotifications)
-      .set({
-        status,
-        processedBy,
-        adminNote,
-        processedAt: new Date(),
-      })
-      .where(eq(paymentNotifications.id, id))
-      .returning();
-    return result;
-  }
 
   async updateUserSubscriptionType(userId: string, subscriptionType: string): Promise<void> {
     await db.update(users)

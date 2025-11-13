@@ -12,10 +12,10 @@ export default function MaintenanceCheck() {
     enabled: !!user, // Only run if user is logged in
   });
 
-  const settingsMap = settings?.reduce((acc: any, setting: any) => {
+  const settingsMap = Array.isArray(settings) ? settings.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;
     return acc;
-  }, {}) || {};
+  }, {}) : {};
 
   const isMaintenanceMode = settingsMap.maintenance_mode === "true";
   const isAdmin = user && ((user as any).role === 'ADMIN' || (user as any).role === 'SUPER_ADMIN');

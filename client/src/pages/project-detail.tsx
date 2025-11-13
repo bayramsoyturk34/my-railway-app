@@ -180,19 +180,19 @@ export default function ProjectDetailPage() {
                   <div>
                     <p className="text-gray-500 text-sm">Toplam Tutar</p>
                     <p className="text-green-400 font-medium">
-                      {formatCurrency(contractorTasks.reduce((sum: number, task: any) => sum + parseFloat(task.amount), 0).toString())}
+                      {formatCurrency(Array.isArray(contractorTasks) ? contractorTasks.reduce((sum: number, task: any) => sum + parseFloat(task.amount), 0).toString() : '0')}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm">Yapılan Ödeme</p>
                     <p className="text-blue-400 font-medium">
-                      {formatCurrency(contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0).toString())}
+                      {formatCurrency(Array.isArray(contractorPayments) ? contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0).toString() : '0')}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm">Kalan Bakiye</p>
                     <p className="text-red-400 font-medium">
-                      {formatCurrency((contractorTasks.reduce((sum: number, task: any) => sum + parseFloat(task.amount), 0) - contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0)).toString())}
+                      {formatCurrency(((Array.isArray(contractorTasks) ? contractorTasks.reduce((sum: number, task: any) => sum + parseFloat(task.amount), 0) : 0) - (Array.isArray(contractorPayments) ? contractorPayments.reduce((sum: number, payment: any) => sum + parseFloat(payment.amount), 0) : 0)).toString())}
                     </p>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export default function ProjectDetailPage() {
                   </Button>
                 </div>
                 
-                {contractorTasks.length === 0 ? (
+                {!Array.isArray(contractorTasks) || contractorTasks.length === 0 ? (
                   <div className="text-center py-8">
                     <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-400 text-lg mb-2">Henüz iş tanımlanmamış</p>
@@ -253,7 +253,7 @@ export default function ProjectDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {contractorTasks.map((task: any) => (
+                    {Array.isArray(contractorTasks) && contractorTasks.map((task: any) => (
                       <div key={task.id} className="bg-dark-primary p-4 rounded-lg border border-dark-accent">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="text-white font-medium">{task.title}</h4>
@@ -320,7 +320,7 @@ export default function ProjectDetailPage() {
                   </Button>
                 </div>
                 
-                {contractorPayments.length === 0 ? (
+                {!Array.isArray(contractorPayments) || contractorPayments.length === 0 ? (
                   <div className="text-center py-8">
                     <Banknote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-400 text-lg mb-2">Henüz ödeme yapılmamış</p>
@@ -328,7 +328,7 @@ export default function ProjectDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {contractorPayments.map((payment: any) => (
+                    {Array.isArray(contractorPayments) && contractorPayments.map((payment: any) => (
                       <div key={payment.id} className="bg-dark-primary p-4 rounded-lg border border-dark-accent">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="text-white font-medium">{formatCurrency(payment.amount)}</h4>

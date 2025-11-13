@@ -67,7 +67,7 @@ export default function AdminDashboard() {
   });
 
   // Filter users based on search
-  const filteredUsers = (allUsers || []).filter((user: any) =>
+  const filteredUsers = ((allUsers as any[]) || []).filter((user: any) =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <div className="text-2xl font-bold">{(stats as any).totalUsers}</div>
             <p className="text-xs text-muted-foreground">
               Kayıtlı kullanıcı sayısı
             </p>
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
             <UserCheck className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <div className="text-2xl font-bold">{(stats as any).activeUsers}</div>
             <p className="text-xs text-muted-foreground">
               Son 30 günde giriş yapmış
             </p>
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
             <Activity className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.demoUsers}</div>
+            <div className="text-2xl font-bold">{(stats as any).demoUsers}</div>
             <p className="text-xs text-muted-foreground">
               Demo hesabı kullanan
             </p>
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
             <Calendar className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.todayRegistrations}</div>
+            <div className="text-2xl font-bold">{(stats as any).todayRegistrations}</div>
             <p className="text-xs text-muted-foreground">
               Bugün kayıt olan
             </p>

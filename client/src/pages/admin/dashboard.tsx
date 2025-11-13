@@ -32,7 +32,6 @@ export default function AdminDashboard() {
   const { data: dashboardStats, isLoading } = useQuery({
     queryKey: ["/api/admin/dashboard-stats"],
     refetchInterval: autoRefresh ? 15000 : false, // 15 seconds when enabled
-    onSuccess: () => setLastUpdateTime(new Date()),
   });
 
   // System metrics with real-time monitoring
@@ -82,10 +81,10 @@ export default function AdminDashboard() {
     },
   });
 
-  const settingsMap = systemSettings?.reduce((acc: any, setting: any) => {
+  const settingsMap = Array.isArray(systemSettings) ? systemSettings.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;
     return acc;
-  }, {}) || {};
+  }, {}) : {};
 
   const isMaintenanceMode = settingsMap.maintenance_mode === "true";
 
@@ -102,7 +101,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const stats = dashboardStats || {
+  const stats = (dashboardStats as any) || {
     totalUsers: 0,
     activeUsers: 0,
     totalMessages: 0,
@@ -110,6 +109,11 @@ export default function AdminDashboard() {
     registrationsThisMonth: 0,
     messagesThisMonth: 0,
   };
+
+  // Keep last update time in sync with data changes (useEffect replaces onSuccess typing issue)
+  useEffect(() => {
+    if (dashboardStats) setLastUpdateTime(new Date());
+  }, [dashboardStats]);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -324,7 +328,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-yellow-400 text-sm font-medium">Bekleyen</p>
                     <p className="text-2xl font-bold text-white">
-                      {paymentNotifications?.filter((p: any) => p.status === 'PENDING').length || 0}
+                      {(paymentNotifications as any)?.filter((p: any) => p.status === 'PENDING').length || 0}
                     </p>
                   </div>
                   <AlertTriangle className="h-8 w-8 text-yellow-400" />
@@ -337,7 +341,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-green-400 text-sm font-medium">Onaylı</p>
                     <p className="text-2xl font-bold text-white">
-                      {paymentNotifications?.filter((p: any) => p.status === 'APPROVED').length || 0}
+                      {(paymentNotifications as any)?.filter((p: any) => p.status === 'APPROVED').length || 0}
                     </p>
                   </div>
                   <UserCheck className="h-8 w-8 text-green-400" />
@@ -350,7 +354,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-red-400 text-sm font-medium">Reddedilen</p>
                     <p className="text-2xl font-bold text-white">
-                      {paymentNotifications?.filter((p: any) => p.status === 'REJECTED').length || 0}
+                      {(paymentNotifications as any)?.filter((p: any) => p.status === 'REJECTED').length || 0}
                     </p>
                   </div>
                   <UserX className="h-8 w-8 text-red-400" />
@@ -362,8 +366,8 @@ export default function AdminDashboard() {
             <div className="mt-6">
               <h4 className="text-white font-medium mb-3">Son Ödeme Bildirimleri</h4>
               <div className="space-y-3">
-                {paymentNotifications && paymentNotifications.length > 0 ? (
-                  paymentNotifications.slice(0, 3).map((payment: any) => (
+                {(paymentNotifications as any) && (paymentNotifications as any).length > 0 ? (
+                  (paymentNotifications as any).slice(0, 3).map((payment: any) => (
                     <div key={payment.id} className="flex items-center justify-between p-3 bg-dark-primary rounded border border-gray-600">
                       <div className="flex-1">
                         <p className="text-white text-sm font-medium">{payment.senderName}</p>
@@ -427,8 +431,8 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {adminLogs && adminLogs.length > 0 ? (
-                  adminLogs.slice(0, 5).map((log: any) => (
+                {(adminLogs as any) && (adminLogs as any).length > 0 ? (
+                  (adminLogs as any).slice(0, 5).map((log: any) => (
                     <div key={log.id} className="flex items-start gap-3 p-3 border border-gray-600 rounded">
                       <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
                       <div className="flex-1">

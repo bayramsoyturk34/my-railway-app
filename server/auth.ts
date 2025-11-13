@@ -4,6 +4,28 @@ import { db } from "./db";
 import { sessions } from "@shared/schema";
 import { eq, and, lt, gt } from "drizzle-orm";
 import multer from "multer";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+
+// JWT helper functions
+const generateToken = (userId: string): string => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET || "fallback-secret", {
+    expiresIn: "30d",
+  });
+};
+
+const verifyToken = (token: string): { userId: string } | null => {
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET || "fallback-secret") as { userId: string };
+  } catch {
+    return null;
+  }
+};
+
+// Hash password helper
+const hashPassword = (password: string): string => {
+  return crypto.createHash('sha256').update(password).digest('hex');
+};
 
 // Database-based session management
 const createSession = async (userId: string): Promise<string> => {
@@ -83,7 +105,7 @@ export async function setupAuth(app: Express) {
       const newUser = {
         id: Math.random().toString(36).substring(2, 15),
         email,
-        password, // In production, hash this password
+        password: hashPassword(password), // Hash the password
         firstName,
         lastName,
         profileImageUrl: null,
@@ -93,20 +115,20 @@ export async function setupAuth(app: Express) {
 
       const user = await storage.upsertUser(newUser);
       
-      // Generate database session
-      const sessionId = await createSession(user.id);
+      // Generate JWT token
+      const token = generateToken(user.id);
       
-      // Set HTTP-only cookie for session
-      res.cookie('session', sessionId, {
+      // Set HTTP-only cookie for JWT token
+      res.cookie('auth_token', token, {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: true,
-        secure: false, // Set to true in production with HTTPS
+        secure: process.env.NODE_ENV === 'production', // HTTPS in production
         sameSite: 'lax'
       });
       
-      console.log("User registered:", user.email, "Session:", sessionId);
+      console.log("User registered:", user.email);
       
-      res.json({ success: true, user, sessionId });
+      res.json({ success: true, user: { ...user, password: undefined }, token });
     } catch (error) {
       console.error("Register error:", error);
       res.status(500).json({ message: "Kayıt başarısız" });
@@ -127,6 +149,7 @@ export async function setupAuth(app: Express) {
           email: "demo@puantajpro.com",
           firstName: "Demo",
           lastName: "User",
+          password: hashPassword("demo123"), // Default demo password
           profileImageUrl: null,
           subscriptionType: "DEMO",
           subscriptionStatus: "ACTIVE",
@@ -139,7 +162,7 @@ export async function setupAuth(app: Express) {
         }
         
         user = await storage.getUserByEmail(email);
-        if (!user || user.password !== password) {
+        if (!user || user.password !== hashPassword(password)) {
           return res.status(401).json({ message: "Geçersiz email veya şifre" });
         }
         
@@ -149,20 +172,20 @@ export async function setupAuth(app: Express) {
         }
       }
       
-      // Generate database session
-      const sessionId = await createSession(user.id);
+      // Generate JWT token
+      const token = generateToken(user.id);
       
-      // Set HTTP-only cookie for session
-      res.cookie('session', sessionId, {
+      // Set HTTP-only cookie for JWT token
+      res.cookie('auth_token', token, {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: true,
-        secure: false, // Set to true in production with HTTPS
+        secure: process.env.NODE_ENV === 'production', // HTTPS in production
         sameSite: 'lax'
       });
       
-      console.log("🔐 Login successful - Setting cookie with sessionId:", sessionId);
+      console.log("🔐 Login successful for:", user.email);
       
-      res.json({ success: true, user, sessionId });
+      res.json({ success: true, user: { ...user, password: undefined }, token });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Giriş başarısız" });
@@ -172,28 +195,28 @@ export async function setupAuth(app: Express) {
   // Check auth endpoint
   app.get("/api/auth/user", async (req, res) => {
     try {
-      // Try to get session ID from Authorization header or cookie
+      // Try to get token from Authorization header or cookie
       const authHeader = req.headers.authorization;
-      let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['session'];
+      const token = authHeader?.replace('Bearer ', '') || req.cookies['auth_token'];
       
-      // Handle signed cookies format: s:sessionId.signature  
-      if (sessionId && sessionId.startsWith('s:')) {
-        sessionId = sessionId.substring(2).split('.')[0];
-      }
+      console.log("🔐 Auth debug - Token present:", !!token);
       
-      console.log("🔐 Auth debug - Raw sessionId:", sessionId);
-      console.log("🔐 Auth debug - Cookies:", req.cookies);
-      console.log("🔐 Auth debug - Auth header:", authHeader);
-      
-      if (!sessionId) {
-        console.log("🔐 Auth debug - No sessionId found");
+      if (!token) {
+        console.log("🔐 Auth debug - No token found");
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const user = await getSession(sessionId);
-      
+      // Verify JWT token
+      const decoded = verifyToken(token);
+      if (!decoded) {
+        console.log("🔐 Auth debug - Invalid token");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get user from database
+      const user = await storage.getUser(decoded.userId);
       if (!user) {
-        console.log("🔐 Auth debug - User not found for sessionId");
+        console.log("🔐 Auth debug - User not found for token");
         return res.status(401).json({ message: "Unauthorized" });
       }
       
@@ -336,7 +359,7 @@ export async function setupAuth(app: Express) {
           file.mimetype === 'image/webp') {
         cb(null, true);
       } else {
-        cb(new Error('Sadece JPG, PNG, GIF ve WebP formatları desteklenmektedir.'), false);
+        cb(null, false);
       }
     }
   });
@@ -378,32 +401,33 @@ export async function setupAuth(app: Express) {
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   try {
+    // Get token from Authorization header or cookie
     const authHeader = req.headers.authorization;
-    let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'] || req.cookies['session'];
+    const token = authHeader?.replace('Bearer ', '') || req.cookies['auth_token'];
     
-    console.log("🔐 Auth debug - Raw sessionId:", sessionId);
-    console.log("🔐 Auth debug - Cookies:", req.cookies);
-    
-    // Handle signed cookies format: s:sessionId.signature
-    if (sessionId && sessionId.startsWith('s:')) {
-      sessionId = sessionId.substring(2).split('.')[0];
-      console.log("🔐 Auth debug - Cleaned sessionId:", sessionId);
-    }
-    
-    // Authentication middleware processing
-    
-    if (!sessionId) {
-      console.log("🔐 Auth debug - No sessionId found");
+    if (!token) {
+      console.log("🔐 Auth debug - No token found");
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const user = await getSession(sessionId);
-    console.log("🔐 Auth debug - User found:", !!user);
-    
-    if (!user) {
-      // Session expired or not found
-      console.log("🔐 Auth debug - No user found for session");
+    // Verify JWT token
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      console.log("🔐 Auth debug - Invalid token");
       return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Get user from database
+    const user = await storage.getUser(decoded.userId);
+    if (!user) {
+      console.log("🔐 Auth debug - User not found for token");
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Check if user is suspended
+    if (user.status === 'SUSPENDED') {
+      console.log("🔐 Auth debug - User is suspended");
+      return res.status(403).json({ message: "Account suspended" });
     }
 
     // Authentication successful

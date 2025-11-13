@@ -715,9 +715,6 @@ export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
 export type ImageUpload = typeof imageUploads.$inferSelect;
 export type InsertImageUpload = z.infer<typeof insertImageUploadSchema>;
 
-export type Notification = typeof notifications.$inferSelect;
-export type CompanyDirectory = typeof companyDirectory.$inferSelect;
-
 export const insertCompanyBlockSchema = createInsertSchema(companyBlocks).omit({
   id: true,
   createdAt: true,

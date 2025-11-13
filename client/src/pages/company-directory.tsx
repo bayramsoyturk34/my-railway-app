@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCompanyDirectorySchema, insertMessageSchema, type CompanyDirectory, type InsertCompanyDirectory, type Message, type InsertMessage, type Notification } from "@shared/schema";
-import { Building2, Phone, Mail, Globe, MapPin, MessageCircle, Plus, Search, Users, Send, X, Star, Shield, Filter, Bell, Block, VolumeX, Flag, CheckCircle, Crown, Verified } from "lucide-react";
+import { Building2, Phone, Mail, Globe, MapPin, MessageCircle, Plus, Search, Users, Send, X, Star, Shield, Filter, Bell, Blocks, VolumeX, Flag, CheckCircle, Crown, Verified } from "lucide-react";
 
 export default function CompanyDirectory() {
   const [showForm, setShowForm] = useState(false);
@@ -141,9 +141,11 @@ export default function CompanyDirectory() {
     if (!newMessage.trim() || !selectedCompany) return;
     
     sendMessageMutation.mutate({
-      fromCompanyId: "current-user", // Bu gerçek uygulamada authentication'dan gelecek
-      toCompanyId: selectedCompany.id,
       message: newMessage.trim(),
+      fromUserId: "current-user", // Bu gerçek uygulamada authentication'dan gelecek
+      toUserId: "target-user",
+      fromCompanyId: "current-user",
+      toCompanyId: selectedCompany.id,
       messageType: "text",
     });
   };
@@ -160,7 +162,7 @@ export default function CompanyDirectory() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const formatMessageTime = (dateString: string) => {
+  const formatMessageTime = (dateString: string | Date) => {
     return new Date(dateString).toLocaleTimeString("tr-TR", {
       hour: "2-digit",
       minute: "2-digit",
@@ -533,7 +535,7 @@ export default function CompanyDirectory() {
                               : "text-gray-400"
                           }`}
                         >
-                          {formatMessageTime(message.createdAt)}
+                          {message.createdAt ? formatMessageTime(message.createdAt) : ''}
                         </p>
                       </div>
                     </div>

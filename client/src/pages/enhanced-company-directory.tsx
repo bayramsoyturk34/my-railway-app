@@ -18,7 +18,7 @@ import { useLocation } from "wouter";
 import { insertCompanyDirectorySchema, type CompanyDirectory, type InsertCompanyDirectory, type Notification } from "@shared/schema";
 import { 
   Building2, Phone, Mail, Globe, MapPin, MessageCircle, Plus, Search, Users, Send, X, 
-  Star, Shield, Filter, Bell, Block, VolumeX, Flag, CheckCircle, Crown, Verified, Home 
+  Star, Shield, Filter, Bell, Blocks, VolumeX, Flag, CheckCircle, Crown, Verified, Home 
 } from "lucide-react";
 
 export default function EnhancedCompanyDirectory() {
@@ -203,7 +203,7 @@ export default function EnhancedCompanyDirectory() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const formatMessageTime = (dateString: string) => {
+  const formatMessageTime = (dateString: string | Date) => {
     return new Date(dateString).toLocaleTimeString("tr-TR", {
       hour: "2-digit",
       minute: "2-digit",
@@ -348,7 +348,7 @@ export default function EnhancedCompanyDirectory() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              {notification.type === 'NEW_DM' && notification.payload && (
+                              {(notification as any).type === 'NEW_DM' && (notification as any).payload && (
                                 <>
                                   <div className="text-white font-medium">
                                     {(notification.payload as any).fromCompanyName}
@@ -357,7 +357,7 @@ export default function EnhancedCompanyDirectory() {
                                     {(notification.payload as any).message}
                                   </div>
                                   <div className="text-xs text-gray-500 mt-1">
-                                    {new Date(notification.createdAt).toLocaleString('tr-TR')}
+                                    {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : ''}
                                   </div>
                                 </>
                               )}
@@ -393,7 +393,7 @@ export default function EnhancedCompanyDirectory() {
           </TabsTrigger>
           <TabsTrigger value="messages" className="data-[state=active]:bg-blue-600">
             <MessageCircle className="h-4 w-4 mr-2" />
-            Mesajlarım ({conversations.length})
+            Mesajlarım ({Array.isArray(conversations) ? conversations.length : 0})
           </TabsTrigger>
         </TabsList>
 
@@ -565,7 +565,7 @@ export default function EnhancedCompanyDirectory() {
                     <CardHeader className="pb-3 border-b border-dark-accent">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-white">
-                          {conversations.find((c: any) => c.id === activeConversation)?.otherCompany?.companyName}
+                          {Array.isArray(conversations) ? conversations.find((c: any) => c.id === activeConversation)?.otherCompany?.companyName : ''}
                         </h3>
                         <Button variant="ghost" size="sm" onClick={() => setActiveConversation(null)}>
                           <X className="h-4 w-4" />
@@ -592,7 +592,7 @@ export default function EnhancedCompanyDirectory() {
                               >
                                 <p className="text-sm">{message.message}</p>
                                 <p className="text-xs opacity-70 mt-1">
-                                  {formatMessageTime(message.createdAt)}
+                                  {message.createdAt ? formatMessageTime(message.createdAt) : ''}
                                 </p>
                               </div>
                             </div>

@@ -48,7 +48,7 @@ export default function AdminSettings() {
     },
   });
 
-  const settingsMap = settings?.reduce((acc: any, setting: any) => {
+  const settingsMap = (settings as any)?.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;
     return acc;
   }, {}) || {};

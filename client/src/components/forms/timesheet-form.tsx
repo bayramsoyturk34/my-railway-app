@@ -132,7 +132,8 @@ export default function TimesheetForm({ open, onOpenChange, editingTimesheet }: 
             return { success: true, data: result };
           } catch (error) {
             console.error("Timesheet creation error for personnel:", personnelId, error);
-            return { success: false, error: error.message };
+            const err = error as Error;
+            return { success: false, error: err.message };
           }
         });
         

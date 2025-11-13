@@ -239,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...validatedData,
         userId
       };
-      const personnel = await storage.createPersonnel(personnelData);
+      const personnel = await storage.createPersonnel(personnelData, userId);
       res.status(201).json(personnel);
     } catch (error) {
       console.error("Personnel validation error:", error);
@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...validatedData,
         userId
       };
-      const project = await storage.createProject(projectData);
+      const project = await storage.createProject(projectData, userId);
       res.status(201).json(project);
     } catch (error) {
       console.error("Project validation error:", error);
@@ -390,7 +390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: z.string()
       });
       const validatedData = serverTimesheetSchema.parse(processedBody);
-      const timesheet = await storage.createTimesheet(validatedData);
+      const timesheet = await storage.createTimesheet(validatedData, userId);
       res.status(201).json(timesheet);
     } catch (error) {
       console.error("Timesheet validation error:", error);
@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: req.user.id
       };
       const validatedData = insertTransactionSchema.parse(processedBody);
-      const transaction = await storage.createTransaction(validatedData);
+      const transaction = await storage.createTransaction(validatedData, req.user.id);
       res.status(201).json(transaction);
     } catch (error) {
       console.error("Transaction validation error:", error);
@@ -524,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/notes", async (req, res) => {
     try {
       const validatedData = insertNoteSchema.parse(req.body);
-      const note = await storage.createNote(validatedData);
+      const note = await storage.createNote(validatedData, (req.user! as any).id);
       res.status(201).json(note);
     } catch (error) {
       res.status(400).json({ message: "Invalid note data" });
@@ -559,7 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contractors", async (req, res) => {
     try {
       const validatedData = insertContractorSchema.parse(req.body);
-      const contractor = await storage.createContractor(validatedData);
+      const contractor = await storage.createContractor(validatedData, (req.user! as any).id);
       res.status(201).json(contractor);
     } catch (error) {
       res.status(400).json({ message: "Invalid contractor data" });
@@ -657,7 +657,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...validatedData,
         userId
       };
-      const customer = await storage.createCustomer(customerData);
+      const customer = await storage.createCustomer(customerData, userId);
       res.status(201).json(customer);
     } catch (error) {
       console.error("Customer validation error:", error);
@@ -805,7 +805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Add the income transaction to the system
-      await storage.createTransaction(incomeTransaction);
+      await storage.createTransaction(incomeTransaction, req.user.id);
       
       res.status(201).json(payment);
     } catch (error) {
@@ -1204,7 +1204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Add the expense transaction to the system
-      await storage.createTransaction(expenseTransaction);
+      await storage.createTransaction(expenseTransaction, req.user.id);
       
       res.status(201).json(payment);
     } catch (error) {
@@ -1412,7 +1412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Add the expense transaction to the system
-      await storage.createTransaction(expenseTransaction);
+      await storage.createTransaction(expenseTransaction, req.user.id);
       
       res.status(201).json(payment);
     } catch (error) {
@@ -1573,7 +1573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Add the expense transaction to the system
-      const transaction = await storage.createTransaction(expenseTransaction);
+      const transaction = await storage.createTransaction(expenseTransaction, (req.user! as any).id);
       
       // Update payment with transaction reference
       if (transaction && transaction.id) {
@@ -1669,7 +1669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/directory/my-companies", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = (req as any).user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -1785,7 +1785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enrichedThreads = await Promise.all(threads.map(async (thread) => {
         // Get the other participant (not current user)
         const participants = thread.participants || [];
-        const otherParticipant = participants.find(p => p.userId !== userId);
+        const otherParticipant = participants.find((p: any) => p.userId !== userId);
         
         if (otherParticipant) {
           const company = await storage.getCompany(otherParticipant.companyId);
@@ -2560,11 +2560,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const now = new Date();
       const presenceTTL = 2 * 60 * 1000; // 2 minutes
-      const isOnline = (now.getTime() - presence.lastHeartbeatAt.getTime()) <= presenceTTL;
+      const isOnline = presence.lastHeartbeatAt ? (now.getTime() - presence.lastHeartbeatAt.getTime()) <= presenceTTL : false;
       
       res.json({
         online: isOnline,
-        lastSeen: presence.lastHeartbeatAt.toISOString()
+        lastSeen: presence.lastHeartbeatAt?.toISOString() || null
       });
     } catch (error) {
       console.error("Presence fetch error:", error);
@@ -3500,7 +3500,7 @@ puantropls Admin Sistemi
         action: `Role changed to ${role}`,
         adminUserId: req.user.id,
         targetEntity: `User:${userId}`,
-        targetEntityId: userId,
+        targetId: userId,
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
@@ -3537,7 +3537,7 @@ puantropls Admin Sistemi
         action: `Status changed to ${status}`,
         adminUserId: req.user.id,
         targetEntity: `User:${userId}`,
-        targetEntityId: userId,
+        targetId: userId,
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
@@ -3570,7 +3570,7 @@ puantropls Admin Sistemi
         action: "All sessions terminated",
         adminUserId: req.user.id,
         targetEntity: `User:${userId}`,
-        targetEntityId: userId,
+        targetId: userId,
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
@@ -3603,7 +3603,7 @@ puantropls Admin Sistemi
         action: "Password reset link sent",
         adminUserId: req.user.id,
         targetEntity: `User:${userId}`,
-        targetEntityId: userId,
+        targetId: userId,
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
@@ -3799,7 +3799,7 @@ puantropls Admin Sistemi
         action: `Deleted ${deletedCount} users (excluding super admin)`,
         adminUserId: req.user.id,
         targetEntity: "System",
-        targetEntityId: "bulk_delete",
+        targetId: "bulk_delete",
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });

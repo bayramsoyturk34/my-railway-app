@@ -1,16 +1,27 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Load environment variables
+dotenv.config();
+
 const app = express();
 
-// CORS middleware for cookie sharing - explicit origin for credentials
+// CORS middleware - production ready
 app.use((req, res, next) => {
+  const allowedOrigins = process.env.CORS_ORIGIN 
+    ? [process.env.CORS_ORIGIN] 
+    : process.env.NODE_ENV === 'production' 
+      ? ['https://*.railway.app'] 
+      : ['http://localhost:5173', 'http://localhost:3000'];
+  
   const origin = req.headers.origin;
-  if (origin) {
+  if (origin && (allowedOrigins.includes(origin) || allowedOrigins.some(allowed => origin.match(allowed.replace('*', '.*'))))) {
     res.header('Access-Control-Allow-Origin', origin);
   }
+  
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -22,7 +33,7 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(cookieParser('puantajpro-secret-key'));
+app.use(cookieParser(process.env.COOKIE_SECRET || 'fallback-cookie-secret'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

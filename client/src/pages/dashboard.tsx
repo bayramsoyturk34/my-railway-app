@@ -111,7 +111,7 @@ export default function Dashboard() {
   });
 
   // Notifications query - disabled for speed
-  const notifications = [];
+  const notifications: any[] = [];
 
   // Mark notification as read mutation
   const markNotificationAsReadMutation = useMutation({

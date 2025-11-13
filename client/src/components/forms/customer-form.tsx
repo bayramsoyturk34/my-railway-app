@@ -92,8 +92,9 @@ export default function CustomerForm({ open, onOpenChange, customer }: CustomerF
       console.log("🚪 Dialog closed");
       
     } catch (error) {
-      console.error("❌ Customer operation failed:", error);
-      console.error("❌ Error details:", error.message, error.stack);
+      setIsSubmitting(false);
+      const err = error as Error;
+      console.error("❌ Error details:", err.message, err.stack);
       toast({
         title: "Hata",
         description: customer ? "Müşteri kaydı güncellenemedi." : "Müşteri kaydı oluşturulamadı.",
