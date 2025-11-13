@@ -13,16 +13,11 @@ RUN npm ci --verbose
 # Uygulama kodunu kopyala
 COPY . .
 
-# Build işlemini yap (verbose output ile debug)
-RUN npx vite build --outDir=dist/public --config=vite.config.ts && npm run build:server
+# Build client to client/dist first, then copy to dist/public
+RUN npm run build:client && npm run build:server
 
-# Build output debug
-RUN echo "=== BUILD OUTPUT DEBUG ===" && \
-    ls -la dist/ && \
-    echo "=== CLIENT DIST DEBUG ===" && \
-    ls -la client/dist/ && \
-    echo "=== DIST PUBLIC DEBUG ===" && \
-    ls -la dist/public/ || echo "dist/public not found"
+# Copy client build to expected location
+RUN mkdir -p dist/public && cp -r client/dist/* dist/public/ && ls -la dist/public/
 
 # Production için gereksiz dev dependencies'leri temizle
 RUN npm prune --production
