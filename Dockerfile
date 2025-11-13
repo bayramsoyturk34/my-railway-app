@@ -22,5 +22,5 @@ RUN npm prune --production
 # Port'u expose et
 EXPOSE $PORT
 
-# Uygulamayı başlat
-CMD ["npm", "start"]
+# Start script ile database migration + app başlatma
+CMD ["sh", "-c", "npm run db:push && npm start"]

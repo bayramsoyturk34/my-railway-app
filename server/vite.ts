@@ -69,9 +69,9 @@ export async function setupVite(app: Express, server: Server) {
 export function serveStatic(app: Express) {
   // Multiple paths to check for Railway deployment compatibility
   const possiblePaths = [
+    path.resolve(process.cwd(), "client", "dist"), // Railway'de buraya build ediyor
     path.resolve(process.cwd(), "dist", "public"),
     path.resolve(process.cwd(), "public"),
-    path.resolve(process.cwd(), "client", "dist"),
     path.resolve(process.cwd(), "build"),
   ];
 
