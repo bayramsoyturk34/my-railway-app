@@ -65,10 +65,31 @@ Drizzle ORM will handle schema synchronization.
 - Use Railway metrics for performance
 
 ## Troubleshooting
+
+### Common Issues:
+
+#### 1. DATABASE_URL Format Error
+If you see `Invalid URL` errors:
+- Check Railway PostgreSQL service is running
+- Verify DATABASE_URL in Variables tab
+- Should look like: `postgresql://username:password@host:port/database`
+- **NOT** `http://` or `https://`
+
+#### 2. Build Failures
 - Check Railway logs if deployment fails
 - Verify environment variables are set
 - Ensure PostgreSQL service is running
 - Check build logs for TypeScript errors
+
+#### 3. Static Files Not Found
+- Verify build completed successfully
+- Check if `dist/public` directory exists
+- Review build logs for client build errors
+
+#### 4. Database Connection Issues
+- Ensure PostgreSQL service is linked to your app
+- Check database service status in Railway dashboard
+- Verify DATABASE_URL is automatically generated
 
 ## Local Production Test
 Test production build locally:
