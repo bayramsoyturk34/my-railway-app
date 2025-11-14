@@ -64,6 +64,7 @@ export default function Dashboard() {
   const [location, setLocation] = useLocation();
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -151,10 +152,55 @@ export default function Dashboard() {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="min-h-screen bg-gray-50 dark:bg-dark-primary text-gray-800 dark:text-white">
-        <Header />
+        <Header onMenuClick={() => setIsSidebarOpen(true)} />
+        
+        {/* Sidebar */}
+        {isSidebarOpen && (
+          <>
+            {/* Overlay */}
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            
+            {/* Sidebar */}
+            <div className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-dark-secondary border-r border-gray-200 dark:border-dark-accent z-50 transform transition-transform duration-300 ease-in-out">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Menü</h2>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+                
+                {/* Navigation Items */}
+                <nav className="space-y-2">
+                  {/* Account Item */}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent"
+                    onClick={() => {
+                      setLocation("/account");
+                      setIsSidebarOpen(false);
+                    }}
+                  >
+                    <UserCircle className="h-5 w-5 mr-3 text-blue-400" />
+                    Hesabım
+                  </Button>
+                  
+                  {/* Add other navigation items as needed */}
+                </nav>
+              </div>
+            </div>
+          </>
+        )}
         <header className="flex justify-between items-center p-4 bg-white dark:bg-dark-primary border-b border-gray-200 dark:border-dark-accent" style={{ display: 'none' }}>
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantropls</h1>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantroplus</h1>
           </div>
           
           <div className="flex items-center gap-4">

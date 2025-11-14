@@ -95,7 +95,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         <Menu className="h-6 w-6" />
       </Button>
       
-      <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantropls</h1>
+      <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantroplus</h1>
       
       <div className="flex items-center gap-2">
         {user && (
@@ -113,17 +113,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         )}
         
         {/* Account Button - for all authenticated users */}
-        {user && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-blue-400 hover:bg-dark-accent"
-            onClick={() => window.location.href = "/account"}
-            title="Hesabım"
-          >
-            <UserCircle className="h-6 w-6" />
-          </Button>
-        )}
+        {/* Moved to sidebar navigation */}
         
         {/* Admin Panel Button - only for admins */}
         {user && (user as any).isAdmin && (
@@ -219,14 +209,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           </DropdownMenu>
         )}
         
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-dark-accent"
-          onClick={onSettingsClick}
-        >
-          <Settings className="h-6 w-6" />
-        </Button>
+        {/* Settings button removed - moved to sidebar */}
         <Button
           variant="ghost"
           size="icon"
