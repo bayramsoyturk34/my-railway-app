@@ -3955,6 +3955,176 @@ puantropls Admin Sistemi
     }
   });
 
+  // User Profile Management APIs
+
+  // Hash password helper
+  const hashPassword = (password: string): string => {
+    return crypto.createHash('sha256').update(password).digest('hex');
+  };
+
+  // Update user profile
+  app.put("/api/user/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { firstName, lastName, email } = req.body;
+
+      if (!firstName || !lastName || !email) {
+        return res.status(400).json({ error: "Tüm alanlar gereklidir" });
+      }
+
+      // Check if email is already taken by another user
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ error: "Bu email adresi başka bir kullanıcı tarafından kullanılıyor" });
+      }
+
+      // Update user profile
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        firstName,
+        lastName,
+        email,
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Profil başarıyla güncellendi",
+        user: { ...updatedUser, password: undefined }
+      });
+
+    } catch (error) {
+      console.error("Profile update error:", error);
+      res.status(500).json({ error: "Profil güncellenirken bir hata oluştu" });
+    }
+  });
+
+  // Update user password
+  app.put("/api/user/password", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Mevcut şifre ve yeni şifre gereklidir" });
+      }
+
+      // Get current user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+      }
+
+      // Verify current password
+      const currentPasswordHash = hashPassword(currentPassword);
+      if (user.password !== currentPasswordHash) {
+        return res.status(400).json({ error: "Mevcut şifre yanlış" });
+      }
+
+      // Hash new password
+      const newPasswordHash = hashPassword(newPassword);
+
+      // Update password
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        password: newPasswordHash,
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Şifre başarıyla güncellendi"
+      });
+
+    } catch (error) {
+      console.error("Password update error:", error);
+      res.status(500).json({ error: "Şifre güncellenirken bir hata oluştu" });
+    }
+  });
+
+  // Update user profile image
+  app.put("/api/user/profile-image", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { profileImageUrl } = req.body;
+
+      if (!profileImageUrl) {
+        return res.status(400).json({ error: "Profil resmi URL'i gereklidir" });
+      }
+
+      // Update user profile image
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        profileImageUrl,
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Profil resmi başarıyla güncellendi",
+        user: { ...updatedUser, password: undefined }
+      });
+
+    } catch (error) {
+      console.error("Profile image update error:", error);
+      res.status(500).json({ error: "Profil resmi güncellenirken bir hata oluştu" });
+    }
+  });
+
+  // Update user notification preferences
+  app.put("/api/user/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { emailNotifications, smsNotifications, pushNotifications, marketingNotifications } = req.body;
+
+      // Since we don't have a separate user settings table, we'll store these in localStorage on the client
+      // For now, just return success
+      res.json({ 
+        success: true, 
+        message: "Bildirim ayarları başarıyla güncellendi",
+        settings: {
+          emailNotifications: emailNotifications !== undefined ? emailNotifications : true,
+          smsNotifications: smsNotifications !== undefined ? smsNotifications : false,
+          pushNotifications: pushNotifications !== undefined ? pushNotifications : true,
+          marketingNotifications: marketingNotifications !== undefined ? marketingNotifications : false,
+        }
+      });
+
+    } catch (error) {
+      console.error("Notification settings update error:", error);
+      res.status(500).json({ error: "Bildirim ayarları güncellenirken bir hata oluştu" });
+    }
+  });
+
+  // Get user notification preferences  
+  app.get("/api/user/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      // Return default notification settings
+      res.json({
+        emailNotifications: true,
+        smsNotifications: false, 
+        pushNotifications: true,
+        marketingNotifications: false,
+      });
+    } catch (error) {
+      console.error("Get notification settings error:", error);
+      res.status(500).json({ error: "Bildirim ayarları alınırken bir hata oluştu" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

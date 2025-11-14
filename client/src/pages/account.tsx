@@ -78,6 +78,28 @@ export default function Account() {
     const saved = localStorage.getItem('darkTheme');
     return saved ? JSON.parse(saved) : true;
   });
+  
+  // Notification settings state
+  const [emailNotifications, setEmailNotifications] = useState(() => {
+    const saved = localStorage.getItem('emailNotifications');
+    return saved ? JSON.parse(saved) : true;
+  });
+  const [smsNotifications, setSmsNotifications] = useState(() => {
+    const saved = localStorage.getItem('smsNotifications');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [pushNotifications, setPushNotifications] = useState(() => {
+    const saved = localStorage.getItem('pushNotifications');
+    return saved ? JSON.parse(saved) : true;
+  });
+  const [marketingNotifications, setMarketingNotifications] = useState(() => {
+    const saved = localStorage.getItem('marketingNotifications');
+    return saved ? JSON.parse(saved) : false;
+  });
+  
+  // Profile image upload state
+  const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Apply theme effects
   useEffect(() => {
@@ -173,12 +195,111 @@ export default function Account() {
     }
   });
 
+  // Update profile image mutation
+  const updateProfileImageMutation = useMutation({
+    mutationFn: (profileImageUrl: string) => apiRequest("/api/user/profile-image", "PUT", { profileImageUrl }),
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Profil resminiz güncellendi",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      setSelectedProfileImage(null);
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Profil resmi güncellenirken bir hata oluştu",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update notification settings mutation
+  const updateNotificationsMutation = useMutation({
+    mutationFn: (settings: any) => apiRequest("/api/user/notifications", "PUT", settings),
+    onSuccess: () => {
+      toast({
+        title: "Başarılı",
+        description: "Bildirim ayarlarınız güncellendi",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "Bildirim ayarları güncellenirken bir hata oluştu",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleProfileSubmit = (data: ProfileFormData) => {
     updateProfileMutation.mutate(data);
   };
 
   const handlePasswordSubmit = (data: PasswordFormData) => {
     updatePasswordMutation.mutate(data);
+  };
+
+  const handleProfileImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        updateProfileImageMutation.mutate(result.url);
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Resim yüklenirken bir hata oluştu",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleNotificationChange = (type: string, value: boolean) => {
+    const settings = {
+      emailNotifications,
+      smsNotifications,
+      pushNotifications,
+      marketingNotifications,
+      [type]: value
+    };
+    
+    // Update local state
+    switch(type) {
+      case 'emailNotifications':
+        setEmailNotifications(value);
+        localStorage.setItem('emailNotifications', JSON.stringify(value));
+        break;
+      case 'smsNotifications':
+        setSmsNotifications(value);
+        localStorage.setItem('smsNotifications', JSON.stringify(value));
+        break;
+      case 'pushNotifications':
+        setPushNotifications(value);
+        localStorage.setItem('pushNotifications', JSON.stringify(value));
+        break;
+      case 'marketingNotifications':
+        setMarketingNotifications(value);
+        localStorage.setItem('marketingNotifications', JSON.stringify(value));
+        break;
+    }
+    
+    // Update on server
+    updateNotificationsMutation.mutate(settings);
   };
 
   const menuItems = [
@@ -205,15 +326,42 @@ export default function Account() {
               {/* Profile Picture */}
               <div className="flex flex-col items-center space-y-4">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={user?.profilePicture} />
+                  <AvatarImage src={user?.profileImageUrl} />
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-lg">
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
-                <Button variant="outline" className="text-gray-300 border-gray-600">
-                  <Camera className="h-4 w-4 mr-2" />
-                  Fotoğraf Değiştir
-                </Button>
+                <div className="flex flex-col items-center space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setSelectedProfileImage(file);
+                        handleProfileImageUpload(file);
+                      }
+                    }}
+                    className="hidden"
+                    id="profile-image-input"
+                  />
+                  <label htmlFor="profile-image-input">
+                    <Button 
+                      variant="outline" 
+                      className="text-gray-300 border-gray-600 cursor-pointer"
+                      disabled={uploadingImage}
+                      asChild
+                    >
+                      <span>
+                        <Camera className="h-4 w-4 mr-2" />
+                        {uploadingImage ? "Yükleniyor..." : "Fotoğraf Değiştir"}
+                      </span>
+                    </Button>
+                  </label>
+                  {selectedProfileImage && (
+                    <p className="text-sm text-gray-400">{selectedProfileImage.name}</p>
+                  )}
+                </div>
               </div>
 
               {/* Profile Form */}
@@ -436,20 +584,44 @@ export default function Account() {
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-gray-300">Email Bildirimleri</Label>
-                  <Switch defaultChecked />
+                  <div className="space-y-1">
+                    <Label className="text-gray-300">Email Bildirimleri</Label>
+                    <p className="text-sm text-gray-500">Önemli güncellemeleri email ile alın</p>
+                  </div>
+                  <Switch 
+                    checked={emailNotifications}
+                    onCheckedChange={(checked) => handleNotificationChange('emailNotifications', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-gray-300">SMS Bildirimleri</Label>
-                  <Switch />
+                  <div className="space-y-1">
+                    <Label className="text-gray-300">SMS Bildirimleri</Label>
+                    <p className="text-sm text-gray-500">Acil durumlar için SMS bildirim</p>
+                  </div>
+                  <Switch 
+                    checked={smsNotifications}
+                    onCheckedChange={(checked) => handleNotificationChange('smsNotifications', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-gray-300">Push Bildirimleri</Label>
-                  <Switch defaultChecked />
+                  <div className="space-y-1">
+                    <Label className="text-gray-300">Push Bildirimleri</Label>
+                    <p className="text-sm text-gray-500">Tarayıcı bildirimleri</p>
+                  </div>
+                  <Switch 
+                    checked={pushNotifications}
+                    onCheckedChange={(checked) => handleNotificationChange('pushNotifications', checked)}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-gray-300">Pazarlama Bildirimleri</Label>
-                  <Switch />
+                  <div className="space-y-1">
+                    <Label className="text-gray-300">Pazarlama Bildirimleri</Label>
+                    <p className="text-sm text-gray-500">Yeni özellik ve kampanyalar</p>
+                  </div>
+                  <Switch 
+                    checked={marketingNotifications}
+                    onCheckedChange={(checked) => handleNotificationChange('marketingNotifications', checked)}
+                  />
                 </div>
               </div>
             </CardContent>
