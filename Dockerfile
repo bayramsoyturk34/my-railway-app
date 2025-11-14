@@ -36,12 +36,20 @@ RUN mkdir -p dist/public && \
     if [ -d "client/dist" ]; then \
         echo "Found client/dist, copying to dist/public..."; \
         cp -r client/dist/* dist/public/; \
+        echo "✅ Copied client build files to dist/public"; \
+        ls -la client/dist/; \
+        echo "Contents of dist/public:"; \
+        ls -la dist/public/; \
     else \
-        echo "client/dist not found, creating empty public dir"; \
+        echo "❌ client/dist not found, creating empty public dir"; \
     fi && \
     echo "=== FINAL DIST STRUCTURE ===" && \
     ls -la dist/ && \
-    ls -la dist/public/
+    if [ -f "dist/public/index.html" ]; then \
+        echo "✅ index.html found in dist/public"; \
+    else \
+        echo "❌ index.html NOT found in dist/public"; \
+    fi
 
 # Production için gereksiz dev dependencies'leri temizle
 RUN npm prune --production

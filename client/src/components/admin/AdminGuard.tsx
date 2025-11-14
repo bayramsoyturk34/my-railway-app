@@ -1,5 +1,5 @@
-import React from 'react';
-import { Navigate } from 'wouter';
+import React, { useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface AdminGuardProps {
 
 export default function AdminGuard({ children }: AdminGuardProps) {
   const { user, loading } = useAuth();
+  const [location, setLocation] = useLocation();
 
   // While loading, show loading state
   if (loading) {
@@ -24,7 +25,8 @@ export default function AdminGuard({ children }: AdminGuardProps) {
 
   // If not logged in, redirect to login
   if (!user) {
-    return <Navigate to="/login" replace />;
+    setLocation("/login");
+    return null;
   }
 
   // Check if user is admin
@@ -36,7 +38,8 @@ export default function AdminGuard({ children }: AdminGuardProps) {
 
   // If not admin, redirect to dashboard
   if (!isAdmin) {
-    return <Navigate to="/" replace />;
+    setLocation("/");
+    return null;
   }
 
   // User is admin, render children
