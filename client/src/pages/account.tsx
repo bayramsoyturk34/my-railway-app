@@ -355,29 +355,94 @@ export default function Account() {
           </Link>
         </div>
 
+        {/* Account Summary Card */}
+        <Card className="bg-dark-secondary border-dark-accent mb-8">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={previewUrl || user?.profileImageUrl || ""} />
+                  <AvatarFallback className="bg-dark-accent text-white text-lg">
+                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h2 className="text-xl font-semibold text-white">
+                    {user?.firstName} {user?.lastName}
+                  </h2>
+                  <p className="text-gray-300">{user?.email}</p>
+                  <p className="text-sm text-gray-500">
+                    Son güncelleme: {new Date().toLocaleDateString('tr-TR')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  (user as any)?.subscriptionType === 'PRO' 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-blue-600 text-white'
+                }`}>
+                  {(user as any)?.subscriptionType || 'DEMO'}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-dark-primary border-gray-600 text-gray-300 hover:bg-dark-accent"
+                  onClick={() => {
+                    // Navigate to security tab or trigger password change
+                    document.querySelector('[data-state="active"][value="security"]')?.click() || 
+                    document.querySelector('[value="security"]')?.click();
+                  }}
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  Parolayı Değiştir
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-dark-secondary">
-            <TabsTrigger value="profile" className="text-white data-[state=active]:bg-dark-accent">
+          <TabsList className="grid w-full grid-cols-6 bg-dark-secondary overflow-x-auto">
+            <TabsTrigger 
+              value="profile" 
+              className="text-white data-[state=active]:bg-dark-accent data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
+            >
               <User className="h-4 w-4 mr-2" />
               Profil
             </TabsTrigger>
-            <TabsTrigger value="security" className="text-white data-[state=active]:bg-dark-accent">
+            <TabsTrigger 
+              value="security" 
+              className="text-white data-[state=active]:bg-dark-accent data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
+            >
               <Lock className="h-4 w-4 mr-2" />
               Güvenlik
             </TabsTrigger>
-            <TabsTrigger value="subscription" className="text-white data-[state=active]:bg-dark-accent">
+            <TabsTrigger 
+              value="subscription" 
+              className="text-white data-[state=active]:bg-dark-accent data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
+            >
               <CreditCard className="h-4 w-4 mr-2" />
               Abonelik
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="text-white data-[state=active]:bg-dark-accent">
+            <TabsTrigger 
+              value="notifications" 
+              className="text-white data-[state=active]:bg-dark-accent data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
+            >
               <Bell className="h-4 w-4 mr-2" />
               Bildirimler
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="text-white data-[state=active]:bg-dark-accent">
+            <TabsTrigger 
+              value="preferences" 
+              className="text-white data-[state=active]:bg-dark-accent data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
+            >
               <Globe className="h-4 w-4 mr-2" />
               Tercihler
             </TabsTrigger>
-            <TabsTrigger value="payment" className="text-white data-[state=active]:bg-dark-accent">
+            <TabsTrigger 
+              value="payment" 
+              className="text-white data-[state=active]:bg-dark-accent data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
+            >
               <CreditCard className="h-4 w-4 mr-2" />
               Ödeme
             </TabsTrigger>
@@ -386,23 +451,26 @@ export default function Account() {
           {/* Profile Tab */}
           <TabsContent value="profile">
             <div className="grid gap-6">
-              <Card className="bg-dark-secondary border-dark-accent">
+              <Card className="bg-dark-secondary border-dark-accent shadow-lg rounded-lg">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <User className="h-5 w-5" />
+                    <User className="h-5 w-5 text-blue-500" />
                     Profil Bilgileri
                   </CardTitle>
+                  <p className="text-sm text-gray-400">
+                    Kişisel bilgilerinizi güncelleyin
+                  </p>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Profile Picture */}
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-20 w-20">
+                <CardContent className="space-y-8">
+                  {/* Profile Picture Section */}
+                  <div className="flex items-center gap-6 p-4 bg-dark-primary rounded-lg border border-dark-accent">
+                    <Avatar className="h-20 w-20 border-2 border-gray-600">
                       <AvatarImage src={previewUrl || user?.profileImageUrl || ""} />
                       <AvatarFallback className="bg-dark-accent text-white text-lg">
                         {user?.firstName?.[0]}{user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <input
                         id="photo-upload"
                         type="file"
@@ -413,7 +481,7 @@ export default function Account() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="border-gray-600 text-gray-300"
+                        className="border-gray-600 text-gray-300 hover:bg-dark-accent"
                         onClick={triggerPhotoUpload}
                         disabled={uploadPhotoMutation.isPending}
                       >
@@ -426,23 +494,34 @@ export default function Account() {
                     </div>
                   </div>
 
-                  {/* Profile Form */}
+                  {/* Profile Form with improved layout */}
                   <Form {...profileForm}>
-                    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+                      {/* Success message */}
+                      {updateProfileMutation.isSuccess && (
+                        <div className="p-4 bg-green-600 bg-opacity-20 border border-green-600 rounded-lg">
+                          <p className="text-green-400 text-sm">
+                            ✅ Profil başarıyla güncellendi
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Two-column responsive form layout */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <FormField
                           control={profileForm.control}
                           name="firstName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-gray-300">Ad</FormLabel>
+                              <FormLabel className="text-gray-300 text-sm font-medium">Ad</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
-                                  className="bg-dark-primary border-gray-600 text-white"
+                                  className="bg-dark-primary border-gray-600 text-white h-12 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Adınızı giriniz"
                                 />
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-red-400 text-xs" />
                             </FormItem>
                           )}
                         />
@@ -452,14 +531,15 @@ export default function Account() {
                           name="lastName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-gray-300">Soyad</FormLabel>
+                              <FormLabel className="text-gray-300 text-sm font-medium">Soyad</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
-                                  className="bg-dark-primary border-gray-600 text-white"
+                                  className="bg-dark-primary border-gray-600 text-white h-12 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Soyadınızı giriniz"
                                 />
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-red-400 text-xs" />
                             </FormItem>
                           )}
                         />
@@ -470,27 +550,32 @@ export default function Account() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-gray-300">Email</FormLabel>
+                            <FormLabel className="text-gray-300 text-sm font-medium">Email Adresi</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 type="email"
-                                className="bg-dark-primary border-gray-600 text-white"
+                                className="bg-dark-primary border-gray-600 text-white h-12 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                placeholder="ornek@email.com"
                               />
                             </FormControl>
-                            <FormMessage />
+                            <p className="text-xs text-gray-500 mt-1">
+                              Fatura ve bildirimler bu adrese gönderilecektir
+                            </p>
+                            <FormMessage className="text-red-400 text-xs" />
                           </FormItem>
                         )}
                       />
 
-                      <div className="flex justify-end">
+                      {/* Action button aligned to the right */}
+                      <div className="flex justify-end pt-4 border-t border-dark-accent">
                         <Button 
                           type="submit" 
-                          className="bg-blue-600 hover:bg-blue-700"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 font-medium"
                           disabled={updateProfileMutation.isPending}
                         >
                           <Save className="h-4 w-4 mr-2" />
-                          Profili Güncelle
+                          {updateProfileMutation.isPending ? "Güncelleniyor..." : "Profili Güncelle"}
                         </Button>
                       </div>
                     </form>
