@@ -81,6 +81,12 @@ export default function AdminDashboard() {
     },
   });
 
+  // Keep last update time in sync with data changes (useEffect replaces onSuccess typing issue)
+  // *** MOVED TO TOP - MUST BE BEFORE ANY CONDITIONAL RETURNS ***
+  useEffect(() => {
+    if (dashboardStats) setLastUpdateTime(new Date());
+  }, [dashboardStats]);
+
   const settingsMap = Array.isArray(systemSettings) ? systemSettings.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;
     return acc;
@@ -88,6 +94,16 @@ export default function AdminDashboard() {
 
   const isMaintenanceMode = settingsMap.maintenance_mode === "true";
 
+  const stats = (dashboardStats as any) || {
+    totalUsers: 0,
+    activeUsers: 0,
+    totalMessages: 0,
+    totalStorage: 0,
+    registrationsThisMonth: 0,
+    messagesThisMonth: 0,
+  };
+
+  // CONDITIONAL RETURN - MOVED AFTER ALL HOOKS
   if (isLoading) {
     return (
       <AdminLayout>
@@ -100,20 +116,6 @@ export default function AdminDashboard() {
       </AdminLayout>
     );
   }
-
-  const stats = (dashboardStats as any) || {
-    totalUsers: 0,
-    activeUsers: 0,
-    totalMessages: 0,
-    totalStorage: 0,
-    registrationsThisMonth: 0,
-    messagesThisMonth: 0,
-  };
-
-  // Keep last update time in sync with data changes (useEffect replaces onSuccess typing issue)
-  useEffect(() => {
-    if (dashboardStats) setLastUpdateTime(new Date());
-  }, [dashboardStats]);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
