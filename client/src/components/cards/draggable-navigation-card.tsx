@@ -82,12 +82,12 @@ export default function DraggableNavigationCard({
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
       <Card 
-        className="bg-dark-secondary border-dark-accent hover:bg-dark-accent transition-all duration-200 cursor-pointer group"
+        className="bg-white dark:bg-dark-secondary border-gray-200 dark:border-dark-accent hover:bg-gray-50 dark:hover:bg-dark-accent transition-all duration-200 cursor-pointer group"
         onClick={onClick}
       >
         <CardContent className="p-6 text-center">
           <Icon className={`h-8 w-8 mx-auto mb-3 ${iconColor} group-hover:scale-110 transition-transform`} />
-          <p className="text-white font-medium">{label}</p>
+          <p className="text-gray-800 dark:text-white font-medium">{label}</p>
         </CardContent>
       </Card>
     </div>
