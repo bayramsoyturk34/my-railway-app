@@ -16,11 +16,15 @@ function useGlobalTheme() {
     
     const root = document.documentElement;
     
-    // Apply dark theme
-    if (savedDarkTheme === 'true' || savedDarkTheme === null) {
+    // Apply dark theme - default to false (light theme) if not set
+    if (savedDarkTheme === 'true') {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
+      // Ensure light theme is default
+      if (savedDarkTheme === null) {
+        localStorage.setItem('darkTheme', 'false');
+      }
     }
     
     // Apply compact view
@@ -169,15 +173,13 @@ function Router() {
 }
 
 function App() {
-  useEffect(() => {
-    // Set dark mode by default
-    document.documentElement.classList.add('dark');
-  }, []);
+  // Use global theme management
+  useGlobalTheme();
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-dark-primary">
+        <div className="min-h-screen bg-background">
           <Toaster />
           <Router />
         </div>

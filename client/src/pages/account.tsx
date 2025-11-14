@@ -76,7 +76,7 @@ export default function Account() {
   });
   const [darkTheme, setDarkTheme] = useState(() => {
     const saved = localStorage.getItem('darkTheme');
-    return saved ? JSON.parse(saved) : true;
+    return saved ? JSON.parse(saved) : false;  // Default to light theme
   });
   
   // Notification settings state
