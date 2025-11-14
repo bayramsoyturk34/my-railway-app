@@ -42,6 +42,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Notification } from "@shared/schema";
+import MobileDashboard from "./mobile-dashboard";
+import ProjectCard from "@/components/cards/project-card";
+import NavigationCard from "@/components/cards/navigation-card";
+import DraggableNavigationCard from "@/components/cards/draggable-navigation-card";
+import TimesheetForm from "@/components/forms/timesheet-form";
+import DashboardCharts from "@/components/analytics/dashboard-charts";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Notification } from "@shared/schema";
 
 interface FinancialSummary {
   totalIncome: number;
@@ -70,9 +81,30 @@ export default function Dashboard() {
   const [showTimesheetForm, setShowTimesheetForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Device detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Don't render if not on exact root path
+  if (location !== "/") {
+    return null;
+  }
+
+  // Render mobile dashboard for mobile devices
+  if (isMobile) {
+    return <MobileDashboard />;
+  }
 
   // Navigation cards with fixed routing
   const getBaseNavCards = useCallback(() => [
