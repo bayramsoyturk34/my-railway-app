@@ -8,6 +8,10 @@ node_modules
 .env.production.local
 *.log
 .DS_Store
+attached_assets/
+uploads/
+*.tmp
+*.temp
 .vscode
 .idea
 coverage/

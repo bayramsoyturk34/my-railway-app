@@ -25,9 +25,9 @@
   --ring: hsl(202.8169 89.1213% 53.1373%);
   
   /* Dark theme colors */
-  --dark-primary: hsl(0 0% 10.2%);
-  --dark-secondary: hsl(0 0% 17.6%);
-  --dark-accent: hsl(0 0% 25.1%);
+  --dark-primary: hsl(0 0% 7%);
+  --dark-secondary: hsl(0 0% 12%);
+  --dark-accent: hsl(0 0% 15%);
   
   /* Gradient colors */
   --orange-start: hsl(16 100% 60%);
@@ -44,24 +44,24 @@
 }
 
 .dark {
-  --background: hsl(222.2 84% 4.9%);
+  --background: hsl(0 0% 7%);
   --foreground: hsl(210 40% 98%);
-  --card: hsl(222.2 84% 4.9%);
+  --card: hsl(0 0% 12%);
   --card-foreground: hsl(210 40% 98%);
-  --popover: hsl(222.2 84% 4.9%);
+  --popover: hsl(0 0% 12%);
   --popover-foreground: hsl(210 40% 98%);
   --primary: hsl(203.8863 88.2845% 53.1373%);
   --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(217.2 32.6% 17.5%);
+  --secondary: hsl(0 0% 15%);
   --secondary-foreground: hsl(210 40% 98%);
-  --muted: hsl(217.2 32.6% 17.5%);
+  --muted: hsl(0 0% 15%);
   --muted-foreground: hsl(215 20.2% 65.1%);
-  --accent: hsl(217.2 32.6% 17.5%);
+  --accent: hsl(0 0% 15%);
   --accent-foreground: hsl(210 40% 98%);
   --destructive: hsl(0 62.8% 30.6%);
   --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(217.2 32.6% 17.5%);
-  --input: hsl(217.2 32.6% 17.5%);
+  --border: hsl(0 0% 20%);
+  --input: hsl(0 0% 15%);
   --ring: hsl(212.7 26.8% 83.9%);
 }
 
@@ -170,5 +170,14 @@
   
   body:not(.dark) .text-purple-400 {
     color: hsl(258 90% 40%) !important;
+  }
+  
+  /* Karanlık tema kart renklerini güncelle */
+  .dark .bg-dark-secondary {
+    background-color: hsl(0 0% 12%) !important;
+  }
+  
+  .dark .bg-dark-accent {
+    background-color: hsl(0 0% 15%) !important;
   }
 }
