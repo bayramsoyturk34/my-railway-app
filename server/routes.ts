@@ -108,6 +108,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   
+  // Admin middleware definitions - must be defined before use
+  const isAdmin = (req: any, res: any, next: any) => {
+    if (!req.user || (!req.user.isAdmin && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN')) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    next();
+  };
+
+  const isSuperAdmin = (req: any, res: any, next: any) => {
+    if (!req.user || req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "Super Admin access required" });
+    }
+    next();
+  };
+  
   // Logout endpoint - support both GET and POST
   app.get("/api/auth/logout", async (req, res) => {
     try {
@@ -2991,19 +3006,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Admin Panel Routes with SUPER_ADMIN support
-  const isAdmin = (req: any, res: any, next: any) => {
-    if (!req.user || (!req.user.isAdmin && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN')) {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    next();
-  };
-
-  const isSuperAdmin = (req: any, res: any, next: any) => {
-    if (!req.user || req.user.role !== 'SUPER_ADMIN') {
-      return res.status(403).json({ error: "Super Admin access required" });
-    }
-    next();
-  };
 
   app.get("/api/admin/dashboard-stats", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
