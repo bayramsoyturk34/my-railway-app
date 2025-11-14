@@ -85,11 +85,11 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-2 sm:p-4 bg-gray-100 dark:bg-dark-primary border-b border-gray-200 dark:border-dark-accent">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-2 sm:p-4 bg-background border-b border-border">
       <Button
         variant="ghost"
         size="icon"
-        className="text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent flex-shrink-0"
+        className="text-gray-800 dark:text-white hover:bg-accent dark:hover:bg-dark-accent flex-shrink-0"
         onClick={onMenuClick}
       >
         <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -125,7 +125,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-purple-600 dark:text-purple-400 hover:bg-gray-200 dark:hover:bg-dark-accent"
+            className="text-purple-600 dark:text-purple-400 hover:bg-accent dark:hover:bg-dark-accent"
             onClick={() => window.location.href = "/admin"}
             title="Admin Panel"
           >
@@ -140,7 +140,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent relative"
+                className="text-gray-800 dark:text-white hover:bg-accent dark:hover:bg-dark-accent relative"
                 title={`Bildirimler (${unreadCount} okunmamış)`}
               >
                 <Bell className="h-4 w-4 sm:h-6 sm:w-6" />
@@ -218,7 +218,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent"
+          className="text-gray-800 dark:text-white hover:bg-accent dark:hover:bg-dark-accent"
           onClick={handleLogout}
           title="Çıkış Yap"
         >

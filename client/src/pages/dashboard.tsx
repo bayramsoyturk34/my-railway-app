@@ -537,7 +537,7 @@ export default function Dashboard() {
       
 
 
-      <main className="p-4">
+      <main className="pt-20 p-4">
         {/* Customer Financial Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <ProjectCard
