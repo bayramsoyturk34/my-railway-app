@@ -202,7 +202,12 @@ export default function Dashboard() {
         )}
         <header className="flex justify-between items-center p-4 bg-white dark:bg-dark-primary border-b border-gray-200 dark:border-dark-accent" style={{ display: 'none' }}>
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantroplus</h1>
+            <button 
+              onClick={() => setLocation("/")}
+              className="text-xl font-bold text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+            >
+              puantroplus
+            </button>
           </div>
           
           <div className="flex items-center gap-4">

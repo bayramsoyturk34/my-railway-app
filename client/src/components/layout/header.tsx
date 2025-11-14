@@ -95,7 +95,12 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         <Menu className="h-6 w-6" />
       </Button>
       
-      <h1 className="text-xl font-bold text-gray-800 dark:text-white">puantroplus</h1>
+      <button 
+        onClick={() => setLocation("/")}
+        className="text-xl font-bold text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+      >
+        puantroplus
+      </button>
       
       <div className="flex items-center gap-2">
         {user && (
