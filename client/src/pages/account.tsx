@@ -243,25 +243,44 @@ export default function Account() {
 
   const handleProfileImageUpload = async (file: File) => {
     setUploadingImage(true);
+    console.log("Starting file upload:", file.name, file.size);
+    
     try {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Dosya boyutu 5MB\'dan küçük olmalıdır');
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Sadece resim dosyaları yüklenebilir');
+      }
+
       const formData = new FormData();
       formData.append('image', file);
       
+      console.log("Sending upload request...");
       const response = await fetch('/api/upload-image', {
         method: 'POST',
         body: formData,
       });
       
+      console.log("Upload response status:", response.status);
+      
       if (response.ok) {
         const result = await response.json();
+        console.log("Upload successful, URL:", result.url);
         updateProfileImageMutation.mutate(result.url);
       } else {
-        throw new Error('Upload failed');
+        const errorData = await response.text();
+        console.error("Upload failed:", response.status, errorData);
+        throw new Error(`Upload failed: ${response.status}`);
       }
     } catch (error) {
+      console.error("Profile image upload error:", error);
       toast({
         title: "Hata",
-        description: "Resim yüklenirken bir hata oluştu",
+        description: error.message || "Resim yüklenirken bir hata oluştu",
         variant: "destructive",
       });
     } finally {

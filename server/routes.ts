@@ -2392,48 +2392,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Image upload endpoint  
   app.post("/api/upload-image", upload.single('image'), async (req: any, res) => {
     try {
-      // Manual authentication check for file upload
-      const authHeader = req.headers.authorization;
-      let sessionId = authHeader?.replace('Bearer ', '') || req.cookies['connect.sid'];
+      console.log("Image upload request received");
       
-      // Handle signed cookies format: s:sessionId.signature
-      if (sessionId && sessionId.startsWith('s:')) {
-        sessionId = sessionId.substring(2).split('.')[0];
-      }
+      // Get auth token from cookie
+      const token = req.cookies?.auth_token;
+      console.log("Auth token found:", !!token);
       
-      if (!sessionId) {
-        console.log("No session ID found for image upload");
-        return res.status(401).json({ message: "Unauthorized" });
+      if (!token) {
+        console.log("No auth token found for image upload");
+        return res.status(401).json({ error: "Authentication required" });
       }
 
-      const { getSession } = await import("./auth");
-      const user = await getSession(sessionId);
-      
-      if (!user) {
-        console.log("Session not found or expired for image upload");
-        return res.status(401).json({ message: "Unauthorized" });
+      // Verify JWT token
+      const jwt = await import('jsonwebtoken');
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback-secret");
+        console.log("Token verified for user:", decoded.userId);
+      } catch (error) {
+        console.log("Invalid token for image upload");
+        return res.status(401).json({ error: "Invalid authentication" });
       }
-      
+
       if (!req.file) {
+        console.log("No file provided in upload request");
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const userId = user.id;
-      const userCompanies = await storage.getCompanyDirectoryByUserId(userId);
-      
-      if (!userCompanies.length) {
-        return res.status(400).json({ error: "No company found for user" });
-      }
+      console.log("File received:", {
+        name: req.file.originalname,
+        size: req.file.size,
+        type: req.file.mimetype
+      });
 
-      const firmId = userCompanies[0].id; // Use first company
+      const userId = decoded.userId;
       const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${req.file.mimetype.split('/')[1]}`;
       
       // In production, you'd save to cloud storage. For now, we'll use a local path simulation
       const url = `/uploads/${filename}`;
       
+      console.log("Generated file URL:", url);
+
+      // Create image upload record
       const imageUpload = await storage.createImageUpload({
         userId,
-        firmId,
+        firmId: "default", // Default firm ID for user uploads
         filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
@@ -2443,12 +2446,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         height: 600
       });
 
+      console.log("Image upload record created successfully");
+
       res.json({
         url: imageUpload.url,
         width: imageUpload.width,
         height: imageUpload.height,
         mime: imageUpload.mimeType
       });
+
     } catch (error) {
       console.error("Image upload error:", error);
       res.status(500).json({ error: "Failed to upload image" });
@@ -4006,36 +4012,59 @@ puantropls Admin Sistemi
   app.put("/api/user/password", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
+      console.log("Password update attempt for user:", userId);
+      
       if (!userId) {
+        console.log("No user ID found in request");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
       const { currentPassword, newPassword } = req.body;
+      console.log("Password update data:", { 
+        hasCurrentPassword: !!currentPassword, 
+        hasNewPassword: !!newPassword,
+        currentPasswordLength: currentPassword?.length,
+        newPasswordLength: newPassword?.length
+      });
 
       if (!currentPassword || !newPassword) {
+        console.log("Missing password fields");
         return res.status(400).json({ error: "Mevcut şifre ve yeni şifre gereklidir" });
       }
 
       // Get current user
       const user = await storage.getUser(userId);
       if (!user) {
+        console.log("User not found:", userId);
         return res.status(404).json({ error: "Kullanıcı bulunamadı" });
       }
 
+      console.log("User found for password update:", user.email);
+
       // Verify current password
       const currentPasswordHash = hashPassword(currentPassword);
+      console.log("Password verification:", {
+        inputHash: currentPasswordHash.substring(0, 10) + "...",
+        storedHash: user.password?.substring(0, 10) + "...",
+        matches: user.password === currentPasswordHash
+      });
+      
       if (user.password !== currentPasswordHash) {
+        console.log("Current password mismatch for user:", user.email);
         return res.status(400).json({ error: "Mevcut şifre yanlış" });
       }
 
       // Hash new password
       const newPasswordHash = hashPassword(newPassword);
+      console.log("New password hashed successfully");
 
       // Update password
       const updatedUser = await storage.upsertUser({
         id: userId,
         password: newPasswordHash,
       });
+
+      console.log("Password updated successfully for user:", user.email);
 
       res.json({ 
         success: true, 
@@ -4044,7 +4073,7 @@ puantropls Admin Sistemi
 
     } catch (error) {
       console.error("Password update error:", error);
-      res.status(500).json({ error: "Şifre güncellenirken bir hata oluştu" });
+      res.status(500).json({ error: "Şifre güncellenirken bir hata oluştu: " + error.message });
     }
   });
 
@@ -4052,13 +4081,18 @@ puantropls Admin Sistemi
   app.put("/api/user/profile-image", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
+      console.log("Profile image update attempt for user:", userId);
+      
       if (!userId) {
+        console.log("No user ID found for profile image update");
         return res.status(401).json({ error: "Unauthorized" });
       }
 
       const { profileImageUrl } = req.body;
+      console.log("Profile image URL received:", profileImageUrl);
 
       if (!profileImageUrl) {
+        console.log("No profile image URL provided");
         return res.status(400).json({ error: "Profil resmi URL'i gereklidir" });
       }
 
@@ -4068,6 +4102,8 @@ puantropls Admin Sistemi
         profileImageUrl,
       });
 
+      console.log("Profile image updated successfully for user:", userId);
+
       res.json({ 
         success: true, 
         message: "Profil resmi başarıyla güncellendi",
@@ -4076,7 +4112,7 @@ puantropls Admin Sistemi
 
     } catch (error) {
       console.error("Profile image update error:", error);
-      res.status(500).json({ error: "Profil resmi güncellenirken bir hata oluştu" });
+      res.status(500).json({ error: "Profil resmi güncellenirken bir hata oluştu: " + error.message });
     }
   });
 

@@ -4,24 +4,24 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0 0% 100%);
+  --background: hsl(0 0% 97%);
   --foreground: hsl(210 25% 7.8431%);
-  --card: hsl(0 0% 100%);
+  --card: hsl(0 0% 98%);
   --card-foreground: hsl(210 25% 7.8431%);
-  --popover: hsl(0 0% 100%);
+  --popover: hsl(0 0% 98%);
   --popover-foreground: hsl(210 25% 7.8431%);
   --primary: hsl(203.8863 88.2845% 53.1373%);
   --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(210 25% 7.8431%);
   --secondary-foreground: hsl(0 0% 100%);
-  --muted: hsl(240 1.9608% 90%);
-  --muted-foreground: hsl(210 25% 7.8431%);
-  --accent: hsl(211.5789 51.3514% 92.7451%);
-  --accent-foreground: hsl(203.8863 88.2845% 53.1373%);
+  --muted: hsl(220 14.3% 95.9%);
+  --muted-foreground: hsl(220 8.9% 46.1%);
+  --accent: hsl(220 14.3% 95.9%);
+  --accent-foreground: hsl(220.9 39.3% 11%);
   --destructive: hsl(356.3033 90.5579% 54.3137%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(201.4286 30.4348% 90.9804%);
-  --input: hsl(200 23.0769% 97.4510%);
+  --border: hsl(220 13% 91%);
+  --input: hsl(220 13% 91%);
   --ring: hsl(202.8169 89.1213% 53.1373%);
   
   /* Dark theme colors */
