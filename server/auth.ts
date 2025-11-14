@@ -128,7 +128,12 @@ export async function setupAuth(app: Express) {
       
       console.log("User registered:", user.email);
       
-      res.json({ success: true, user: { ...user, password: undefined }, token });
+      res.json({ 
+        success: true, 
+        user: { ...user, password: undefined }, 
+        token,
+        sessionId: token // Add sessionId for client compatibility
+      });
     } catch (error) {
       console.error("Register error:", error);
       res.status(500).json({ message: "Kayıt başarısız" });
@@ -185,7 +190,12 @@ export async function setupAuth(app: Express) {
       
       console.log("🔐 Login successful for:", user.email);
       
-      res.json({ success: true, user: { ...user, password: undefined }, token });
+      res.json({ 
+        success: true, 
+        user: { ...user, password: undefined }, 
+        token,
+        sessionId: token // Add sessionId for client compatibility
+      });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Giriş başarısız" });
