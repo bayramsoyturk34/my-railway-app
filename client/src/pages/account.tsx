@@ -22,7 +22,7 @@ import {
   ChevronRight,
   Settings
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,7 @@ type PasswordFormData = z.infer<typeof passwordFormSchema>;
 export default function Account() {
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("profil");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -171,6 +172,7 @@ export default function Account() {
     { id: "abonelik", label: "Abonelik", icon: CreditCard },
     { id: "bildirimler", label: "Bildirimler", icon: Bell },
     { id: "tercihler", label: "Tercihler", icon: Settings },
+    { id: "odeme", label: "Ödeme", icon: CreditCard },
   ];
 
   const renderContent = () => {
@@ -439,6 +441,42 @@ export default function Account() {
           </Card>
         );
 
+      case "odeme":
+        return (
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Ödeme Yönetimi
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-lg font-semibold text-white">Kredi Kartı</span>
+                  <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">Aktif</span>
+                </div>
+                <p className="text-gray-300 text-sm">**** **** **** 1234</p>
+                <p className="text-gray-400 text-xs mt-2">Son kullanma: 12/26</p>
+              </div>
+              <div className="space-y-3">
+                <Button className="w-full" variant="outline">
+                  Kart Bilgilerini Güncelle
+                </Button>
+                <Button className="w-full" variant="outline">
+                  Yeni Kart Ekle
+                </Button>
+                <Button className="w-full" variant="outline">
+                  Ödeme Geçmişi
+                </Button>
+                <Button className="w-full" variant="outline">
+                  Fatura İndirme
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
       case "tercihler":
         return (
           <Card className="bg-gray-800 border-gray-700">
@@ -555,11 +593,14 @@ export default function Account() {
             <h1 className="text-lg font-semibold text-white">
               {menuItems.find(item => item.id === activeSection)?.label || 'Hesabım'}
             </h1>
-            <Link href="/dashboard">
-              <Button variant="ghost" size="icon" className="text-white">
-                <Home className="h-6 w-6" />
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-white hover:bg-gray-700"
+              onClick={() => setLocation("/")}
+            >
+              <Home className="h-6 w-6" />
+            </Button>
           </div>
 
           {/* Content Area */}
