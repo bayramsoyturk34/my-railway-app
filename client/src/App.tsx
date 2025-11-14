@@ -61,6 +61,7 @@ import AdminPaymentSettings from "@/pages/admin/payment-settings";
 import AdminGuard from "@/components/admin/AdminGuard";
 import Account from "@/pages/account";
 import Logout from "@/pages/logout";
+import AiAssistant from "@/pages/ai-assistant";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -113,6 +114,7 @@ function Router() {
       <Route path="/messages" component={Messages} />
       <Route path="/reports" component={Reports} />
       <Route path="/bulk-sms" component={BulkSMS} />
+      <Route path="/ai-assistant" component={AiAssistant} />
       <Route path="/admin/dashboard">
         <AdminGuard>
           <AdminDashboard />

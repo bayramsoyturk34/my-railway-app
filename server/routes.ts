@@ -3851,6 +3851,110 @@ puantropls Admin Sistemi
     }
   });
 
+  // AI Assistant API Routes
+  app.post("/api/ai/ask", isAuthenticated, async (req, res) => {
+    try {
+      const { question, conversationId } = req.body;
+      
+      // Simulate AI response delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock AI response
+      const mockResponses = [
+        "Bu sorunuz için size şu önerileri sunabilirim: Öncelikle mevcut verilerinizi analiz etmeniz gerekiyor.",
+        "Puantroplus sisteminizde bu işlem için şu adımları takip edebilirsiniz...",
+        "Bu konuda size yardımcı olabilirim. İlgili raporları kontrol edelim.",
+        "Sistem verilerinize göre şu sonuçları elde ettik: Performans analizi olumlu görünüyor.",
+        "Bu sorunun cevabı için öncelikle kullanıcı yetkilerinizi kontrol etmemiz gerekiyor."
+      ];
+      
+      const response = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+      const newConversationId = conversationId || crypto.randomUUID();
+      
+      res.json({
+        message: response,
+        conversationId: newConversationId,
+        tokensUsed: Math.floor(Math.random() * 100) + 50
+      });
+    } catch (error) {
+      console.error("AI ask error:", error);
+      res.status(500).json({ error: "AI servisinde bir hata oluştu" });
+    }
+  });
+
+  app.get("/api/ai/conversations", isAuthenticated, async (req, res) => {
+    try {
+      // Mock conversations data
+      const mockConversations = [
+        {
+          id: "conv-1",
+          title: "Personel Yönetimi Hakkında",
+          lastMessage: "Personel ekleme işlemi nasıl yapılır?",
+          updatedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 min ago
+          messageCount: 5
+        },
+        {
+          id: "conv-2", 
+          title: "Finansal Raporlar",
+          lastMessage: "Bu ayın gelir gider raporu nasıl alınır?",
+          updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+          messageCount: 3
+        }
+      ];
+      
+      res.json(mockConversations);
+    } catch (error) {
+      console.error("AI conversations error:", error);
+      res.status(500).json({ error: "Konuşmalar yüklenemedi" });
+    }
+  });
+
+  app.get("/api/ai/messages/:conversationId", isAuthenticated, async (req, res) => {
+    try {
+      const { conversationId } = req.params;
+      
+      // Mock messages data
+      const mockMessages = [
+        {
+          id: "msg-1",
+          role: "user" as const,
+          content: "Personel ekleme işlemi nasıl yapılır?",
+          createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString()
+        },
+        {
+          id: "msg-2",
+          role: "assistant" as const,
+          content: "Personel ekleme için şu adımları izleyebilirsiniz: 1. Dashboard'dan Personeller sekmesine gidin 2. 'Yeni Personel Ekle' butonuna tıklayın 3. Gerekli bilgileri doldurun",
+          createdAt: new Date(Date.now() - 1000 * 60 * 24).toISOString(),
+          tokensUsed: 75
+        }
+      ];
+      
+      res.json(mockMessages);
+    } catch (error) {
+      console.error("AI messages error:", error);
+      res.status(500).json({ error: "Mesajlar yüklenemedi" });
+    }
+  });
+
+  app.get("/api/ai/usage", isAuthenticated, async (req, res) => {
+    try {
+      // Mock usage data
+      const mockUsage = {
+        totalTokensUsed: 15420,
+        monthlyLimit: 50000,
+        conversationCount: 12,
+        averageTokensPerMessage: 85,
+        resetDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 15).toISOString() // 15 days from now
+      };
+      
+      res.json(mockUsage);
+    } catch (error) {
+      console.error("AI usage error:", error);
+      res.status(500).json({ error: "Kullanım bilgileri alınamadı" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
