@@ -4,24 +4,24 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0 0% 97%);
+  --background: hsl(0 0% 94%);
   --foreground: hsl(210 25% 7.8431%);
-  --card: hsl(0 0% 98%);
+  --card: hsl(0 0% 96%);
   --card-foreground: hsl(210 25% 7.8431%);
-  --popover: hsl(0 0% 98%);
+  --popover: hsl(0 0% 96%);
   --popover-foreground: hsl(210 25% 7.8431%);
   --primary: hsl(203.8863 88.2845% 53.1373%);
   --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(210 25% 7.8431%);
+  --secondary: hsl(210 25% 15%);
   --secondary-foreground: hsl(0 0% 100%);
-  --muted: hsl(220 14.3% 95.9%);
-  --muted-foreground: hsl(220 8.9% 46.1%);
-  --accent: hsl(220 14.3% 95.9%);
+  --muted: hsl(220 14.3% 92%);
+  --muted-foreground: hsl(220 8.9% 35%);
+  --accent: hsl(220 14.3% 92%);
   --accent-foreground: hsl(220.9 39.3% 11%);
   --destructive: hsl(356.3033 90.5579% 54.3137%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(220 13% 91%);
-  --input: hsl(220 13% 91%);
+  --border: hsl(220 13% 87%);
+  --input: hsl(220 13% 87%);
   --ring: hsl(202.8169 89.1213% 53.1373%);
   
   /* Dark theme colors */
@@ -157,5 +157,18 @@
     backdrop-filter: blur(10px);
     background: rgba(45, 45, 45, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Açık tema header iconları için daha koyu renkler */
+  body:not(.dark) .text-gray-700 {
+    color: hsl(210 25% 15%) !important;
+  }
+  
+  body:not(.dark) .text-white {
+    color: hsl(210 25% 15%) !important;
+  }
+  
+  body:not(.dark) .text-purple-400 {
+    color: hsl(258 90% 40%) !important;
   }
 }

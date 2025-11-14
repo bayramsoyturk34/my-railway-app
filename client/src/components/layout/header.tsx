@@ -89,7 +89,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent flex-shrink-0"
+        className="text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent flex-shrink-0"
         onClick={onMenuClick}
       >
         <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -104,7 +104,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         {user && (
-          <div className="flex items-center gap-1 sm:gap-2 text-gray-700 dark:text-white text-xs sm:text-sm">
+          <div className="flex items-center gap-1 sm:gap-2 text-gray-800 dark:text-white text-xs sm:text-sm">
             <User className="h-3 w-3 sm:h-4 sm:w-4 hidden sm:block" />
             <span className="hidden sm:inline truncate max-w-[100px]">{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
             <span className={`px-1 sm:px-2 py-1 rounded text-xs font-semibold ${
@@ -125,7 +125,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-purple-400 hover:bg-dark-accent"
+            className="text-purple-600 dark:text-purple-400 hover:bg-gray-200 dark:hover:bg-dark-accent"
             onClick={() => window.location.href = "/admin"}
             title="Admin Panel"
           >
@@ -140,7 +140,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-dark-accent relative"
+                className="text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent relative"
                 title={`Bildirimler (${unreadCount} okunmamış)`}
               >
                 <Bell className="h-4 w-4 sm:h-6 sm:w-6" />
@@ -218,7 +218,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="text-white hover:bg-dark-accent"
+          className="text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent"
           onClick={handleLogout}
           title="Çıkış Yap"
         >

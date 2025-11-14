@@ -2390,28 +2390,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Image upload endpoint  
-  app.post("/api/upload-image", upload.single('image'), async (req: any, res) => {
+  app.post("/api/upload-image", isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
       console.log("Image upload request received");
+      console.log("User from auth middleware:", req.user?.id);
       
-      // Get auth token from cookie
-      const token = req.cookies?.auth_token;
-      console.log("Auth token found:", !!token);
-      
-      if (!token) {
-        console.log("No auth token found for image upload");
+      if (!req.user) {
+        console.log("No user found in request after authentication");
         return res.status(401).json({ error: "Authentication required" });
-      }
-
-      // Verify JWT token
-      const jwt = await import('jsonwebtoken');
-      let decoded;
-      try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback-secret");
-        console.log("Token verified for user:", decoded.userId);
-      } catch (error) {
-        console.log("Invalid token for image upload");
-        return res.status(401).json({ error: "Invalid authentication" });
       }
 
       if (!req.file) {
@@ -2425,7 +2411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: req.file.mimetype
       });
 
-      const userId = decoded.userId;
+      const userId = req.user.id;
       const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${req.file.mimetype.split('/')[1]}`;
       
       // In production, you'd save to cloud storage. For now, we'll use a local path simulation
