@@ -4,6 +4,7 @@ import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
 import { 
   Send, 
   Brain,
@@ -294,13 +295,13 @@ export default function AiAssistantPage() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
               <span className="text-gray-400">Bugün: </span>
-              <span className="text-blue-400 font-semibold">{usage.usage?.dailyQuestions || 0}</span>
+              <span className="text-blue-400 font-semibold">{usage.totalTokensUsed || 0}</span>
             </div>
             <div className="w-px h-4 bg-gray-600"></div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
               <span className="text-gray-400">Limit: </span>
-              <span className="text-purple-400 font-semibold">{usage.usage?.dailyLimit || 20}</span>
+              <span className="text-purple-400 font-semibold">{usage.monthlyLimit || 50000}</span>
             </div>
           </div>
         )}
