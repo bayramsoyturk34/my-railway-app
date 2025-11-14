@@ -90,6 +90,21 @@ export default function Account() {
     localStorage.setItem('darkTheme', JSON.stringify(darkTheme));
   }, [darkTheme]);
 
+  // Listen for section changes from external sources (like dashboard menu)
+  useEffect(() => {
+    const handleSectionChange = (event: any) => {
+      if (event.detail) {
+        setActiveSection(event.detail);
+        setSidebarOpen(false); // Close sidebar if open
+      }
+    };
+
+    window.addEventListener('setAccountSection', handleSectionChange);
+    return () => {
+      window.removeEventListener('setAccountSection', handleSectionChange);
+    };
+  }, []);
+
   // Form instances
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),

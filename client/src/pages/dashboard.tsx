@@ -24,7 +24,11 @@ import {
   MessageCircle,
   MessageSquare,
   UserCircle,
-  Brain
+  Brain,
+  User,
+  Lock,
+  CreditCard,
+  Settings
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/header";
@@ -181,20 +185,126 @@ export default function Dashboard() {
                 
                 {/* Navigation Items */}
                 <nav className="space-y-2">
-                  {/* Account Item */}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent"
-                    onClick={() => {
-                      setLocation("/account");
-                      setIsSidebarOpen(false);
-                    }}
-                  >
-                    <UserCircle className="h-5 w-5 mr-3 text-blue-400" />
-                    Hesabım
-                  </Button>
+                  {/* Account Section */}
+                  <div className="mb-4">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 px-3">
+                      Hesap Ayarları
+                    </div>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent mb-1"
+                      onClick={() => {
+                        setLocation("/account");
+                        setIsSidebarOpen(false);
+                      }}
+                    >
+                      <User className="h-4 w-4 mr-3 text-blue-500" />
+                      Profil
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent mb-1"
+                      onClick={() => {
+                        // Navigate to security section of account page
+                        setLocation("/account");
+                        setIsSidebarOpen(false);
+                        // Set active section to security after navigation
+                        setTimeout(() => {
+                          const event = new CustomEvent('setAccountSection', { detail: 'guvenlik' });
+                          window.dispatchEvent(event);
+                        }, 100);
+                      }}
+                    >
+                      <Shield className="h-4 w-4 mr-3 text-green-500" />
+                      Güvenlik
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent mb-1"
+                      onClick={() => {
+                        setLocation("/account");
+                        setIsSidebarOpen(false);
+                        setTimeout(() => {
+                          const event = new CustomEvent('setAccountSection', { detail: 'abonelik' });
+                          window.dispatchEvent(event);
+                        }, 100);
+                      }}
+                    >
+                      <CreditCard className="h-4 w-4 mr-3 text-purple-500" />
+                      Abonelik
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent mb-1"
+                      onClick={() => {
+                        setLocation("/account");
+                        setIsSidebarOpen(false);
+                        setTimeout(() => {
+                          const event = new CustomEvent('setAccountSection', { detail: 'bildirimler' });
+                          window.dispatchEvent(event);
+                        }, 100);
+                      }}
+                    >
+                      <Bell className="h-4 w-4 mr-3 text-yellow-500" />
+                      Bildirimler
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent mb-1"
+                      onClick={() => {
+                        setLocation("/account");
+                        setIsSidebarOpen(false);
+                        setTimeout(() => {
+                          const event = new CustomEvent('setAccountSection', { detail: 'tercihler' });
+                          window.dispatchEvent(event);
+                        }, 100);
+                      }}
+                    >
+                      <Settings className="h-4 w-4 mr-3 text-gray-500" />
+                      Tercihler
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent mb-1"
+                      onClick={() => {
+                        setLocation("/account");
+                        setIsSidebarOpen(false);
+                        setTimeout(() => {
+                          const event = new CustomEvent('setAccountSection', { detail: 'odeme' });
+                          window.dispatchEvent(event);
+                        }, 100);
+                      }}
+                    >
+                      <CreditCard className="h-4 w-4 mr-3 text-orange-500" />
+                      Ödeme
+                    </Button>
+                  </div>
                   
-                  {/* Add other navigation items as needed */}
+                  {/* Admin Section */}
+                  {user && 'isAdmin' in user && user.isAdmin && (
+                    <div className="border-t border-gray-200 dark:border-dark-accent pt-4">
+                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 px-3">
+                        Yönetim
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-left hover:bg-gray-100 dark:hover:bg-dark-accent"
+                        onClick={() => {
+                          setLocation("/admin");
+                          setIsSidebarOpen(false);
+                        }}
+                      >
+                        <Shield className="h-4 w-4 mr-3 text-red-500" />
+                        Admin Panel
+                      </Button>
+                    </div>
+                  )}
                 </nav>
               </div>
             </div>
