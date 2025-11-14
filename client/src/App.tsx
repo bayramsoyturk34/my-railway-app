@@ -58,6 +58,7 @@ import AdminLogs from "@/pages/admin/logs";
 import AdminSessions from "@/pages/admin/sessions";
 import AdminPaymentNotifications from "@/pages/admin/payment-notifications";
 import AdminPaymentSettings from "@/pages/admin/payment-settings";
+import AdminGuard from "@/components/admin/AdminGuard";
 import Account from "@/pages/account";
 import Logout from "@/pages/logout";
 
@@ -112,15 +113,51 @@ function Router() {
       <Route path="/messages" component={Messages} />
       <Route path="/reports" component={Reports} />
       <Route path="/bulk-sms" component={BulkSMS} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
-      <Route path="/admin" component={AdminPanel} />
-      <Route path="/admin/users" component={AdminUsers} />
-      <Route path="/admin/settings" component={AdminSettings} />
-      <Route path="/admin/announcements" component={AdminAnnouncements} />
-      <Route path="/admin/logs" component={AdminLogs} />
-      <Route path="/admin/sessions" component={AdminSessions} />
-      <Route path="/admin/payment-notifications" component={AdminPaymentNotifications} />
-      <Route path="/admin/payment-settings" component={AdminPaymentSettings} />
+      <Route path="/admin/dashboard">
+        <AdminGuard>
+          <AdminDashboard />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin">
+        <AdminGuard>
+          <AdminPanel />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin/users">
+        <AdminGuard>
+          <AdminUsers />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin/settings">
+        <AdminGuard>
+          <AdminSettings />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin/announcements">
+        <AdminGuard>
+          <AdminAnnouncements />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin/logs">
+        <AdminGuard>
+          <AdminLogs />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin/sessions">
+        <AdminGuard>
+          <AdminSessions />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin/payment-notifications">
+        <AdminGuard>
+          <AdminPaymentNotifications />
+        </AdminGuard>
+      </Route>
+      <Route path="/admin/payment-settings">
+        <AdminGuard>
+          <AdminPaymentSettings />
+        </AdminGuard>
+      </Route>
       <Route path="/account" component={Account} />
       <Route path="/api/auth/logout" component={Logout} />
       <Route component={Dashboard} />

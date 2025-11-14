@@ -2077,7 +2077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes for PRO system
-  app.patch("/api/admin/directory/:companyId/verify", isAuthenticated, async (req, res) => {
+  app.patch("/api/admin/directory/:companyId/verify", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const userId = (req as any).user.id;
       const user = await storage.getUser(userId);
@@ -2095,7 +2095,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/directory/:companyId/pro-status", isAuthenticated, async (req, res) => {
+  app.patch("/api/admin/directory/:companyId/pro-status", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const userId = (req as any).user.id;
       const user = await storage.getUser(userId);
@@ -2276,7 +2276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Admin routes
-  app.get("/api/admin/stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -2294,7 +2294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // System metrics endpoint
-  app.get("/api/admin/system-metrics", isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/system-metrics", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -2342,7 +2342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -3310,7 +3310,7 @@ puantropls Admin Sistemi
   });
 
   // Admin announcements management  
-  app.get("/api/admin/announcements", isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/announcements", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -3346,7 +3346,7 @@ puantropls Admin Sistemi
     }
   });
 
-  app.post("/api/admin/announcements", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/announcements", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -3466,7 +3466,7 @@ puantropls Admin Sistemi
   // SUPER_ADMIN Exclusive Routes
   
   // Role Management (USER ⇄ ADMIN)
-  app.put("/api/admin/users/:userId/role", isAuthenticated, async (req: any, res) => {
+  app.put("/api/admin/users/:userId/role", isAuthenticated, isSuperAdmin, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const currentUser = await storage.getUser(currentUserId);
@@ -3513,7 +3513,7 @@ puantropls Admin Sistemi
   });
 
   // Status Management (ACTIVE ⇄ SUSPENDED)
-  app.put("/api/admin/users/:userId/status", isAuthenticated, async (req: any, res) => {
+  app.put("/api/admin/users/:userId/status", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const currentUser = await storage.getUser(currentUserId);
@@ -3550,7 +3550,7 @@ puantropls Admin Sistemi
   });
 
   // Force logout all sessions
-  app.post("/api/admin/users/:userId/terminate-sessions", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/users/:userId/terminate-sessions", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const currentUser = await storage.getUser(currentUserId);
@@ -3583,7 +3583,7 @@ puantropls Admin Sistemi
   });
 
   // Send password reset link
-  app.post("/api/admin/users/:userId/reset-password", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/users/:userId/reset-password", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const currentUser = await storage.getUser(currentUserId);
@@ -3616,7 +3616,7 @@ puantropls Admin Sistemi
   });
 
   // Create invitation
-  app.post("/api/admin/invitations", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/invitations", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const currentUser = await storage.getUser(currentUserId);
@@ -3766,7 +3766,7 @@ puantropls Admin Sistemi
   });
 
   // Delete all users except super admin
-  app.post("/api/admin/users/delete-all-except-super", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/users/delete-all-except-super", isAuthenticated, isSuperAdmin, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const currentUser = await storage.getUser(currentUserId);
