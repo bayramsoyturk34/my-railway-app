@@ -13,20 +13,35 @@ RUN npm ci --verbose
 # Uygulama kodunu kopyala
 COPY . .
 
-# Build client to client/dist first, then copy to dist/public
-RUN npm run build:client && npm run build:server && echo "Build complete, checking outputs..." && ls -la client/ && ls -la client/dist/ || echo "client/dist not found" && ls -la dist/ || echo "dist not found"
+# Debug: mevcut dosyaları kontrol et
+RUN echo "=== BEFORE BUILD ===" && \
+    ls -la && \
+    echo "=== SERVER FILES ===" && \
+    ls -la server/ && \
+    echo "=== CLIENT FILES ===" && \
+    ls -la client/
 
-# Copy from actual build location to expected location
+# Build server first, then client
+RUN echo "=== BUILDING SERVER ===" && \
+    npm run build:server && \
+    echo "=== SERVER BUILD COMPLETE ===" && \
+    ls -la dist/ && \
+    echo "=== BUILDING CLIENT ===" && \
+    npm run build:client && \
+    echo "=== CLIENT BUILD COMPLETE ===" && \
+    ls -la client/dist/ || echo "client/dist not found"
+
+# Copy client build to dist/public
 RUN mkdir -p dist/public && \
-    if [ -d "client/dist/public" ]; then \
-        echo "Found client/dist/public, copying to dist/public..."; \
-        cp -r client/dist/public/* dist/public/; \
-    elif [ -f "client/dist/index.html" ]; then \
-        echo "Found files in client/dist, copying to dist/public..."; \
+    if [ -d "client/dist" ]; then \
+        echo "Found client/dist, copying to dist/public..."; \
         cp -r client/dist/* dist/public/; \
     else \
-        echo "Build files not found in expected locations"; \
-    fi && ls -la dist/public/
+        echo "client/dist not found, creating empty public dir"; \
+    fi && \
+    echo "=== FINAL DIST STRUCTURE ===" && \
+    ls -la dist/ && \
+    ls -la dist/public/
 
 # Production için gereksiz dev dependencies'leri temizle
 RUN npm prune --production
