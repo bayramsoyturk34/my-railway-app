@@ -85,29 +85,29 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   };
 
   return (
-    <header className="flex justify-between items-center p-4 bg-gray-100 dark:bg-dark-primary border-b border-gray-200 dark:border-dark-accent">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-2 sm:p-4 bg-gray-100 dark:bg-dark-primary border-b border-gray-200 dark:border-dark-accent">
       <Button
         variant="ghost"
         size="icon"
-        className="text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent"
+        className="text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-dark-accent flex-shrink-0"
         onClick={onMenuClick}
       >
-        <Menu className="h-6 w-6" />
+        <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>
       
       <button 
         onClick={() => setLocation("/")}
-        className="text-xl font-bold text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+        className="text-sm sm:text-lg font-bold text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer truncate mx-2"
       >
         puantroplus
       </button>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         {user && (
-          <div className="flex items-center gap-2 text-gray-700 dark:text-white text-sm">
-            <User className="h-4 w-4" />
-            <span>{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
-            <span className={`px-2 py-1 rounded text-xs font-semibold ${
+          <div className="flex items-center gap-1 sm:gap-2 text-gray-700 dark:text-white text-xs sm:text-sm">
+            <User className="h-3 w-3 sm:h-4 sm:w-4 hidden sm:block" />
+            <span className="hidden sm:inline truncate max-w-[100px]">{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
+            <span className={`px-1 sm:px-2 py-1 rounded text-xs font-semibold ${
               (user as any).subscriptionType === 'PRO' 
                 ? 'bg-green-500 text-white' 
                 : 'bg-blue-500 text-white'
@@ -129,7 +129,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
             onClick={() => window.location.href = "/admin"}
             title="Admin Panel"
           >
-            <Shield className="h-6 w-6" />
+            <Shield className="h-4 w-4 sm:h-6 sm:w-6" />
           </Button>
         )}
 
@@ -143,18 +143,18 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
                 className="text-white hover:bg-dark-accent relative"
                 title={`Bildirimler (${unreadCount} okunmamış)`}
               >
-                <Bell className="h-6 w-6" />
+                <Bell className="h-4 w-4 sm:h-6 sm:w-6" />
                 {unreadCount > 0 && (
                   <Badge 
                     variant="destructive" 
-                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                    className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 p-0 flex items-center justify-center text-xs"
                   >
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </Badge>
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-dark-secondary border-dark-accent">
+            <DropdownMenuContent align="end" className="w-72 sm:w-80 bg-dark-secondary border-dark-accent">
               <div className="p-3 border-b border-dark-accent">
                 <h3 className="font-semibold text-white">Bildirimler</h3>
                 {unreadCount > 0 && (
@@ -222,7 +222,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           onClick={handleLogout}
           title="Çıkış Yap"
         >
-          <LogOut className="h-6 w-6" />
+          <LogOut className="h-4 w-4 sm:h-6 sm:w-6" />
         </Button>
       </div>
     </header>

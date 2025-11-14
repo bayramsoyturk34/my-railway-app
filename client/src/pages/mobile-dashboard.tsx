@@ -234,26 +234,28 @@ export default function MobileDashboard() {
       )}
 
       {/* Ana İçerik */}
-      <div className="pt-16 pb-6 px-4">
+      <div className="pt-16 pb-2 px-3">
         {/* Finansal Durum Kartları - 2+1 Layout */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-3">
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-            <CardContent className="p-4">
-              <div className="text-xs opacity-90 mb-1">Alınan İşler</div>
-              <div className="text-lg font-bold">{formatCurrency(summary?.totalIncome || 125000)}</div>
+            <CardContent className="p-5">
+              <div className="text-xs opacity-90 mb-2">Alınan İşler</div>
+              <div className="text-xl font-bold">{formatCurrency(summary?.totalIncome || 125000)}</div>
+              <div className="text-xs opacity-75 mt-1">Bu ay</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-4">
-              <div className="text-xs opacity-90 mb-1">Alınan Ödemeler</div>
-              <div className="text-lg font-bold">{formatCurrency(summary?.customerPayments.total || 98000)}</div>
+            <CardContent className="p-5">
+              <div className="text-xs opacity-90 mb-2">Alınan Ödemeler</div>
+              <div className="text-xl font-bold">{formatCurrency(summary?.customerPayments.total || 98000)}</div>
+              <div className="text-xs opacity-75 mt-1">Toplam</div>
             </CardContent>
           </Card>
         </div>
         
-        <div className="grid grid-cols-1 gap-3 mb-4">
+        <div className="grid grid-cols-1 gap-2 mb-3">
           <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-4">
+            <CardContent className="p-4 text-center">
               <div className="text-xs opacity-90 mb-1">Bakiye</div>
               <div className="text-xl font-bold">{formatCurrency(summary?.netBalance || 27000)}</div>
             </CardContent>
@@ -261,9 +263,9 @@ export default function MobileDashboard() {
         </div>
 
         {/* Navigation Kartları */}
-        <div className="space-y-3 mb-4">
+        <div className="space-y-2 mb-3">
           {/* Müşteriler & Personeller */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/customers")}>
               <CardContent className="p-4 text-center">
                 <UserCog className="h-8 w-8 text-orange-500 mx-auto mb-2" />
@@ -278,17 +280,21 @@ export default function MobileDashboard() {
             </Card>
           </div>
 
-          {/* Puantaj - Full Width Blue */}
+          {/* Puantaj - Compact Blue */}
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/timesheet")}>
-            <CardContent className="p-4 text-center">
-              <Edit className="h-10 w-10 mx-auto mb-2" />
-              <div className="text-lg font-medium">Puantaj</div>
-              <div className="text-xs opacity-90">Puantaj kayıtlarını yönet</div>
+            <CardContent className="p-3 text-center">
+              <div className="flex items-center justify-center space-x-3">
+                <Edit className="h-6 w-6" />
+                <div>
+                  <div className="text-base font-medium">Puantaj</div>
+                  <div className="text-xs opacity-90">Puantaj kayıtları</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           {/* Verilen Projeler & Kasa */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/projects")}>
               <CardContent className="p-4 text-center">
                 <Home className="h-8 w-8 text-pink-500 mx-auto mb-2" />
@@ -304,7 +310,7 @@ export default function MobileDashboard() {
           </div>
 
           {/* Mesajlar & PRO Firma Rehberi */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/messages")}>
               <CardContent className="p-4 text-center">
                 <MessageCircle className="h-8 w-8 text-purple-500 mx-auto mb-2" />
@@ -319,21 +325,24 @@ export default function MobileDashboard() {
             </Card>
           </div>
 
-          {/* AI Asistan - Full Width Modern Green */}
+          {/* AI Asistan - Compact Modern Green */}
           <Card className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white cursor-pointer hover:shadow-xl transition-shadow" onClick={() => setLocation("/ai-assistant")}>
-            <CardContent className="p-6 text-center">
-              <Brain className="h-12 w-12 mx-auto mb-3" />
-              <div className="text-xl font-semibold mb-1">AI Asistan</div>
-              <div className="text-sm opacity-90">Akıllı iş asistanınız</div>
-              <div className="inline-flex items-center mt-2 px-2 py-1 bg-white/20 rounded-full text-xs">
-                <span className="animate-pulse mr-1">●</span>
-                Aktif
+            <CardContent className="p-3 text-center">
+              <div className="flex items-center justify-center space-x-3">
+                <Brain className="h-7 w-7" />
+                <div className="text-left">
+                  <div className="text-base font-semibold">AI Asistan</div>
+                  <div className="text-xs opacity-90 flex items-center">
+                    <span className="animate-pulse mr-1 w-2 h-2 bg-white rounded-full"></span>
+                    Akıllı iş asistanınız
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Toplu SMS & Raporlar */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/bulk-sms")}>
               <CardContent className="p-4 text-center">
                 <MessageSquare className="h-8 w-8 text-green-500 mx-auto mb-2" />
@@ -350,8 +359,8 @@ export default function MobileDashboard() {
         </div>
 
         {/* Döviz Kurları - Horizontal Scroll */}
-        <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 px-1">Döviz Kurları</h3>
+        <div className="mb-3">
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 px-1">Döviz Kurları</h3>
           <div className="flex space-x-3 overflow-x-auto pb-2">
             {currencies.map((currency, index) => (
               <Card key={index} className="flex-shrink-0 w-24 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
