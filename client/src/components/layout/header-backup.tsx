@@ -48,43 +48,29 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
 
   // Debug bilgileri temizlendi - sadece önemli log'lar
   if (finalNotifications.length > 0) {
-    console.log("🔔 Found notifications:", finalNotifications.length, "unread:", unreadCount);
+    console.log(`🔔 ${finalNotifications.length} bildirim var, ${unreadCount} okunmamış`);
   }
-
-  const logoutMutation = useMutation({
-    mutationFn: () => apiRequest("/api/auth/logout", "POST"),
-    onSuccess: () => {
-      queryClient.clear();
-      setLocation("/auth");
-      toast({
-        title: "Başarıyla çıkış yapıldı",
-        description: "Güvenli bir şekilde oturumunuz sonlandırıldı.",
-      });
-    },
-    onError: () => {
-      // Even if logout fails on server, clear local state
-      queryClient.clear();
-      setLocation("/auth");
-      toast({
-        title: "Çıkış yapıldı",
-        description: "Yerel oturum temizlendi.",
-      });
+  
+  // Force check notifications immediately when user changes
+  React.useEffect(() => {
+    if (user) {
+      console.log("🔔 User changed, user ID:", user.id);
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
     }
-  });
+  }, [user]);
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    localStorage.clear();
+    window.location.href = "/";
   };
 
   const handleNotificationClick = async (notification: any) => {
-    // Mark as read if not already read
-    if (!notification.isRead) {
-      try {
-        await apiRequest(`/api/notifications/${notification.id}/read`, "PATCH");
-        queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      } catch (error) {
-        console.error("Error marking notification as read:", error);
-      }
+    // Mark as read
+    try {
+      await apiRequest(`/api/notifications/${notification.id}/read`, "PATCH");
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
     }
 
     // Handle navigation based on notification type
@@ -137,12 +123,15 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           </div>
         )}
         
+        {/* Account Button - for all authenticated users */}
+        {/* Moved to sidebar navigation */}
+        
         {/* Admin Panel Button - only for admins */}
         {user && (user as any).isAdmin && (
           <Button
             variant="ghost"
             size="icon"
-            className="text-purple-600 dark:text-purple-400 hover:bg-accent transition-colors"
+                className="text-purple-600 dark:text-purple-400 hover:bg-accent transition-colors"
             onClick={() => window.location.href = "/admin"}
             title="Admin Panel"
           >
@@ -158,7 +147,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
                 variant="ghost"
                 size="icon"
                 className="text-header-icon hover:bg-accent transition-colors relative"
-                title={`Bildirimler (${unreadCount} okunmamış)`}
+                title={`Bildirimler (${unreadCount} okunmam\u0131\u015f)`}
               >
                 <Bell className="h-4 w-4 sm:h-6 sm:w-6" />
                 {unreadCount > 0 && (
@@ -171,11 +160,12 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            
-            <DropdownMenuContent align="end" className="w-80 max-w-sm">
-              <div className="p-3 border-b border-border">
-                <h3 className="text-foreground font-semibold">Bildirimler</h3>
-                <p className="text-muted-foreground text-sm">{unreadCount} okunmamış bildirim</p>
+            <DropdownMenuContent align="end" className="w-72 sm:w-80 bg-dark-secondary border-dark-accent">
+              <div className="p-3 border-b border-dark-accent">
+                <h3 className="font-semibold text-white">Bildirimler</h3>
+                {unreadCount > 0 && (
+                  <p className="text-sm text-gray-400">{unreadCount} okunmamış bildirim</p>
+                )}
               </div>
               
               {finalNotifications && finalNotifications.length > 0 ? (
@@ -230,6 +220,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
           </DropdownMenu>
         )}
         
+        {/* Settings button removed - moved to sidebar */}
         <Button
           variant="ghost"
           size="icon"

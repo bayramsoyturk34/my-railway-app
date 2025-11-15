@@ -41,6 +41,16 @@
   
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --radius: 0.75rem;
+  
+  /* Theme-safe semantic colors for light mode */
+  --header-bg: hsl(0 0% 100%);
+  --header-text: hsl(210 25% 7.8431%);
+  --header-brand: hsl(203.8863 88.2845% 53.1373%);
+  --header-icon: hsl(210 25% 7.8431%);
+  --nav-text: hsl(210 25% 7.8431%);
+  --nav-text-hover: hsl(203.8863 88.2845% 53.1373%);
+  --surface: hsl(0 0% 96%);
+  --surface-hover: hsl(220 14.3% 92%);
 }
 
 .dark {
@@ -63,6 +73,16 @@
   --border: hsl(0 0% 20%);
   --input: hsl(0 0% 15%);
   --ring: hsl(0 0% 83.9%);
+  
+  /* Theme-safe semantic colors for dark mode */
+  --header-bg: hsl(0 0% 12%);
+  --header-text: hsl(0 0% 98%);
+  --header-brand: hsl(203.8863 88.2845% 53.1373%);
+  --header-icon: hsl(0 0% 98%);
+  --nav-text: hsl(0 0% 98%);
+  --nav-text-hover: hsl(203.8863 88.2845% 53.1373%);
+  --surface: hsl(0 0% 15%);
+  --surface-hover: hsl(0 0% 20%);
 }
 
 /* Compact view styles */
@@ -293,46 +313,6 @@ form input:focus {
 .account-page [class*="bg-gray"] input {
   color: white !important;
   -webkit-text-fill-color: white !important;
-}
-
-/* Force puantroplus header text to be white - HIGHEST PRIORITY */
-header button[class*="font-bold"] {
-  color: white !important;
-}
-
-/* Ultra-specific rule for puantroplus text - FORCE WHITE COLOR */
-[data-header] button,
-header button,
-nav button {
-  color: white !important;
-  -webkit-text-fill-color: white !important;
-  text-shadow: none !important;
-}
-
-/* Specific targeting for puantroplus */
-header button:nth-child(2),
-header > div > button:nth-child(2) {
-  color: white !important;
-  -webkit-text-fill-color: white !important;
-}
-
-/* Force all header text to be white */
-header,
-header *,
-header button,
-header button *,
-header span,
-[data-testid="header"] *,
-.header-brand,
-.header-brand * {
-  color: white !important;
-  -webkit-text-fill-color: white !important;
-  text-shadow: none !important;
-}
-
-/* Target by text content (if supported) */
-header *:contains("puantroplus") {
-  color: white !important;
 }
 
 /* Brute force approach */

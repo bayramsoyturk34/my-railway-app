@@ -55,6 +55,22 @@ export default {
         'purple-end': "var(--purple-end)",
         'blue-start': "var(--blue-start)",
         'blue-end': "var(--blue-end)",
+        
+        // Theme-safe semantic colors
+        'header': {
+          DEFAULT: "var(--header-bg)",
+          text: "var(--header-text)",
+          brand: "var(--header-brand)",
+          icon: "var(--header-icon)",
+        },
+        'nav': {
+          text: "var(--nav-text)",
+          'text-hover': "var(--nav-text-hover)",
+        },
+        'surface': {
+          DEFAULT: "var(--surface)",
+          hover: "var(--surface-hover)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
