@@ -450,7 +450,7 @@ export default function ReportsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-dark-primary text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Header />
       
       <div className="p-4">
@@ -512,7 +512,7 @@ export default function ReportsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Toplam Rapor</p>
-                  <p className="text-2xl font-bold text-white">{reportTemplates.length}</p>
+                  <p className="text-2xl font-bold text-foreground dark:text-white">{reportTemplates.length}</p>
                 </div>
                 <FileText className="h-8 w-8 text-blue-400" />
               </div>
@@ -588,7 +588,7 @@ export default function ReportsPage() {
                           <IconComponent className={`h-6 w-6 ${template.color}`} />
                         </div>
                         <div>
-                          <CardTitle className="text-white text-lg">{template.name}</CardTitle>
+                          <CardTitle className="text-foreground dark:text-white text-lg">{template.name}</CardTitle>
                           <Badge className={`mt-1 ${getTypeColor(template.type)}`}>
                             {getTypeName(template.type)}
                           </Badge>
@@ -604,7 +604,7 @@ export default function ReportsPage() {
                     
                     <div className="flex gap-2">
                       <Button
-                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+                        className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                         onClick={() => generateReport(template.id)}
                       >
                         <BarChart className="h-4 w-4 mr-2" />
@@ -630,7 +630,7 @@ export default function ReportsPage() {
         {/* Custom Report Builder */}
         <Card className="bg-dark-secondary border-dark-accent mt-6">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground dark:text-white flex items-center gap-2">>
               <Plus className="h-5 w-5 text-green-400" />
               Özel Rapor Oluştur
             </CardTitle>
@@ -640,7 +640,7 @@ export default function ReportsPage() {
               İhtiyacınıza özel rapor şablonları oluşturun ve kaydedin.
             </p>
             <Button 
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-600 text-primary-foreground hover:bg-green-700"
               onClick={() => {
                 toast({
                   title: "Özel Rapor",

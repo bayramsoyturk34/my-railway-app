@@ -173,15 +173,15 @@ export default function CompanyDirectory() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Building2 className="h-8 w-8 text-blue-400" />
+          <h1 className="text-3xl font-bold text-foreground dark:text-white flex items-center gap-3">
+            <Building2 className="h-8 w-8 text-primary" />
             Firma Rehberi
           </h1>
-          <p className="text-gray-400 mt-2">Uygulamayı kullanan firmalarla iletişime geçin</p>
+          <p className="text-muted-foreground mt-2">Uygulamayı kullanan firmalarla iletişime geçin</p>
         </div>
         <Button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          onClick={() => setShowAddDialog(true)}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Plus className="h-4 w-4 mr-2" />
           Yeni Firma Ekle
@@ -190,12 +190,12 @@ export default function CompanyDirectory() {
 
       {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
           placeholder="Firma adı, yetkili kişi veya sektör ile ara..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-dark-primary border-dark-accent text-white"
+          className="pl-10 bg-input border-border text-foreground"
         />
       </div>
 
@@ -218,7 +218,7 @@ export default function CompanyDirectory() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold text-white">{company.companyName}</h3>
+                    <h3 className="text-xl font-semibold text-foreground dark:text-white">{company.companyName}</h3>
                     <p className="text-blue-400 font-medium">{company.contactPerson}</p>
                   </div>
                   {company.isActive && (
@@ -300,9 +300,9 @@ export default function CompanyDirectory() {
 
       {/* Add Company Form Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-card-foreground max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white">Yeni Firma Ekle</DialogTitle>
+            <DialogTitle className="text-foreground">Yeni Firma Ekle</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">

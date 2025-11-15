@@ -315,6 +315,44 @@ form input:focus {
   -webkit-text-fill-color: white !important;
 }
 
+/* Theme-safe utility classes for components that still need hardcoded fixes */
+.text-theme-primary {
+  @apply text-gray-900 dark:text-white;
+}
+
+.bg-theme-primary {
+  @apply bg-white dark:bg-gray-900;
+}
+
+.text-theme-secondary {
+  @apply text-gray-600 dark:text-gray-300;
+}
+
+.bg-theme-secondary {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.border-theme {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+/* Fix any remaining text-white issues in light mode */
+@media (prefers-color-scheme: light) {
+  .dark\:text-white:not(.dark *) {
+    color: rgb(31 41 55) !important; /* gray-800 */
+  }
+}
+
+/* Ensure proper contrast in dialogs and modals */
+[data-radix-dialog-content] {
+  @apply bg-background text-foreground border-border;
+}
+
+/* Fix any remaining white text on white background in light mode */
+.light .text-white:not([class*="bg-"]):not([style*="background"]) {
+  @apply text-gray-900;
+}
+
 /* Brute force approach */
 header button {
   color: white !important;
@@ -333,3 +371,32 @@ input[type="tel"]:-webkit-autofill {
   -webkit-text-fill-color: white !important;
   -webkit-box-shadow: 0 0 0px 1000px #374151 inset !important;
 }
+
+/* Tema geçişleri için animasyonlar */
+.theme-transition {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* 
+JavaScript tema değişimi için örnek kod:
+
+const [isDark, setIsDark] = useState(() => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('theme') === 'dark' || 
+           (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  return false;
+});
+
+useEffect(() => {
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }
+}, [isDark]);
+
+const toggleTheme = () => setIsDark(!isDark);
+*/

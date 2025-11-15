@@ -251,13 +251,13 @@ export default function EnhancedCompanyDirectory() {
             variant="ghost"
             size="icon"
             onClick={() => setLocation("/")}
-            className="text-gray-400 hover:text-white hover:bg-dark-accent"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent"
             title="Anasayfa'ya dön"
           >
             <Home className="h-6 w-6" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground dark:text-white flex items-center gap-3">
               <Crown className="h-8 w-8 text-yellow-500" />
               PRO Firma Rehberi
             </h1>
@@ -281,7 +281,7 @@ export default function EnhancedCompanyDirectory() {
                 <div className="absolute top-full right-0 mt-2 w-80 bg-dark-secondary border border-dark-accent rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
                   <div className="p-4 border-b border-dark-accent">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold">Bildirimler</h3>
+                      <h3 className="text-foreground dark:text-white font-semibold">Bildirimler</h3>
                       <div className="flex items-center gap-2">
                         {notifications.filter(n => !n.isRead).length > 0 && (
                           <Button
@@ -302,7 +302,7 @@ export default function EnhancedCompanyDirectory() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setShowNotifications(false)}
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                         >
                           <X className="h-4 w-4" />
                         </Button>

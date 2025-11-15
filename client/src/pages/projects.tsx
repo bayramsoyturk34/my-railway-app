@@ -180,7 +180,7 @@ export default function ProjectsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark-primary text-white">
+      <div className="min-h-screen bg-background text-foreground">
         <Header />
         <div className="p-4">
           <div className="flex justify-center items-center h-64">
@@ -200,7 +200,7 @@ export default function ProjectsPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-dark-accent"
+            className="text-foreground hover:bg-accent"
             onClick={() => setLocation("/")}
           >
             <Home className="h-6 w-6" />

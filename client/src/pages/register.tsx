@@ -68,7 +68,7 @@ export default function Register() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-gray-800 border-gray-700">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-white">Kayıt Ol</CardTitle>
+          <CardTitle className="text-2xl font-bold text-card-foreground">Kayıt Ol</CardTitle>
           <CardDescription className="text-gray-400">
             Puantroplus hesabınızı oluşturun
           </CardDescription>
@@ -84,8 +84,7 @@ export default function Register() {
                   value={formData.firstName}
                   onChange={(e) => handleInputChange("firstName", e.target.value)}
                   required
-                  className="bg-gray-700 border-gray-600 text-white"
-                  style={{ color: 'white' }}
+                  className="bg-input border-border text-foreground"
                   placeholder="Adınız"
                 />
               </div>
@@ -97,8 +96,7 @@ export default function Register() {
                   value={formData.lastName}
                   onChange={(e) => handleInputChange("lastName", e.target.value)}
                   required
-                  className="bg-gray-700 border-gray-600 text-white"
-                  style={{ color: 'white' }}
+                  className="bg-input border-border text-foreground"
                   placeholder="Soyadınız"
                 />
               </div>
@@ -112,8 +110,7 @@ export default function Register() {
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 required
-                className="bg-gray-700 border-gray-600 text-white"
-                style={{ color: 'white' }}
+                className="bg-input border-border text-foreground"
                 placeholder="email@ornek.com"
               />
             </div>
@@ -126,8 +123,7 @@ export default function Register() {
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 required
-                className="bg-gray-700 border-gray-600 text-white"
-                style={{ color: 'white' }}
+                className="bg-input border-border text-foreground"
                 placeholder="Sifre (min 6 karakter)"
               />
             </div>
@@ -140,8 +136,7 @@ export default function Register() {
                 value={formData.confirmPassword}
                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                 required
-                className="bg-gray-700 border-gray-600 text-white"
-                style={{ color: 'white' }}
+                className="bg-input border-border text-foreground"
                 placeholder="Sifre tekrar"
               />
             </div>
@@ -210,7 +205,7 @@ export default function Register() {
             
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2"
+              className="w-full bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/90 text-primary-foreground font-semibold py-2"
               disabled={registerMutation.isPending}
             >
               {registerMutation.isPending ? "Kayıt yapılıyor..." : "Kayıt Ol"}

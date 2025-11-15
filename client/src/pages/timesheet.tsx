@@ -67,7 +67,7 @@ export default function TimesheetPage() {
 
   if (timesheetsLoading) {
     return (
-      <div className="min-h-screen bg-dark-primary text-white">
+      <div className="min-h-screen bg-background text-foreground">
         <Header />
         <div className="p-4">
           <div className="flex justify-center items-center h-64">
@@ -122,7 +122,7 @@ export default function TimesheetPage() {
                     <div className="w-full">
                       <div className="flex items-center gap-3 mb-3">
                         <Calendar className="h-5 w-5 text-blue-400" />
-                        <h4 className="text-white font-medium text-lg">
+                        <h4 className="text-foreground dark:text-white font-medium text-lg">
                           {getPersonnelName(timesheet.personnelId)}
                         </h4>
                       </div>

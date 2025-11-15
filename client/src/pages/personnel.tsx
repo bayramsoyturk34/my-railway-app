@@ -54,7 +54,7 @@ export default function PersonnelPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-gray-400 hover:text-white hover:bg-dark-accent"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent"
             onClick={() => setLocation("/")}
           >
             <Home className="h-6 w-6" />
@@ -98,7 +98,7 @@ export default function PersonnelPage() {
       {/* Add Personnel Button */}
       <div className="mb-6">
         <Button
-          className="bg-green-500 hover:bg-green-600 text-white"
+          className="bg-green-500 hover:bg-green-600 text-primary-foreground"
           onClick={() => {
             setSelectedPersonnel(undefined);
             setShowPersonnelForm(true);
@@ -130,12 +130,12 @@ export default function PersonnelPage() {
                 <div className="flex items-center gap-3">
                   {/* Avatar */}
                   <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="h-6 w-6 text-white" />
+                    <User className="h-6 w-6 text-foreground" />
                   </div>
                   
                   {/* Personnel Info */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-white font-medium text-lg truncate">{person.name}</h4>
+                    <h4 className="text-foreground font-medium text-lg truncate">{person.name}</h4>
                     <p className="text-gray-400 text-sm truncate">{person.position}</p>
                     <p className="text-green-400 text-sm">₺{(person.salary || 0).toLocaleString('tr-TR')}/ay</p>
                   </div>

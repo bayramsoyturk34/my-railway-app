@@ -120,7 +120,7 @@ export default function Messages() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-background border-b border-border shadow-sm">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <Link href="/">
@@ -129,7 +129,7 @@ export default function Messages() {
                 Ana Sayfa
               </Button>
             </Link>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Mesajlar</h1>
+            <h1 className="text-xl font-semibold text-foreground">Mesajlar</h1>
           </div>
         </div>
       </div>

@@ -74,7 +74,7 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-gray-800 border-gray-700">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-white">Giriş Yap</CardTitle>
+          <CardTitle className="text-2xl font-bold text-card-foreground">Giriş Yap</CardTitle>
           <CardDescription className="text-gray-400">
             Puantroplus hesabınıza giriş yapın
           </CardDescription>
@@ -127,7 +127,7 @@ export default function Login() {
           <div className="mt-4 text-center">
             <Button
               variant="outline"
-              className="w-full bg-green-600 hover:bg-green-700 text-white border-green-600"
+              className="w-full bg-green-600 hover:bg-green-700 text-primary-foreground border-green-600"
               onClick={() => demoLoginMutation.mutate()}
               disabled={demoLoginMutation.isPending}
             >

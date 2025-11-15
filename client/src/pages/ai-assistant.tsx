@@ -261,19 +261,19 @@ export default function AiAssistantPage() {
   }, [messages]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Mobil Header */}
-      <div className="bg-gray-800 border-b border-gray-700 p-4">
+      <div className="bg-card border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/dashboard">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700">
+              <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent">
                 <ArrowLeft className="h-6 w-6" />
               </Button>
             </Link>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Brain className="w-5 h-5 text-white" />
+                <Brain className="w-5 h-5 text-primary-foreground" />
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 AI Asistan
@@ -320,7 +320,7 @@ export default function AiAssistantPage() {
                     <Button
                       variant="ghost"
                       className={`w-full p-4 h-auto text-left justify-start ${
-                        selectedCategory === category.id ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                        selectedCategory === category.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                       }`}
                       onClick={() => handleCategoryClick(category.id)}
                     >
