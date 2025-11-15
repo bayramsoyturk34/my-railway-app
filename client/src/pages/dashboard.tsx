@@ -373,9 +373,13 @@ export default function Dashboard() {
             {/* Navigation Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {getBaseNavCards().map((card) => (
-                <DraggableNavigationCard 
+                <NavigationCard
                   key={card.id}
-                  {...card}
+                  icon={card.icon}
+                  title={card.title}
+                  description={card.description}
+                  color={card.color}
+                  onClick={card.action}
                 />
               ))}
             </div>
