@@ -481,7 +481,7 @@ export default function Account() {
                               type={showCurrentPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
                               style={{ color: 'white' }}
-                              placeholder="Mevcut \u015fifreniz"
+                              placeholder="Mevcut şifreniz"
                             />
                             <Button
                               type="button"
@@ -511,7 +511,7 @@ export default function Account() {
                               type={showNewPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
                               style={{ color: 'white' }}
-                              placeholder="Yeni \u015fifreniz"
+                              placeholder="Yeni şifreniz"
                             />
                             <Button
                               type="button"
@@ -541,7 +541,7 @@ export default function Account() {
                               type={showConfirmPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
                               style={{ color: 'white' }}
-                              placeholder="\u015eifrenizi tekrar giriniz"
+                              placeholder="Şifrenizi tekrar giriniz"
                             />
                             <Button
                               type="button"
