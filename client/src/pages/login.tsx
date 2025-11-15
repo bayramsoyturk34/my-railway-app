@@ -72,17 +72,17 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+      <Card className="w-full max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-card-foreground">Giriş Yap</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardDescription className="text-gray-600 dark:text-gray-400">
             Puantroplus hesabınıza giriş yapın
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -95,7 +95,7 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-300">Şifre</Label>
+              <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Şifre</Label>
               <Input
                 id="password"
                 type="password"
@@ -136,7 +136,7 @@ export default function Login() {
           </div>
 
           <div className="mt-4 text-center">
-            <p className="text-gray-400">
+            <p className="text-gray-600 dark:text-gray-400">
               Hesabınız yok mu?{" "}
               <Link href="/register" className="text-blue-400 hover:text-blue-300">
                 Kayıt olun

@@ -2,6 +2,7 @@ import React from "react";
 import { Menu, Settings, LogOut, User, Shield, UserCircle, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -229,6 +230,9 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+        
+        {/* Theme Toggle */}
+        <ThemeToggle className="text-header-icon" />
         
         <Button
           variant="ghost"

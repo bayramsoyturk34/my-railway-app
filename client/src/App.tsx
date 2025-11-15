@@ -48,6 +48,7 @@ import Projects from "@/pages/projects";
 import ProjectDetail from "@/pages/project-detail.tsx";
 import Finances from "@/pages/finances";
 import Customers from "@/pages/customers";
+import ThemeTestPage from "@/pages/theme-test";
 import CustomerDetail from "@/pages/customer-detail";
 import CompanyDirectory from "@/pages/company-directory";
 import EnhancedCompanyDirectory from "@/pages/enhanced-company-directory-fixed";
@@ -110,6 +111,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/bulk-sms" component={BulkSMS} />
       <Route path="/ai-assistant" component={AiAssistant} />
+      <Route path="/theme-test" component={ThemeTestPage} />
       <Route path="/admin/dashboard">
         <AdminGuard>
           <AdminDashboard />

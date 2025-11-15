@@ -66,10 +66,10 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+      <Card className="w-full max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-card-foreground">Kayıt Ol</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardDescription className="text-gray-600 dark:text-gray-400">
             Puantroplus hesabınızı oluşturun
           </CardDescription>
         </CardHeader>
@@ -77,7 +77,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-gray-300">Ad</Label>
+                <Label htmlFor="firstName" className="text-gray-700 dark:text-gray-300">Ad</Label>
                 <Input
                   id="firstName"
                   type="text"
@@ -143,7 +143,7 @@ export default function Register() {
             
             {/* Firma Bilgileri Bölümü */}
             <div className="pt-4 border-t border-gray-600">
-              <h3 className="text-lg font-semibold text-gray-300 mb-4">Firma Bilgileri</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Firma Bilgileri</h3>
               
               <div className="space-y-4">
                 <div className="space-y-2">

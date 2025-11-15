@@ -203,7 +203,7 @@ export default function CompanyDirectory() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-dark-secondary rounded-lg p-6 animate-pulse">
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-6 animate-pulse">
               <div className="h-6 bg-gray-700 rounded mb-4"></div>
               <div className="h-4 bg-gray-700 rounded mb-2"></div>
               <div className="h-4 bg-gray-700 rounded mb-4"></div>
@@ -214,7 +214,7 @@ export default function CompanyDirectory() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCompanies.map((company: CompanyDirectory) => (
-            <Card key={company.id} className="bg-dark-secondary border-dark-accent">
+            <Card key={company.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -228,7 +228,7 @@ export default function CompanyDirectory() {
                   )}
                 </div>
                 {company.industry && (
-                  <Badge variant="outline" className="w-fit text-gray-300 border-gray-600">
+                  <Badge variant="outline" className="w-fit text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600">
                     {company.industry}
                   </Badge>
                 )}
@@ -288,8 +288,8 @@ export default function CompanyDirectory() {
 
       {filteredCompanies.length === 0 && !isLoading && (
         <div className="text-center py-12">
-          <Users className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-300 mb-2">
+          <Users className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
             {searchTerm ? "Arama sonucu bulunamadı" : "Henüz firma eklenmemiş"}
           </h3>
           <p className="text-gray-500">
