@@ -75,20 +75,6 @@ function Router() {
   // Apply global theme settings
   useGlobalTheme();
 
-  // Debug removed - routing now stable
-
-  // SessionId kontrolü ekle - eğer yoksa loading gösterme
-  const sessionId = typeof window !== 'undefined' ? localStorage.getItem('sessionId') : null;
-
-  // Show loading only if sessionId exists and we're actually loading
-  if (sessionId && isLoading) {
-    return (
-      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
-        <div className="text-white">Giriş kontrol ediliyor...</div>
-      </div>
-    );
-  }
-
   // Show authenticated routes if user is authenticated
   const shouldShowAuthenticatedRoutes = isAuthenticated && user;
 

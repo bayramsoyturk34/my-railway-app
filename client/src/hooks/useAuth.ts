@@ -28,15 +28,12 @@ export function useAuth() {
     throwOnError: false
   });
 
-  // SessionId yoksa hiç loading gösterme - direkt false dön
-  const actualIsLoading = sessionId ? isLoading : false;
-
   // user varsa authenticated
   const isAuthenticated = !!user;
 
   return {
     user,
-    isLoading: actualIsLoading,
+    isLoading: false, // Loading'i tamamen kapat
     isAuthenticated,
     error,
     refetch,
