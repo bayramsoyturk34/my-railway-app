@@ -1,0 +1,164 @@
+{
+  "name": "Puantroplus UI Test Suite",
+  "version": "1.0.0",
+  "description": "TestSprite scenarios for Puantroplus app",
+  "baseUrl": "https://web-production-02170.up.railway.app",
+  "scenarios": [
+    {
+      "name": "Header Visibility Test",
+      "description": "Test if header and puantroplus text are visible",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/"
+        },
+        {
+          "action": "waitForElement",
+          "selector": "header",
+          "timeout": 10000
+        },
+        {
+          "action": "checkElementExists",
+          "selector": "header button:contains('puantroplus')",
+          "description": "Check if puantroplus button exists"
+        },
+        {
+          "action": "checkCSSProperty",
+          "selector": "header button:contains('puantroplus')",
+          "property": "color",
+          "expectedValue": "rgb(255, 255, 255)",
+          "description": "Check if puantroplus text is white"
+        },
+        {
+          "action": "checkVisibility",
+          "selector": "header",
+          "description": "Verify header is visible"
+        }
+      ]
+    },
+    {
+      "name": "Landing Page Test",
+      "description": "Test landing page loads correctly",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/"
+        },
+        {
+          "action": "waitForElement",
+          "selector": "body",
+          "timeout": 10000
+        },
+        {
+          "action": "checkElementExists",
+          "selector": "[class*='min-h-screen']",
+          "description": "Check if main content area exists"
+        },
+        {
+          "action": "takeScreenshot",
+          "filename": "landing-page.png",
+          "description": "Capture landing page"
+        }
+      ]
+    },
+    {
+      "name": "Theme and Styling Test", 
+      "description": "Test dark theme and styling issues",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/"
+        },
+        {
+          "action": "executeScript",
+          "script": "return window.getComputedStyle(document.querySelector('html')).getPropertyValue('class')",
+          "description": "Check if dark theme is applied"
+        },
+        {
+          "action": "executeScript",
+          "script": "const btn = document.querySelector('header button'); return window.getComputedStyle(btn).color;",
+          "description": "Get actual color of puantroplus text"
+        },
+        {
+          "action": "checkElementExists",
+          "selector": "html.dark",
+          "description": "Verify dark theme class exists"
+        }
+      ]
+    },
+    {
+      "name": "Input Field Test",
+      "description": "Test login form input visibility",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/login"
+        },
+        {
+          "action": "waitForElement",
+          "selector": "form",
+          "timeout": 10000
+        },
+        {
+          "action": "checkCSSProperty",
+          "selector": "input[type='email']",
+          "property": "color",
+          "expectedValue": "rgb(255, 255, 255)",
+          "description": "Check email input text color"
+        },
+        {
+          "action": "checkCSSProperty",
+          "selector": "input[type='password']",
+          "property": "color", 
+          "expectedValue": "rgb(255, 255, 255)",
+          "description": "Check password input text color"
+        },
+        {
+          "action": "takeScreenshot",
+          "filename": "login-form.png",
+          "description": "Capture login form"
+        }
+      ]
+    },
+    {
+      "name": "Account Page Test",
+      "description": "Test account page input styling",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/account"
+        },
+        {
+          "action": "waitForElement",
+          "selector": ".account-page",
+          "timeout": 10000
+        },
+        {
+          "action": "checkElementExists",
+          "selector": ".account-page input",
+          "description": "Check if account page inputs exist"
+        },
+        {
+          "action": "executeScript",
+          "script": "const inputs = document.querySelectorAll('.account-page input'); return Array.from(inputs).map(input => window.getComputedStyle(input).color);",
+          "description": "Get all input colors in account page"
+        },
+        {
+          "action": "takeScreenshot",
+          "filename": "account-page.png",
+          "description": "Capture account page"
+        }
+      ]
+    }
+  ],
+  "config": {
+    "browser": "chrome",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "waitTimeout": 10000,
+    "screenshotPath": "./test-screenshots",
+    "reportPath": "./test-reports"
+  }
+}

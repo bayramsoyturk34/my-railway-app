@@ -295,13 +295,23 @@ form input:focus {
   -webkit-text-fill-color: white !important;
 }
 
-/* Force puantroplus header text to be white */
+/* Force puantroplus header text to be white - HIGHEST PRIORITY */
 header button[class*="font-bold"] {
   color: white !important;
 }
 
-/* Specific rule for puantroplus text */
+/* Ultra-specific rule for puantroplus text */
 header button:contains("puantroplus") {
+  color: white !important;
+}
+
+/* Brute force approach */
+header button {
+  color: white !important;
+}
+
+/* Target by text content */
+header *:contains("puantroplus") {
   color: white !important;
 }
 
