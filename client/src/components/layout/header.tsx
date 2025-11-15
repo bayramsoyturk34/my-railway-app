@@ -98,6 +98,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       <button 
         onClick={() => setLocation("/")}
         className="text-sm sm:text-lg font-bold text-white dark:text-white hover:text-blue-600 dark:hover:text-gray-200 transition-colors cursor-pointer truncate mx-2"
+        style={{ color: 'white !important' }}
       >
         puantroplus
       </button>

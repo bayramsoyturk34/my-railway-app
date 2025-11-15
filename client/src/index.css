@@ -295,6 +295,16 @@ form input:focus {
   -webkit-text-fill-color: white !important;
 }
 
+/* Force puantroplus header text to be white */
+header button[class*="font-bold"] {
+  color: white !important;
+}
+
+/* Specific rule for puantroplus text */
+header button:contains("puantroplus") {
+  color: white !important;
+}
+
 /* For autofill states */
 input[type="text"]:-webkit-autofill,
 input[type="email"]:-webkit-autofill,
