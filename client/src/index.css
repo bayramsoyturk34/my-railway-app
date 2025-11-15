@@ -211,3 +211,32 @@
   color: hsl(0 0% 98%) !important;
   stroke: hsl(0 0% 98%) !important;
 }
+
+/* Dark theme card text colors - make navigation card texts orange */
+.dark .card h3,
+.dark .card h4,
+.dark .card .text-sm,
+.dark .card .text-xs,
+.dark .card .text-base,
+.dark .card .font-medium,
+.dark .card .font-semibold,
+.dark .card span:not(.text-muted-foreground),
+.dark .card p:not(.text-muted-foreground),
+.dark .navigation-card h3,
+.dark .navigation-card h4,
+.dark .navigation-card .text-sm,
+.dark .navigation-card span,
+.dark .navigation-card p {
+  color: hsl(25 95% 53%) !important; /* Orange color */
+}
+
+/* Dark theme financial card texts stay white */
+.dark .financial-card h3,
+.dark .financial-card h4,
+.dark .financial-card .text-2xl,
+.dark .financial-card .text-xl,
+.dark .financial-card .text-lg,
+.dark .financial-card span,
+.dark .financial-card p {
+  color: hsl(0 0% 98%) !important; /* Keep white for financial cards */
+}
