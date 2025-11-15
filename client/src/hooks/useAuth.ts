@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 export function useAuth() {
-  // SessionId var mı kontrol et - yoksa query'yi çalıştırma
+  // SessionId var mı kontrol et
   const sessionId = typeof window !== 'undefined' ? localStorage.getItem('sessionId') : null;
   
   const { data: user, isLoading, error, refetch } = useQuery({
@@ -28,8 +28,8 @@ export function useAuth() {
     throwOnError: false
   });
 
-  // SessionId yoksa loading false olsun ki uygulama çalışabilsin
-  const actualIsLoading = !!sessionId && isLoading;
+  // SessionId yoksa hiç loading gösterme - direkt false dön
+  const actualIsLoading = sessionId ? isLoading : false;
 
   // user varsa authenticated
   const isAuthenticated = !!user;
