@@ -70,7 +70,7 @@ export default function Register() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">Kayıt Ol</CardTitle>
           <CardDescription className="text-gray-400">
-            PuantajPro hesabınızı oluşturun
+            Puantroplus hesabınızı oluşturun
           </CardDescription>
         </CardHeader>
         <CardContent>

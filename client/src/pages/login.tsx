@@ -76,7 +76,7 @@ export default function Login() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">Giriş Yap</CardTitle>
           <CardDescription className="text-gray-400">
-            puantropls hesabınıza giriş yapın
+            Puantroplus hesabınıza giriş yapın
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,6 +105,14 @@ export default function Login() {
                 required
               />
             </div>
+            
+            {/* Şifremi Unuttum linki */}
+            <div className="text-right">
+              <Link href="/forgot-password" className="text-blue-400 hover:text-blue-300 text-sm">
+                Şifremi Unuttum?
+              </Link>
+            </div>
+            
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
