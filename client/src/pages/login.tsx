@@ -89,6 +89,7 @@ export default function Login() {
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                style={{ color: 'white' }}
                 placeholder="Email adresinizi girin"
                 required
               />
@@ -101,7 +102,8 @@ export default function Login() {
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                placeholder="Şifrenizi girin"
+                style={{ color: 'white' }}
+                placeholder="\u015eifrenizi girin"
                 required
               />
             </div>

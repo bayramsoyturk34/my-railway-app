@@ -58,6 +58,7 @@ export default function ForgotPassword() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                style={{ color: 'white' }}
                 placeholder="Email adresinizi girin"
                 required
               />

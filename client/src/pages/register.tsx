@@ -85,6 +85,7 @@ export default function Register() {
                   onChange={(e) => handleInputChange("firstName", e.target.value)}
                   required
                   className="bg-gray-700 border-gray-600 text-white"
+                  style={{ color: 'white' }}
                   placeholder="Adınız"
                 />
               </div>
@@ -97,6 +98,7 @@ export default function Register() {
                   onChange={(e) => handleInputChange("lastName", e.target.value)}
                   required
                   className="bg-gray-700 border-gray-600 text-white"
+                  style={{ color: 'white' }}
                   placeholder="Soyadınız"
                 />
               </div>
@@ -111,6 +113,7 @@ export default function Register() {
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 required
                 className="bg-gray-700 border-gray-600 text-white"
+                style={{ color: 'white' }}
                 placeholder="email@ornek.com"
               />
             </div>
@@ -124,6 +127,7 @@ export default function Register() {
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 required
                 className="bg-gray-700 border-gray-600 text-white"
+                style={{ color: 'white' }}
                 placeholder="En az 6 karakter"
               />
             </div>
@@ -137,7 +141,8 @@ export default function Register() {
                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                 required
                 className="bg-gray-700 border-gray-600 text-white"
-                placeholder="Şifrenizi tekrar girin"
+                style={{ color: 'white' }}
+                placeholder="\u015eifrenizi tekrar girin"
               />
             </div>
             
@@ -155,6 +160,7 @@ export default function Register() {
                     onChange={(e) => handleInputChange("companyName", e.target.value)}
                     required
                     className="bg-gray-700 border-gray-600 text-white"
+                    style={{ color: 'white' }}
                     placeholder="Firma adınız"
                   />
                 </div>
@@ -168,6 +174,7 @@ export default function Register() {
                       value={formData.phone}
                       onChange={(e) => handleInputChange("phone", e.target.value)}
                       className="bg-gray-700 border-gray-600 text-white"
+                      style={{ color: 'white' }}
                       placeholder="0555 123 45 67"
                     />
                   </div>
@@ -180,7 +187,8 @@ export default function Register() {
                       value={formData.city}
                       onChange={(e) => handleInputChange("city", e.target.value)}
                       className="bg-gray-700 border-gray-600 text-white"
-                      placeholder="İstanbul"
+                      style={{ color: 'white' }}
+                      placeholder="\u0130stanbul"
                     />
                   </div>
                 </div>
@@ -193,7 +201,8 @@ export default function Register() {
                     value={formData.industry}
                     onChange={(e) => handleInputChange("industry", e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white"
-                    placeholder="İnşaat, Teknoloji, Gıda vs."
+                    style={{ color: 'white' }}
+                    placeholder="\u0130n\u015faat, Teknoloji, G\u0131da vs."
                   />
                 </div>
               </div>
