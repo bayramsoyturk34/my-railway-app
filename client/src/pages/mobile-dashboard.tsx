@@ -269,13 +269,13 @@ export default function MobileDashboard() {
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/customers")}>
               <CardContent className="p-4 text-center">
                 <UserCog className="h-8 w-8 text-orange-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">Müşteriler</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">Müşteriler</div>
               </CardContent>
             </Card>
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/personnel")}>
               <CardContent className="p-4 text-center">
                 <Users className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">Personeller</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">Personeller</div>
               </CardContent>
             </Card>
           </div>
@@ -298,13 +298,13 @@ export default function MobileDashboard() {
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/projects")}>
               <CardContent className="p-4 text-center">
                 <Home className="h-8 w-8 text-pink-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">Verilen Projeler</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">Verilen Projeler</div>
               </CardContent>
             </Card>
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/finances")}>
               <CardContent className="p-4 text-center">
                 <Wallet className="h-8 w-8 text-teal-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">Kasa</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">Kasa</div>
               </CardContent>
             </Card>
           </div>
@@ -314,13 +314,13 @@ export default function MobileDashboard() {
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/messages")}>
               <CardContent className="p-4 text-center">
                 <MessageCircle className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">Mesajlar</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">Mesajlar</div>
               </CardContent>
             </Card>
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/enhanced-company-directory")}>
               <CardContent className="p-4 text-center">
                 <Building className="h-8 w-8 text-indigo-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">PRO Firma Rehberi</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">PRO Firma Rehberi</div>
               </CardContent>
             </Card>
           </div>
@@ -346,13 +346,13 @@ export default function MobileDashboard() {
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/bulk-sms")}>
               <CardContent className="p-4 text-center">
                 <MessageSquare className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">Toplu SMS</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">Toplu SMS</div>
               </CardContent>
             </Card>
             <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/reports")}>
               <CardContent className="p-4 text-center">
                 <BarChart3 className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                <div className="text-sm font-medium text-gray-800 dark:text-white">Raporlar</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-orange-500">Raporlar</div>
               </CardContent>
             </Card>
           </div>
@@ -381,7 +381,7 @@ export default function MobileDashboard() {
         <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-gray-800 dark:text-white text-lg">Notlar - Hatırlatıcılar</CardTitle>
+              <CardTitle className="text-gray-800 dark:text-orange-500 text-lg">Notlar - Hatırlatıcılar</CardTitle>
               <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
                 <Plus className="h-4 w-4" />
               </Button>
@@ -392,7 +392,7 @@ export default function MobileDashboard() {
               {notes.map((note) => (
                 <div key={note.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
-                    <div className="text-sm font-medium text-gray-800 dark:text-white">{note.title}</div>
+                    <div className="text-sm font-medium text-gray-800 dark:text-orange-500">{note.title}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">{note.date} - {note.time}</div>
                   </div>
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>

@@ -87,7 +87,7 @@ export default function DraggableNavigationCard({
       >
         <CardContent className="p-6 text-center">
           <Icon className={`h-8 w-8 mx-auto mb-3 ${iconColor} group-hover:scale-110 transition-transform`} />
-          <p className="text-gray-800 dark:text-white font-medium">{label}</p>
+          <p className="text-gray-800 dark:text-orange-500 font-medium">{label}</p>
         </CardContent>
       </Card>
     </div>
