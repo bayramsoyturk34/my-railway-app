@@ -57,7 +57,7 @@ export default function Landing() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg">
-            puantropls
+            Puantroplus
           </h1>
           <p className="text-2xl text-gray-100 mb-8 max-w-3xl mx-auto font-medium leading-relaxed">
             Türkiye'nin en gelişmiş personel puantaj ve proje yönetim sistemi. 
@@ -67,7 +67,7 @@ export default function Landing() {
             <Button
               onClick={() => loginMutation.mutate()}
               size="lg"
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold px-10 py-5 rounded-xl text-xl shadow-2xl transform hover:scale-105 transition-all duration-200"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold px-10 py-5 rounded-xl text-xl shadow-2xl transform hover:scale-105 transition-all duration-200"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? "Giriş yapılıyor..." : "Demo Giriş Yap"}
@@ -80,7 +80,7 @@ export default function Landing() {
                 </Button>
               </Link>
               <Link href="/register">
-                <Button variant="outline" size="lg" className="border-2 border-yellow-400 text-yellow-300 hover:bg-yellow-500 hover:text-black px-8 py-5 text-xl font-semibold rounded-xl shadow-xl transform hover:scale-105 transition-all duration-200">
+                <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-black hover:text-black px-8 py-5 text-xl font-semibold rounded-xl shadow-xl transform hover:scale-105 transition-all duration-200">
                   Kayıt Ol
                 </Button>
               </Link>
@@ -187,7 +187,7 @@ export default function Landing() {
             <CardContent>
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-12 py-4 text-xl font-bold rounded-xl shadow-2xl transform hover:scale-110 transition-all duration-200"
+                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-12 py-4 text-xl font-bold rounded-xl shadow-2xl transform hover:scale-110 transition-all duration-200"
                 onClick={handleLogin}
                 disabled={loginMutation.isPending}
               >
