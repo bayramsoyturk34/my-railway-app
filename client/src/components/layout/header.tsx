@@ -29,7 +29,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   const { data: notifications = [], error: notificationError, isLoading: notificationsLoading } = useQuery({
     queryKey: ["/api/notifications"],
     enabled: !authLoading && isAuthenticated && !!user,
-    refetchInterval: (!authLoading && isAuthenticated && user) ? 3000 : false,
+    refetchInterval: (!authLoading && isAuthenticated && user) ? 30000 : false, // 30 seconds to avoid rate limiting
     retry: false,
   });
 

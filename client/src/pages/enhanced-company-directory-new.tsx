@@ -235,7 +235,7 @@ export default function EnhancedCompanyDirectory() {
   const { data: threads = [] } = useQuery<DirectThread[]>({
     queryKey: ["/api/threads"],
     enabled: activeTab === "messages",
-    refetchInterval: 3000,
+    refetchInterval: 30000, // Reduced to prevent rate limiting
   });
 
   // Messages for active thread
@@ -248,7 +248,7 @@ export default function EnhancedCompanyDirectory() {
       return response;
     },
     enabled: !!activeThread,
-    refetchInterval: 3000,
+    refetchInterval: 30000, // Reduced to prevent rate limiting
     staleTime: 0,
     gcTime: 0,
   });

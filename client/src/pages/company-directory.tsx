@@ -57,7 +57,7 @@ export default function CompanyDirectory() {
   const { data: conversations = [] } = useQuery({
     queryKey: ["/api/threads"],
     enabled: activeTab === "messages",
-    refetchInterval: 3000, // Poll every 3 seconds when on messages tab
+    refetchInterval: 30000, // Poll every 30 seconds to avoid rate limiting
   });
 
   // Get messages for selected conversation
@@ -74,7 +74,7 @@ export default function CompanyDirectory() {
       }
     },
     enabled: !!selectedCompany && showChat,
-    refetchInterval: 3000, // Poll every 3 seconds for new messages
+    refetchInterval: 30000, // Poll every 30 seconds to avoid rate limiting
   });
 
   const createCompanyMutation = useMutation({

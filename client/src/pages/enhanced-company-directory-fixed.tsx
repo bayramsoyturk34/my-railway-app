@@ -52,7 +52,7 @@ export default function EnhancedCompanyDirectory() {
   // Notifications query
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
-    refetchInterval: 3000,
+    refetchInterval: 30000, // Reduced to prevent rate limiting
   });
 
   // URL parametrelerini kontrol et ve aktif thread'i ayarla
@@ -81,7 +81,7 @@ export default function EnhancedCompanyDirectory() {
   // Messages query for active thread
   const { data: messages = [] } = useQuery<DirectMessage[]>({
     queryKey: [`/api/messages/${activeThread}`],
-    refetchInterval: 3000,
+    refetchInterval: 30000, // Reduced to prevent rate limiting
     enabled: !!activeThread,
     staleTime: 0,
     gcTime: 0,
