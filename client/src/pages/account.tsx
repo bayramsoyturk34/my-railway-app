@@ -397,6 +397,7 @@ export default function Account() {
                             <Input 
                               {...field} 
                               className="bg-gray-700 border-gray-600 text-white"
+                              style={{ color: 'white' }}
                               placeholder="Adınız"
                             />
                           </FormControl>
@@ -414,6 +415,7 @@ export default function Account() {
                             <Input 
                               {...field} 
                               className="bg-gray-700 border-gray-600 text-white"
+                              style={{ color: 'white' }}
                               placeholder="Soyadınız"
                             />
                           </FormControl>
@@ -432,6 +434,7 @@ export default function Account() {
                           <Input 
                             {...field} 
                             className="bg-gray-700 border-gray-600 text-white"
+                            style={{ color: 'white' }}
                             placeholder="email@example.com"
                           />
                         </FormControl>
@@ -477,7 +480,8 @@ export default function Account() {
                               {...field}
                               type={showCurrentPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
-                              placeholder="Mevcut şifreniz"
+                              style={{ color: 'white' }}
+                              placeholder="Mevcut \u015fifreniz"
                             />
                             <Button
                               type="button"
@@ -506,7 +510,8 @@ export default function Account() {
                               {...field}
                               type={showNewPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
-                              placeholder="Yeni şifreniz"
+                              style={{ color: 'white' }}
+                              placeholder="Yeni \u015fifreniz"
                             />
                             <Button
                               type="button"
@@ -535,7 +540,8 @@ export default function Account() {
                               {...field}
                               type={showConfirmPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
-                              placeholder="Şifrenizi tekrar giriniz"
+                              style={{ color: 'white' }}
+                              placeholder="\u015eifrenizi tekrar giriniz"
                             />
                             <Button
                               type="button"

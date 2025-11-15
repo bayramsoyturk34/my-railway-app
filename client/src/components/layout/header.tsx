@@ -89,7 +89,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="text-gray-800 dark:text-white hover:bg-accent dark:hover:bg-dark-accent flex-shrink-0"
+        className="text-white dark:text-white hover:bg-accent dark:hover:bg-dark-accent flex-shrink-0"
         onClick={onMenuClick}
       >
         <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -97,14 +97,14 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       
       <button 
         onClick={() => setLocation("/")}
-        className="text-sm sm:text-lg font-bold text-gray-800 dark:text-orange-500 hover:text-blue-600 dark:hover:text-orange-400 transition-colors cursor-pointer truncate mx-2"
+        className="text-sm sm:text-lg font-bold text-white dark:text-orange-500 hover:text-blue-600 dark:hover:text-orange-400 transition-colors cursor-pointer truncate mx-2"
       >
         puantroplus
       </button>
       
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         {user && (
-          <div className="flex items-center gap-1 sm:gap-2 text-gray-800 dark:text-white text-xs sm:text-sm">
+          <div className="flex items-center gap-1 sm:gap-2 text-white dark:text-white text-xs sm:text-sm">
             <User className="h-3 w-3 sm:h-4 sm:w-4 hidden sm:block" />
             <span className="hidden sm:inline truncate max-w-[100px]">{String((user as any).firstName || (user as any).email || "Kullanıcı")}</span>
             <span className={`px-1 sm:px-2 py-1 rounded text-xs font-semibold ${
@@ -140,8 +140,8 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-800 dark:text-white hover:bg-accent dark:hover:bg-dark-accent relative"
-                title={`Bildirimler (${unreadCount} okunmamış)`}
+                className="text-white dark:text-white hover:bg-accent dark:hover:bg-dark-accent relative"
+                title={`Bildirimler (${unreadCount} okunmam\u0131\u015f)`}
               >
                 <Bell className="h-4 w-4 sm:h-6 sm:w-6" />
                 {unreadCount > 0 && (
