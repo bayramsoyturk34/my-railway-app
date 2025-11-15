@@ -128,7 +128,7 @@ export default function Register() {
                 required
                 className="bg-gray-700 border-gray-600 text-white"
                 style={{ color: 'white' }}
-                placeholder="Şifre (min 6 karakter)"
+                placeholder="Sifre (min 6 karakter)"
               />
             </div>
             
@@ -142,7 +142,7 @@ export default function Register() {
                 required
                 className="bg-gray-700 border-gray-600 text-white"
                 style={{ color: 'white' }}
-                placeholder="\u015eifre tekrar"
+                placeholder="Sifre tekrar"
               />
             </div>
             
@@ -202,7 +202,7 @@ export default function Register() {
                     onChange={(e) => handleInputChange("industry", e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white"
                     style={{ color: 'white' }}
-                    placeholder="G\u0131da, Teknoloji, \u0130malat, \u0130n\u015faat"
+                    placeholder="Gida, Teknoloji, Imalat, Insaat"
                   />
                 </div>
               </div>

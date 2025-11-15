@@ -103,7 +103,7 @@ export default function Login() {
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 style={{ color: 'white' }}
-                placeholder="\u015eifrenizi girin"
+                placeholder="Sifrenizi girin"
                 required
               />
             </div>
