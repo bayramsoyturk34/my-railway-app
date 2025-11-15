@@ -397,7 +397,7 @@ export default function Account() {
                             <Input 
                               {...field} 
                               className="bg-gray-700 border-gray-600 text-white"
-                              style={{ color: 'white' }}
+                              style={{ color: 'white !important', WebkitTextFillColor: 'white !important' }}
                               placeholder="Adınız"
                             />
                           </FormControl>
@@ -415,7 +415,7 @@ export default function Account() {
                             <Input 
                               {...field} 
                               className="bg-gray-700 border-gray-600 text-white"
-                              style={{ color: 'white' }}
+                              style={{ color: 'white !important', WebkitTextFillColor: 'white !important' }}
                               placeholder="Soyadınız"
                             />
                           </FormControl>
@@ -434,7 +434,7 @@ export default function Account() {
                           <Input 
                             {...field} 
                             className="bg-gray-700 border-gray-600 text-white"
-                            style={{ color: 'white' }}
+                            style={{ color: 'white !important', WebkitTextFillColor: 'white !important' }}
                             placeholder="email@example.com"
                           />
                         </FormControl>
@@ -480,7 +480,7 @@ export default function Account() {
                               {...field}
                               type={showCurrentPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
-                              style={{ color: 'white' }}
+                              style={{ color: 'white !important', WebkitTextFillColor: 'white !important' }}
                               placeholder="Mevcut şifreniz"
                             />
                             <Button
@@ -510,7 +510,7 @@ export default function Account() {
                               {...field}
                               type={showNewPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
-                              style={{ color: 'white' }}
+                              style={{ color: 'white !important', WebkitTextFillColor: 'white !important' }}
                               placeholder="Yeni şifreniz"
                             />
                             <Button
@@ -540,7 +540,7 @@ export default function Account() {
                               {...field}
                               type={showConfirmPassword ? "text" : "password"}
                               className="bg-gray-700 border-gray-600 text-white pr-10"
-                              style={{ color: 'white' }}
+                              style={{ color: 'white !important', WebkitTextFillColor: 'white !important' }}
                               placeholder="Şifrenizi tekrar giriniz"
                             />
                             <Button
@@ -746,7 +746,7 @@ export default function Account() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-900 account-page">
       <Header />
       
       {/* Mobile Layout */}
