@@ -300,8 +300,38 @@ header button[class*="font-bold"] {
   color: white !important;
 }
 
-/* Ultra-specific rule for puantroplus text */
-header button:contains("puantroplus") {
+/* Ultra-specific rule for puantroplus text - FORCE WHITE COLOR */
+[data-header] button,
+header button,
+nav button {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  text-shadow: none !important;
+}
+
+/* Specific targeting for puantroplus */
+header button:nth-child(2),
+header > div > button:nth-child(2) {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Force all header text to be white */
+header,
+header *,
+header button,
+header button *,
+header span,
+[data-testid="header"] *,
+.header-brand,
+.header-brand * {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  text-shadow: none !important;
+}
+
+/* Target by text content (if supported) */
+header *:contains("puantroplus") {
   color: white !important;
 }
 

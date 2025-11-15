@@ -6,6 +6,7 @@ import { eq, and, lt, gt } from "drizzle-orm";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { validateDataTypes, enforceCharacterLimits } from "./middleware/validation";
 
 // JWT helper functions
 const generateToken = (userId: string): string => {
@@ -86,8 +87,20 @@ setInterval(async () => {
 }, 60 * 60 * 1000);
 
 export async function setupAuth(app: Express) {
-  // Register endpoint
-  app.post("/api/auth/register", async (req, res) => {
+  // Register endpoint with validation
+  app.post("/api/auth/register", 
+    ...validateDataTypes(['email', 'password', 'firstName', 'lastName']),
+    ...enforceCharacterLimits({ 
+      firstName: 50, 
+      lastName: 50, 
+      email: 255, 
+      password: 100,
+      companyName: 100,
+      phone: 20,
+      city: 50,
+      industry: 50 
+    }),
+    async (req, res) => {
     try {
       const { email, password, firstName, lastName, companyName, phone, city, industry } = req.body;
       
@@ -140,8 +153,10 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // Login endpoint
-  app.post("/api/auth/login", async (req, res) => {
+  // Login endpoint with validation
+  app.post("/api/auth/login", 
+    ...validateDataTypes(['email', 'password']),
+    async (req, res) => {
     try {
       const { email, password, isDemo } = req.body;
       

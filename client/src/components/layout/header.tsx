@@ -85,7 +85,11 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-2 sm:p-4 bg-background border-b border-border">
+    <header 
+      data-header="true" 
+      data-testid="header" 
+      className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-2 sm:p-4 bg-background border-b border-border"
+    >
       <Button
         variant="ghost"
         size="icon"
@@ -97,10 +101,16 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
       
       <button 
         onClick={() => setLocation("/")}
-        className="text-sm sm:text-lg font-bold text-white dark:text-white hover:text-blue-600 dark:hover:text-gray-200 transition-colors cursor-pointer truncate mx-2"
-        style={{ color: 'white !important' }}
+        className="header-brand !text-white hover:!text-blue-600 dark:hover:!text-gray-200 transition-colors cursor-pointer truncate mx-2 text-sm sm:text-lg font-bold"
+        data-brand="puantroplus"
+        data-testid="brand-button"
+        style={{ 
+          color: 'white !important',
+          WebkitTextFillColor: 'white !important',
+          textShadow: 'none'
+        }}
       >
-        puantroplus
+        <span className="header-brand-text !text-white" style={{ color: 'white !important' }}>puantroplus</span>
       </button>
       
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">

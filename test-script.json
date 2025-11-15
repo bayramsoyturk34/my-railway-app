@@ -1,0 +1,97 @@
+{
+  "name": "Puantroplus UI Tests",
+  "baseUrl": "https://web-production-02170.up.railway.app",
+  "tests": [
+    {
+      "name": "Header Puantroplus Text Color Test",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "header",
+          "timeout": 5000
+        },
+        {
+          "action": "checkElement",
+          "selector": "header button:contains('puantroplus')",
+          "assertion": "exists"
+        },
+        {
+          "action": "checkStyle",
+          "selector": "header button",
+          "property": "color",
+          "expected": "rgb(255, 255, 255)"
+        }
+      ]
+    },
+    {
+      "name": "Login Form Input Colors Test",
+      "steps": [
+        {
+          "action": "navigate", 
+          "url": "/login"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "form",
+          "timeout": 5000
+        },
+        {
+          "action": "checkStyle",
+          "selector": "input[type='email']",
+          "property": "color",
+          "expected": "rgb(255, 255, 255)"
+        },
+        {
+          "action": "checkStyle",
+          "selector": "input[type='password']",
+          "property": "color", 
+          "expected": "rgb(255, 255, 255)"
+        }
+      ]
+    },
+    {
+      "name": "Account Page Input Test",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/account"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": ".account-page",
+          "timeout": 5000
+        },
+        {
+          "action": "checkStyle",
+          "selector": ".account-page input",
+          "property": "color",
+          "expected": "rgb(255, 255, 255)"
+        }
+      ]
+    },
+    {
+      "name": "Dark Theme Test",
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/"
+        },
+        {
+          "action": "checkElement",
+          "selector": "html.dark",
+          "assertion": "exists"
+        },
+        {
+          "action": "checkStyle", 
+          "selector": "body",
+          "property": "background-color",
+          "expected": "dark"
+        }
+      ]
+    }
+  ]
+}

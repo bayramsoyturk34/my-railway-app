@@ -1,0 +1,73 @@
+{
+  "testsprite": {
+    "projectName": "Puantroplus",
+    "projectUrl": "https://web-production-02170.up.railway.app",
+    "framework": "React",
+    "testTypes": ["ui", "integration", "e2e"],
+    "browsers": ["chrome"],
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "testScenarios": [
+      {
+        "name": "Header Puantroplus Text Color Test",
+        "description": "Test if puantroplus header text is white and visible",
+        "priority": "high",
+        "steps": [
+          "Navigate to homepage",
+          "Wait for page load",
+          "Locate header puantroplus button",
+          "Check computed color style",
+          "Verify text is rgb(255, 255, 255) or white",
+          "Take screenshot for verification"
+        ],
+        "assertions": [
+          "Header should be visible",
+          "Puantroplus text should exist", 
+          "Text color should be white",
+          "Text should not appear gray or faded"
+        ]
+      },
+      {
+        "name": "Login Form Input Styling Test",
+        "description": "Test login form input text visibility",
+        "priority": "medium",
+        "steps": [
+          "Navigate to /login",
+          "Check email input text color",
+          "Check password input text color",
+          "Verify all inputs have white text"
+        ],
+        "assertions": [
+          "Email input text should be white",
+          "Password input text should be white",
+          "Form should be fully functional"
+        ]
+      },
+      {
+        "name": "Account Page Styling Test",
+        "description": "Test account page input styling and functionality",
+        "priority": "medium", 
+        "steps": [
+          "Navigate to /account",
+          "Check if account-page class is applied",
+          "Verify all input field text colors",
+          "Test form functionality"
+        ],
+        "assertions": [
+          "Account page should load",
+          "All input text should be white",
+          "Page should maintain dark theme"
+        ]
+      }
+    ],
+    "automation": {
+      "enabled": true,
+      "aiGenerated": true,
+      "autoFix": true,
+      "screenshotOnFailure": true,
+      "reportFormat": "html"
+    }
+  }
+}

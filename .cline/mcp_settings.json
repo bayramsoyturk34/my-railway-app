@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "testsprite": {
+      "command": "npx",
+      "args": ["@testsprite/testsprite-mcp@latest", "server"],
+      "env": {
+        "PROJECT_PATH": "c:\\Users\\user\\Desktop\\WEP PROJELER\\Puantroplsviscde",
+        "PROJECT_URL": "https://web-production-02170.up.railway.app",
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}

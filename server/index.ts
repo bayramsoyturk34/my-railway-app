@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { errorHandler, sanitizeInput, createRateLimiter } from "./middleware/validation";
 
 // Load environment variables
 dotenv.config();
@@ -34,8 +35,14 @@ app.use((req, res, next) => {
 });
 
 app.use(cookieParser(process.env.COOKIE_SECRET || 'fallback-cookie-secret'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Enhanced JSON parsing with better error handling
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Security middleware
+app.use(sanitizeInput);
+app.use(createRateLimiter(15 * 60 * 1000, 100)); // 100 requests per 15 minutes
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -70,12 +77,8 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
+  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+    return errorHandler(err, _req, res, next);
   });
 
   // importantly only setup vite in development and after
