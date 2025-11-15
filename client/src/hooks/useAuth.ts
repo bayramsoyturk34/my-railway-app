@@ -28,12 +28,15 @@ export function useAuth() {
     throwOnError: false
   });
 
+  // SessionId yoksa loading false olsun ki uygulama çalışabilsin
+  const actualIsLoading = !!sessionId && isLoading;
+
   // user varsa authenticated
   const isAuthenticated = !!user;
 
   return {
     user,
-    isLoading,
+    isLoading: actualIsLoading,
     isAuthenticated,
     error,
     refetch,
