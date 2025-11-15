@@ -630,7 +630,7 @@ export default function ReportsPage() {
         {/* Custom Report Builder */}
         <Card className="bg-dark-secondary border-dark-accent mt-6">
           <CardHeader>
-            <CardTitle className="text-foreground dark:text-white flex items-center gap-2">>
+            <CardTitle className="text-foreground dark:text-white flex items-center gap-2">
               <Plus className="h-5 w-5 text-green-400" />
               Özel Rapor Oluştur
             </CardTitle>
