@@ -458,9 +458,9 @@ export default function Account() {
 
       case "guvenlik":
         return (
-          <Card className="bg-gray-800 border-gray-700">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-card-foreground flex items-center gap-2">
                 <Shield className="h-5 w-5" />
                 Güvenlik Ayarları
               </CardTitle>

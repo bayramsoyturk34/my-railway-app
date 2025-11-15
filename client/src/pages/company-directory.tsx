@@ -273,7 +273,7 @@ export default function CompanyDirectory() {
                 <div className="pt-3">
                   <Button
                     onClick={() => startConversation(company)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                     size="sm"
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />
@@ -311,10 +311,10 @@ export default function CompanyDirectory() {
                 name="companyName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-300">Firma Adı *</FormLabel>
+                    <FormLabel className="text-foreground">Firma Adı *</FormLabel>
                     <FormControl>
                       <Input 
-                        className="bg-dark-primary border-dark-accent text-white"
+                        className="bg-input border-border text-foreground"
                         placeholder="Firma adını giriniz"
                         {...field} 
                       />
@@ -479,13 +479,13 @@ export default function CompanyDirectory() {
 
       {/* Chat Dialog */}
       <Dialog open={showChat} onOpenChange={setShowChat}>
-        <DialogContent className="bg-dark-secondary border-dark-accent text-white max-w-lg max-h-[85vh] p-0">
+        <DialogContent className="bg-card border-border text-card-foreground max-w-lg max-h-[85vh] p-0">
           <DialogHeader className="p-6 pb-3 border-b border-dark-accent">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Building2 className="h-6 w-6 text-blue-400" />
                 <div>
-                  <DialogTitle className="text-white text-lg">
+                  <DialogTitle className="text-card-foreground text-lg">
                     {selectedCompany?.companyName}
                   </DialogTitle>
                   <p className="text-sm text-gray-400">{selectedCompany?.contactPerson}</p>
@@ -553,13 +553,13 @@ export default function CompanyDirectory() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Mesajınızı yazın..."
-                  className="flex-1 bg-dark-primary border-dark-accent text-white resize-none min-h-[2.5rem]"
+                  className="flex-1 bg-input border-border text-foreground resize-none min-h-[2.5rem]"
                   rows={2}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 self-end"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 self-end"
                 >
                   <Send className="h-4 w-4" />
                 </Button>

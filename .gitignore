@@ -26,3 +26,12 @@ uploads/
 # IDE files
 .vscode/
 .idea/
+
+# Test and debug files
+*.txt
+!package.txt
+test-results/
+.testsprite.json
+testsprite-*.md
+testsprite-*.js
+testsprite-config.json

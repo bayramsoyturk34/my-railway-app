@@ -12,18 +12,30 @@ const app = express();
 
 // CORS middleware - production ready
 app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Parse allowed origins
   const allowedOrigins = process.env.CORS_ORIGIN 
-    ? [process.env.CORS_ORIGIN] 
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
     : process.env.NODE_ENV === 'production' 
-      ? ['https://*.railway.app'] 
+      ? [] // In production, explicitly set CORS_ORIGIN env var
       : ['http://localhost:5173', 'http://localhost:3000'];
   
-  const origin = req.headers.origin;
-  if (origin && (allowedOrigins.includes(origin) || allowedOrigins.some(allowed => origin.match(allowed.replace('*', '.*'))))) {
+  // Check if origin is allowed
+  const isAllowed = origin && allowedOrigins.some(allowed => {
+    if (allowed.includes('*')) {
+      // Convert wildcard to regex pattern
+      const pattern = new RegExp('^' + allowed.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$');
+      return pattern.test(origin);
+    }
+    return allowed === origin;
+  });
+  
+  if (isAllowed) {
     res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
   }
   
-  res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   

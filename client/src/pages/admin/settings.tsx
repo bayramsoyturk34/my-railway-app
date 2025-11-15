@@ -407,9 +407,9 @@ export default function AdminSettings() {
 
           {/* Security Settings */}
           <TabsContent value="security">
-            <Card className="bg-dark-secondary border-dark-accent">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="text-card-foreground flex items-center gap-2">
                   <Lock className="h-5 w-5" />
                   Güvenlik Ayarları
                 </CardTitle>
@@ -417,21 +417,21 @@ export default function AdminSettings() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password-min-length" className="text-gray-300">Min. Şifre Uzunluğu</Label>
+                    <Label htmlFor="password-min-length" className="text-foreground">Min. Şifre Uzunluğu</Label>
                     <Input
                       id="password-min-length"
                       type="number"
                       defaultValue={settingsMap.password_min_length || "8"}
-                      className="bg-dark-primary border-gray-600 text-white"
+                      className="bg-input border-border text-foreground"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-attempts" className="text-gray-300">Maks. Giriş Denemesi</Label>
+                    <Label htmlFor="login-attempts" className="text-foreground">Maks. Giriş Denemesi</Label>
                     <Input
                       id="login-attempts"
                       type="number"
                       defaultValue={settingsMap.max_login_attempts || "5"}
-                      className="bg-dark-primary border-gray-600 text-white"
+                      className="bg-input border-border text-foreground"
                     />
                   </div>
                 </div>
@@ -439,8 +439,8 @@ export default function AdminSettings() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label className="text-gray-300">İki Faktörlü Doğrulama</Label>
-                      <p className="text-sm text-gray-400">Kullanıcılar için 2FA zorunlu tut</p>
+                      <Label className="text-foreground">İki Faktörlü Doğrulama</Label>
+                      <p className="text-sm text-muted-foreground">Kullanıcılar için 2FA zorunlu tut</p>
                     </div>
                     <Switch defaultChecked={settingsMap.require_2fa === "true"} />
                   </div>
